@@ -2,44 +2,48 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <stdio.h>
-
-#define DEFAULT_WIDTH 960
-#define DEFAULT_HEIGHT 600
+#include "gl-func.h"
+#include "window-func.h"
 
 int main()
-{
-	//Initialize glfw
-	if(!glfwInit())
-	{
-		fprintf(stderr, "Failed to initialize glfw!\n");
-		return -1;
-	}
+{	
+	GLFWwindow* win = initWindow();
 
-	//Create window
-	GLFWwindow* win = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "Terraria Clone", NULL, NULL);
-	if(!win)
-	{
-		fprintf(stderr, "Failed to create window!\n");
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(win);
-
-	//Initialize glad
-	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		fprintf(stderr, "Failed to load glad!\n");
-		glfwTerminate();
-		return -1;
-	}
+	struct ShaderProgram program = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/simple.frag");
+	glUseProgram(program.id);
+	struct Buffers rectangle = createRectangleBuffer();
+	bindBuffers(rectangle);
 
 	while(!glfwWindowShouldClose(win))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		int w, h;
+		glfwGetWindowSize(win, &w, &h);
+
+		glUniform4f(getUniformLocation("uColor", &program), 0.0f, 1.0f, 0.0f, 1.0f);		
+		glUniform2f(getUniformLocation("uWindowDimensions", &program), (float)w, (float)h);	
+		glUniform2f(getUniformLocation("uDimensions", &program), (float)40.0f, (float)40.0f);	
+		glUniform2f(getUniformLocation("uPixPos", &program), (float)200.0f, (float)200.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glUniform4f(getUniformLocation("uColor", &program), 1.0f, 0.0f, 0.0f, 1.0f);		
+		glUniform2f(getUniformLocation("uDimensions", &program), (float)80.0f, (float)40.0f);	
+		glUniform2f(getUniformLocation("uPixPos", &program), (float)-300.0f, (float)200.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glUniform4f(getUniformLocation("uColor", &program), 0.0f, 0.0f, 1.0f, 1.0f);		
+		glUniform2f(getUniformLocation("uDimensions", &program), (float)80.0f, (float)40.0f);	
+		glUniform2f(getUniformLocation("uPixPos", &program), (float)-w / 2.0f, (float)-h / 2.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		outputGLErrors();
 		glfwPollEvents();
-		glfwSwapBuffers(win);	
+		glfwSwapBuffers(win);
 	}
 
+	//Clean up
+	cleanupProgram(&program);
+	cleanupBuffer(rectangle);
 	glfwTerminate();
 }
