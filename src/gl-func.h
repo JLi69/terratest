@@ -41,11 +41,15 @@ void cleanupProgram(struct ShaderProgram *program);
 //Otherwise it will add the location to the list and then return that value
 int getUniformLocation(const char *uniformName, struct ShaderProgram *program);
 
-void outputGLErrors();
+void outputGLErrors(void);
 
-struct Buffers createRectangleBuffer();
+struct Buffers createRectangleBuffer(void);
 void bindBuffers(struct Buffers buff);
 void cleanupBuffer(struct Buffers buff);
+
+void useShader(struct ShaderProgram *shaderPtr);
+//Returns pointer to the current active shader
+struct ShaderProgram* getActiveShader(void);
 
 #endif
 #define GL_FUNC_H

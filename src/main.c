@@ -4,42 +4,29 @@
 #include <stdio.h>
 #include "gl-func.h"
 #include "window-func.h"
+#include "draw.h"
 
-int main()
+int main(void)
 {	
-	GLFWwindow* win = initWindow();
+	initWindow();
 
 	struct ShaderProgram program = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/simple.frag");
-	glUseProgram(program.id);
+	useShader(&program);	
 	struct Buffers rectangle = createRectangleBuffer();
 	bindBuffers(rectangle);
 
-	while(!glfwWindowShouldClose(win))
+	while(!canQuit())
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		int w, h;
-		glfwGetWindowSize(win, &w, &h);
-
-		glUniform4f(getUniformLocation("uColor", &program), 0.0f, 1.0f, 0.0f, 1.0f);		
-		glUniform2f(getUniformLocation("uWindowDimensions", &program), (float)w, (float)h);	
-		glUniform2f(getUniformLocation("uDimensions", &program), (float)40.0f, (float)40.0f);	
-		glUniform2f(getUniformLocation("uPixPos", &program), (float)200.0f, (float)200.0f);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glUniform4f(getUniformLocation("uColor", &program), 1.0f, 0.0f, 0.0f, 1.0f);		
-		glUniform2f(getUniformLocation("uDimensions", &program), (float)80.0f, (float)40.0f);	
-		glUniform2f(getUniformLocation("uPixPos", &program), (float)-300.0f, (float)200.0f);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glUniform4f(getUniformLocation("uColor", &program), 0.0f, 0.0f, 1.0f, 1.0f);		
-		glUniform2f(getUniformLocation("uDimensions", &program), (float)80.0f, (float)40.0f);	
-		glUniform2f(getUniformLocation("uPixPos", &program), (float)-w / 2.0f, (float)-h / 2.0f);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		updateActiveShaderWindowSize();
+		setRectColor(255.0f, 255.0f, 0.0f, 255.0f);
+		setRectSize(20.0f, 40.0f);	
+		setRectPos(0.0f, 0.0f);	
+		drawRect();
 
 		outputGLErrors();
-		glfwPollEvents();
-		glfwSwapBuffers(win);
+		updateWindow();		
 	}
 
 	//Clean up

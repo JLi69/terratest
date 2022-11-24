@@ -4,6 +4,8 @@
 #include <glad/glad.h>
 #include <string.h>
 
+static struct ShaderProgram* active = NULL;
+
 void readShaderFile(const char *path, char *output, unsigned int maxSize)
 {
 	FILE* shaderFile = fopen(path, "r");
@@ -118,7 +120,7 @@ void cleanupProgram(struct ShaderProgram *program)
 	program->id = EMPTY_SHADER;
 }
 
-void outputGLErrors()
+void outputGLErrors(void)
 {
 	GLenum err;
 	int errorCount = 0;	
@@ -201,7 +203,7 @@ int getUniformLocation(const char *uniformName, struct ShaderProgram *program)
 	return -1;
 }
 
-struct Buffers createRectangleBuffer()
+struct Buffers createRectangleBuffer(void)
 {
 	struct Buffers buff;
 
@@ -262,4 +264,15 @@ void cleanupBuffer(struct Buffers buff)
 	free(buff.vertSize);
 	free(buff.types);
 	free(buff.vertElementCount);
+}
+
+void useShader(struct ShaderProgram *shaderPtr)
+{
+	active = shaderPtr;
+	glUseProgram(active->id);
+}
+
+struct ShaderProgram* getActiveShader(void)
+{
+	return active;
 }
