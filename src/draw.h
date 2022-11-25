@@ -1,4 +1,6 @@
 #ifndef DRAW_H
+void clear(void);
+
 void setRectPos(float x, float y);
 void setRectSize(float x, float y);
 //Input based on 0 - 255

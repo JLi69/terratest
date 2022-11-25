@@ -2,6 +2,11 @@
 #include "draw.h"
 #include <glad/glad.h>
 
+void clear(void)
+{	
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
 void setRectPos(float x, float y)
 {
 	glUniform2f(getUniformLocation("uPixPos", getActiveShader()), x, y);

@@ -1,0 +1,51 @@
+#ifndef SPRITE_H
+
+#define GRAVITY 640.0f
+
+union Point
+{
+	struct
+	{
+		float x, y;
+	};
+
+	struct
+	{
+		float w, h;
+	};
+};
+
+struct Vector2D
+{
+	float x, y;
+};
+
+struct Rectangle
+{
+	union Point position;
+	union Point dimensions;
+};
+
+struct Sprite
+{
+	struct Rectangle hitbox;
+	struct Vector2D vel;
+	int falling, canMove;
+};
+
+union Point midpoint(union Point pt1, union Point pt2);
+union Point createPoint(float x, float y);
+struct Rectangle createRectFromCorner(union Point botLeft, union Point topRight);
+struct Rectangle createRect(float x, float y, float w, float h);
+int colliding(struct Rectangle r1, struct Rectangle r2);
+struct Sprite createSprite(struct Rectangle hitbox);
+
+
+void updateSpriteX(struct Sprite *spr, float secondsPerFrame);
+void updateSpriteY(struct Sprite *spr, float secondsPerFrame);
+void updateSprite(struct Sprite *spr, float secondsPerFrame);
+
+struct Vector2D createVector(float x, float y);
+
+#endif
+#define SPRITE_H

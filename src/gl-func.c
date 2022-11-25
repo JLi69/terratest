@@ -1,4 +1,5 @@
 #include "gl-func.h"
+#include "window-func.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <glad/glad.h>
@@ -135,7 +136,7 @@ void outputGLErrors(void)
 	if(errorCount > 0)
 	{
 		fprintf(stderr, "Found %d errors!\n", errorCount);
-		exit(EXIT_FAILURE);
+		crash("OpenGL Errors -- exiting");	
 	}
 #endif
 }
@@ -220,7 +221,7 @@ struct Buffers createRectangleBuffer(void)
 	glGenBuffers(buff.bufferCount, buff.buffers);
 
 	//Set up rectangle vertices
-	static float rectVerts[] = 
+	const float rectVerts[] = 
 	{
 		 1.0f,  1.0f,
 		-1.0f,  1.0f,
