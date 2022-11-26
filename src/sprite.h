@@ -2,6 +2,8 @@
 
 #define GRAVITY 640.0f
 
+#define PI 3.1415926535f
+
 union Point
 {
 	struct
@@ -40,12 +42,14 @@ struct Rectangle createRect(float x, float y, float w, float h);
 int colliding(struct Rectangle r1, struct Rectangle r2);
 struct Sprite createSprite(struct Rectangle hitbox);
 
-
 void updateSpriteX(struct Sprite *spr, float secondsPerFrame);
 void updateSpriteY(struct Sprite *spr, float secondsPerFrame);
 void updateSprite(struct Sprite *spr, float secondsPerFrame);
 
+//Vector operations
 struct Vector2D createVector(float x, float y);
+struct Vector2D generateUnit(float angle); //Angle is in radians
+float dotProduct(struct Vector2D v1, struct Vector2D v2);
 
 #endif
 #define SPRITE_H

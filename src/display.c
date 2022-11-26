@@ -26,15 +26,21 @@ void display(struct World world, struct Sprite player)
 	clear();	
 	updateActiveShaderWindowSize();
 
+	//Draw background
+	setRectColor(0.0f, 40.0f, 255.0f, 255.0f);	
+	setRectPos(0.0f, 0.0f);	
+	setRectSize(10000.0f, 10000.0f);	
+	drawRect();
+
 	//Draw player
 	setRectColor(255.0f, 255.0f, 0.0f, 255.0f);
 	setRectSize(player.hitbox.dimensions.w, player.hitbox.dimensions.h);	
-	setRectPos(player.hitbox.position.x, player.hitbox.position.y);	
+	setRectPos(0.0f, 0.0f);	
 	drawRect();	
 
 	//Draw blocks	
 	setRectColor(0.0f, 255.0f, 0.0f, 255.0f);
-	setRectSize(32.0f, 32.0f);
+	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
 	drawSpriteTree(world.blocks, camPos);
 }

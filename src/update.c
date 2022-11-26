@@ -5,11 +5,17 @@
 #include <GLFW/glfw3.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 
 void initGame(struct World *world, struct Sprite *player)
 {
-	*world = generateTest();
-	*player = createSprite(createRect(0.0f, 128.0f, 32.0f, 64.0f));
+	const float height = 256.0f;
+	*world = generateWorld(time(0), height, 256.0f);
+	*player = createSprite(createRect(0.0f, height * 32.0f * 2.0f, 32.0f, 64.0f));
+	
+	struct Sprite* collision;
+	while(collisionSearch(world->blocks, *player, &collision))
+		player->hitbox.position.y += 32.0f;
 	player->canMove = 1;
 }
 
@@ -17,17 +23,12 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 {	
 	struct Sprite* collided = (void*)0;	
 
-	updateSpriteX(player, secondsPerFrame);	
+	//Move player in the x direction
+	updateSpriteX(player, secondsPerFrame);
+	//Check for collision
 	if(collisionSearch(world->blocks, *player, &collided))
 	{				
-		//Uncollide the player
-		/*if(player->vel.x != 0.0f)
-		{
-			player->hitbox.position.x -= player->vel.x * secondsPerFrame;
-			player->vel.x = 0.0f;
-		}*/	
-	
-		//Player is moving in the y direction		
+		//Uncollide the player	
 		if(player->vel.x != 0.0f)
 		{
 			if(player->hitbox.position.x >=
@@ -51,10 +52,12 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		}
 	}
 
+	//Move player in y direction
 	updateSpriteY(player, secondsPerFrame);	
+	//Check for collision	
 	if(collisionSearch(world->blocks, *player, &collided))
 	{
-		//Player is moving in the y direction		
+		//Uncollide the player
 		if(player->vel.y != 0.0f)
 		{
 			if(player->hitbox.position.y >=
@@ -90,7 +93,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		player->vel.x = PLAYER_SPEED;
 	else
 		player->vel.x = 0.0f;
-
+	//Jump
 	if(!player->falling && isPressed(GLFW_KEY_SPACE))
 		player->vel.y = JUMP_SPEED;
 }

@@ -41,8 +41,8 @@ void insert(struct SpriteQuadTree *tree, struct Sprite sprite)
 	   tree->topRight == NULL)
 	{
 		//Quad is too small, don't bother inserting
-		if(quadBound.dimensions.w <= 0.0001f ||
-		   quadBound.dimensions.h <= 0.0001f &&
+		if((quadBound.dimensions.w <= 0.0001f ||
+		   quadBound.dimensions.h <= 0.0001f) &&
 		   tree->spriteCount >= QUAD_CAPACITY)
 			return;
 

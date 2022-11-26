@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.11)
 
 project(terratest)
 
-set(CMAKE_C_FLAGS "-O2 -static-libgcc")
+set(CMAKE_C_FLAGS "-O3 -static-libgcc")
 
 add_custom_target(
 	run
@@ -41,3 +41,4 @@ add_executable(
 target_link_libraries(${PROJECT_NAME}_dev glfw3 m)
 target_link_libraries(${PROJECT_NAME}_dev SOIL2 m OpenGL::GL)
 target_compile_definitions(${PROJECT_NAME}_dev PUBLIC DEV_VERSION)
+target_compile_options(${PROJECT_NAME}_dev PUBLIC -g)

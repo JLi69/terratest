@@ -1,4 +1,5 @@
 #include "sprite.h"
+#include <math.h>
 
 int colliding(struct Rectangle r1, struct Rectangle r2)
 {
@@ -88,4 +89,17 @@ struct Vector2D createVector(float x, float y)
 	v.x = x;
 	v.y = y;
 	return v;
+}
+
+struct Vector2D generateUnit(float angle)
+{
+	struct Vector2D unit;
+	unit.x = cosf(angle);
+	unit.y = sinf(angle);
+	return unit;
+}
+
+float dotProduct(struct Vector2D v1, struct Vector2D v2)
+{
+	return v1.x * v2.x + v1.y * v2.y;
 }

@@ -5,7 +5,7 @@
 #define MAX_SHADERS 8
 #define MAX_BUFFERS 4
 
-#define PLAYER_SPEED 128.0f
+#define PLAYER_SPEED 256.0f
 #define JUMP_SPEED 320.0f
 
 //Initializes shaders and buffers
