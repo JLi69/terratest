@@ -1,12 +1,15 @@
 #version 430
 
 layout(location = 0) in vec4 pos;
+layout(location = 1) in vec2 texCoords;
 //Window dimensions
 uniform vec2 uWindowDimensions;
 //Dimensions in pixels
 uniform vec2 uDimensions = vec2(1.0, 1.0);
 //Position in pixels
 uniform vec2 uPixPos = vec2(0.0, 0.0);
+
+out vec2 tc;
 
 void main()
 {
@@ -23,4 +26,6 @@ void main()
 	translate[3] = vec4(uPixPos.x / uWindowDimensions.x * 2.0f, uPixPos.y / uWindowDimensions.y * 2.0f, 0.0, 1.0);
 
 	gl_Position = translate * scale * pos;
+
+	tc = texCoords;
 }

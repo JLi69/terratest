@@ -53,7 +53,39 @@ struct Sprite createSprite(struct Rectangle hitbox)
 	spr.vel.y = 0.0f;
 	spr.falling = 1;
 	spr.canMove = 0;
+	spr.flipped = 0;
+	spr.animating = 0;
+	spr.animationFrame = 0;
+	spr.type = 0;
 	return spr;
+}
+
+struct Sprite createSpriteWithType(struct Rectangle hitbox, int type)
+{
+	struct Sprite spr;
+	spr.hitbox = hitbox;
+	spr.vel.x = 0.0f;
+	spr.vel.y = 0.0f;
+	spr.falling = 1;
+	spr.canMove = 0;
+	spr.flipped = 0;
+	spr.animating = 0;
+	spr.animationFrame = 0;
+	spr.type = type;
+	return spr;
+}
+
+void updateAnimation(
+	struct Sprite *spr, 
+	const int *frames, 
+	const int numOfFrames, 
+	const float timePassed, 
+	const float frameLen)
+{
+	if(!spr->animating)
+		return;
+	int index = (int)(timePassed / frameLen) % numOfFrames;
+	spr->animationFrame = frames[index];
 }
 
 void updateSpriteX(struct Sprite *spr, float secondsPerFrame)

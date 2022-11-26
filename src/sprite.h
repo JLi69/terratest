@@ -32,7 +32,10 @@ struct Sprite
 {
 	struct Rectangle hitbox;
 	struct Vector2D vel;
-	int falling, canMove;
+	short int falling, canMove, flipped, animating;
+	int animationFrame;
+
+	unsigned int type, animationState;
 };
 
 union Point midpoint(union Point pt1, union Point pt2);
@@ -40,7 +43,15 @@ union Point createPoint(float x, float y);
 struct Rectangle createRectFromCorner(union Point botLeft, union Point topRight);
 struct Rectangle createRect(float x, float y, float w, float h);
 int colliding(struct Rectangle r1, struct Rectangle r2);
+
 struct Sprite createSprite(struct Rectangle hitbox);
+struct Sprite createSpriteWithType(struct Rectangle hitbox, int type);
+void updateAnimation(
+		struct Sprite *spr, 
+		const int *frames, 
+		const int numOfFrames, 
+		const float timePassed, 
+		const float frameLen);
 
 void updateSpriteX(struct Sprite *spr, float secondsPerFrame);
 void updateSpriteY(struct Sprite *spr, float secondsPerFrame);

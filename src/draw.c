@@ -30,3 +30,43 @@ void drawRect(void)
 {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
+void turnOnTexture(void)
+{	
+	glUniform1i(getUniformLocation("uUseTexture", getActiveShader()), 1);
+}
+
+void turnOffTexture(void)
+{	
+	glUniform1i(getUniformLocation("uUseTexture", getActiveShader()), 0);
+}
+
+void setTexFrac(float fracX, float fracY)
+{	
+	glUniform2f(getUniformLocation("uTexFrac", getActiveShader()), fracX, fracY);
+}
+
+void setTexOffset(float x, float y)
+{	
+	glUniform2f(getUniformLocation("uTexOffset", getActiveShader()), x, y);
+}
+
+void setTexSize(float texWidth, float texHeight)
+{	
+	glUniform2f(getUniformLocation("uTexSize", getActiveShader()), texWidth, texHeight);
+}
+
+void turnOnFlip(void)
+{	
+	glUniform1i(getUniformLocation("uFlip", getActiveShader()), 1);
+}
+
+void turnOffFlip(void)
+{	
+	glUniform1i(getUniformLocation("uFlip", getActiveShader()), 0);
+}
+
+void flip(int flipped)
+{
+	glUniform1i(getUniformLocation("uFlip", getActiveShader()), flipped);
+}

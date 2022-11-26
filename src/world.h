@@ -6,6 +6,17 @@
 
 #define BLOCK_SIZE 32.0f
 
+enum SpriteType
+{
+	NONE,
+	GRASS,
+	DIRT,
+	STONE,
+	COAL,
+	IRON,
+	INDESTRUCTABLE,
+};
+
 struct World
 {
 	struct SpriteQuadTree* blocks;

@@ -9,10 +9,13 @@
 
 void initGame(struct World *world, struct Sprite *player)
 {
-	const float height = 256.0f;
+	const float height = 128.0f;
 	*world = generateWorld(time(0), height, 256.0f);
-	*player = createSprite(createRect(0.0f, height * 32.0f * 2.0f, 32.0f, 64.0f));
 	
+	*player = createSprite(createRect(0.0f, 32.0f * 1.5f * height, 32.0f, 64.0f));
+	player->animationState = IDLE;
+	player->animating = 1;
+
 	struct Sprite* collision;
 	while(collisionSearch(world->blocks, *player, &collision))
 		player->hitbox.position.y += 32.0f;
@@ -56,7 +59,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	updateSpriteY(player, secondsPerFrame);	
 	//Check for collision	
 	if(collisionSearch(world->blocks, *player, &collided))
-	{
+	{		
 		//Uncollide the player
 		if(player->vel.y != 0.0f)
 		{
@@ -80,19 +83,43 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 					collided->hitbox.dimensions.h / 2.0f -
 					player->hitbox.dimensions.h / 2.0f;	
 			}	
-		}
+		}	
 	}
 	else
+	{
 		//The player is not supported by a block
 		player->falling = 1;
+		player->animationState = FALLING;	
+	
+		struct Sprite temp = createSprite(
+							 createRect(player->hitbox.position.x, player->hitbox.position.y - 0.01f,
+										player->hitbox.dimensions.w, player->hitbox.dimensions.h));
+		struct Sprite* tempCollison;	
+		if(collisionSearch(world->blocks, temp, &tempCollison))
+			player->animationState = IDLE;
+	}
 
 	//Move character with arrow keys
 	if(isPressed(GLFW_KEY_A))
+	{
+		player->flipped = 1;
 		player->vel.x = -PLAYER_SPEED;
+		if(player->animationState == IDLE)
+			player->animationState = WALKING;	
+	}
 	else if(isPressed(GLFW_KEY_D))
+	{
+		player->flipped = 0;	
 		player->vel.x = PLAYER_SPEED;
+		if(player->animationState == IDLE)
+			player->animationState = WALKING;
+	}
 	else
+	{
 		player->vel.x = 0.0f;
+		if(player->animationState == WALKING)
+			player->animationState = IDLE;
+	}
 	//Jump
 	if(!player->falling && isPressed(GLFW_KEY_SPACE))
 		player->vel.y = JUMP_SPEED;

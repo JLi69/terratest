@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <glad/glad.h>
 #include <string.h>
+#include <SOIL2/SOIL2.h>
 
 static struct ShaderProgram* active = NULL;
 
@@ -211,7 +212,7 @@ struct Buffers createRectangleBuffer(void)
 	glGenVertexArrays(1, &buff.arr);
 	glBindVertexArray(buff.arr);
 
-	buff.bufferCount = 1;
+	buff.bufferCount = 2;
 	buff.buffers = (unsigned int*)malloc(sizeof(unsigned int) * buff.bufferCount);
 
 	buff.types = (unsigned int*)malloc(sizeof(unsigned int) * buff.bufferCount); 
@@ -231,12 +232,28 @@ struct Buffers createRectangleBuffer(void)
 		 1.0f, -1.0f,
 		 1.0f,  1.0f
 	};
-	glGenBuffers(1, &buff.buffers[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, buff.buffers[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(rectVerts), rectVerts, GL_STATIC_DRAW);	
 	buff.types[0] = GL_FLOAT;
 	buff.vertSize[0] = 2 * sizeof(float);
 	buff.vertElementCount[0] = 2;
+
+	//Set up rectangle vertices
+	const float rectTexCoords[] = 
+	{
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f,
+
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f
+	};
+	glBindBuffer(GL_ARRAY_BUFFER, buff.buffers[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectTexCoords), rectTexCoords, GL_STATIC_DRAW);	
+	buff.types[1] = GL_FLOAT;
+	buff.vertSize[1] = 2 * sizeof(float);
+	buff.vertElementCount[1] = 2;	
 
 	return buff;
 }
@@ -247,6 +264,7 @@ void bindBuffers(struct Buffers buff)
 
 	for(int i = 0; i < buff.bufferCount; i++)
 	{
+		glBindBuffer(GL_ARRAY_BUFFER, buff.buffers[i]);
 		glVertexAttribPointer(i, 
 							  buff.vertElementCount[i],
 							  buff.types[i],
@@ -276,4 +294,25 @@ void useShader(struct ShaderProgram *shaderPtr)
 struct ShaderProgram* getActiveShader(void)
 {
 	return active;
+}
+
+unsigned int loadTexture(const char *path)
+{
+	unsigned int tex = 
+		SOIL_load_OGL_texture(path, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+
+	//Failed to open texture
+	if(tex == 0)
+	{
+		fprintf(stderr, "Failed to open image: %s\n", path);
+		return 0;	
+	}
+
+	return tex;
+}
+
+void bindTexture(unsigned int texture, int texBinding)
+{
+	glActiveTexture(texBinding);
+	glBindTexture(GL_TEXTURE_2D, texture);
 }

@@ -149,14 +149,28 @@ struct World generateWorld(int seed, float amp, int interval)
 	{
 		for(float y = 0.0f; y <= (worldHeight[i]); y += 1.0f)
 		{
-			if(caveValues[i + (int)y * WORLD_WIDTH] < -0.1f && y > 4.0f)
-			{	
+			if(caveValues[i + (int)y * WORLD_WIDTH] < -0.2f && y > 4.0f)
 				continue;
-			}
 
-			insert(world.blocks, createSprite(createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
+			struct Sprite tempBlock = createSpriteWithType(createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 														 y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f,
-														 BLOCK_SIZE, BLOCK_SIZE)));
+														 BLOCK_SIZE, BLOCK_SIZE), STONE);
+			if(y + 3.0f > worldHeight[i])
+				tempBlock.type = GRASS;
+			else if(y + 7.0f > worldHeight[i])
+				tempBlock.type = DIRT;
+			
+			//Generate ores
+			if(tempBlock.type == STONE && rand() % 1000 < 20)
+				tempBlock.type = COAL;
+			if(tempBlock.type == STONE && rand() % 1000 < 2 && y < amplitude / 4.0f * 3.0f)
+				tempBlock.type = IRON;
+			
+			//Bottom of world
+			if(y <= 4.0f && rand() % (int)(y + 1) == 0)
+				tempBlock.type = INDESTRUCTABLE;
+
+			insert(world.blocks, tempBlock);
 			total++;
 		}	
 	}
@@ -170,6 +184,8 @@ struct World generateWorld(int seed, float amp, int interval)
 //Draws out the world
 void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 {
+	static int prevSpriteType = NONE;
+
 	struct Rectangle camViewBox = createRect(camPos.x, camPos.y, 2000.0f, 1200.0f),
 					 quadBound = createRectFromCorner(tree->botLeftCorner, tree->topRightCorner);
 	if(!colliding(camViewBox, quadBound))
@@ -185,10 +201,16 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 		{
 			if(!colliding(tree->sprites[i].hitbox, camViewBox))
 				continue;
+			if(tree->sprites[i].type != prevSpriteType)
+			{
+				setTexOffset(1.0f / 16.0f * (float)((tree->sprites[i].type - 1) % 16), 1.0f / 16.0f * (float)((tree->sprites[i].type - 1) / 16));
+				prevSpriteType = tree->sprites[i].type; 
+			}
 			setRectPos(tree->sprites[i].hitbox.position.x - camPos.x,
 					   tree->sprites[i].hitbox.position.y - camPos.y);
 			drawRect();
 		}	
+		prevSpriteType = NONE;
 	}
 	else
 	{

@@ -27,6 +27,7 @@ void loop(void)
 	{
 		gettimeofday(&beginFrame, 0);
 		display(world, player);
+		animateSprites(&world, &player, seconds);
 		updateGameobjects(&world, &player, seconds);
 		updateWindow();		
 		gettimeofday(&endFrame, 0);

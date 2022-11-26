@@ -51,5 +51,9 @@ void useShader(struct ShaderProgram *shaderPtr);
 //Returns pointer to the current active shader
 struct ShaderProgram* getActiveShader(void);
 
+//textures
+unsigned int loadTexture(const char *path);
+void bindTexture(unsigned int texture, int texBinding);
+
 #endif
 #define GL_FUNC_H
