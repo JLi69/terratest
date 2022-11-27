@@ -143,6 +143,45 @@ int collisionSearch(
 	return 0;
 }
 
+void deleteSprite(struct SpriteQuadTree *tree, struct Sprite sprite)
+{
+	if(tree == NULL)
+		return;
+	if(tree->spriteCount == 0)
+		return;
+
+	struct Rectangle quadBound = createRectFromCorner(tree->botLeftCorner, tree->topRightCorner);
+	if(!colliding(quadBound, sprite.hitbox))
+		return;
+
+	//Leaf node
+	if(tree->botLeft == NULL &&
+	   tree->botRight == NULL &&
+	   tree->topLeft == NULL &&
+	   tree->botRight == NULL)
+	{
+		for(int i = 0; i < tree->spriteCount; i++)
+		{
+			if(colliding(sprite.hitbox, tree->sprites[i].hitbox))
+			{	
+				//Swap it with the last sprite
+				struct Sprite temp = tree->sprites[i];
+				tree->sprites[i] = tree->sprites[tree->spriteCount - 1];
+				tree->sprites[tree->spriteCount - 1] = temp;
+				tree->spriteCount--;
+				return;
+			}		
+		}	
+	}
+	else
+	{
+		deleteSprite(tree->botLeft, sprite);
+		deleteSprite(tree->botRight, sprite);			
+		deleteSprite(tree->topLeft, sprite);
+		deleteSprite(tree->topRight, sprite);
+	}
+}
+
 void destroyTree(struct SpriteQuadTree *tree)
 {
 	if(tree == NULL)

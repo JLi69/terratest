@@ -9,7 +9,7 @@
 
 void initGame(struct World *world, struct Sprite *player)
 {
-	const float height = 8.0f;
+	const float height = 128.0f;
 	*world = generateWorld(time(0), height, 256.0f);
 	
 	*player = createSprite(createRect(0.0f, 32.0f * 1.5f * height, 32.0f, 64.0f));
@@ -136,6 +136,21 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->blocks, temp, &tempCollision))
 		{
 			insert(world->blocks, temp);
+		}
+	}
+	//Destroy blocks
+	else if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
+	{
+		double cursorX, cursorY;
+		getCursorPos(&cursorX, &cursorY);
+		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE) * BLOCK_SIZE;	
+		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;	
+		struct Sprite selected = createSprite(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE));
+		struct Sprite* tempCollision = NULL;
+		collisionSearch(world->blocks, selected, &tempCollision);
+		if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
+		{
+			deleteSprite(world->blocks, selected);
 		}
 	}
 }

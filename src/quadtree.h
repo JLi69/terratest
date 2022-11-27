@@ -31,6 +31,11 @@ int collisionSearch(
 void insert(
 		struct SpriteQuadTree *tree,
 		struct Sprite sprite);
+//Deletes a sprite by attempting to find the first sprite
+//that is colliding with the sprite passed in
+void deleteSprite(
+		struct SpriteQuadTree *tree,
+		struct Sprite sprite);
 void destroyTree(struct SpriteQuadTree *tree);
 
 #endif
