@@ -6,19 +6,19 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -static-libgcc -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive")
 
 	add_custom_target(
-	libglad.a
+	lib_glad
 
 	COMMAND cd lib/glad && mingw32-make 
 	)
 
 	add_custom_target(
-	libglfw3.a
+	lib_glfw
 
 	COMMAND  cd lib/glfw && mingw32-make
 	)
 
 	add_custom_target(
-	libSOIL2.a
+	lib_soil2
 
 	COMMAND  cd lib/SOIL2 && mingw32-make
 	)
@@ -26,15 +26,21 @@ else()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -static-libgcc")
 
 	add_custom_target(
-	libglad.a
+	lib_glad
 
 	COMMAND  cd lib/glad && make
 	)
 
 	add_custom_target(
-	libglfw3.a
+	lib_glfw
 
 	COMMAND  cd lib/glfw && make
+	)
+
+	add_custom_target(
+	lib_soil2
+
+	COMMAND  cd lib/SOIL2 && make
 	)
 endif()
 
@@ -59,9 +65,9 @@ find_package(OpenGL REQUIRED)
 
 aux_source_directory(src source)
 
-find_library(GLFW3 NAMES glfw3 glfw PATHS ${CMAKE_BINARY_DIR}/lib) 
-find_library(LIBSOIL2 NAMES soil2 PATHS ${CMAKE_BINARY_DIR}/lib/SOIL2) 
-find_library(LIBGLAD NAMES glad PATHS ${CMAKE_BINARY_DIR}/lib/glad)
+link_directories(${CMAKE_BINARY_DIR}/lib/glfw/src)
+link_directories(${CMAKE_BINARY_DIR}/lib/glad)
+link_directories(${CMAKE_BINARY_DIR}/lib/SOIL2)
 
 #build release version
 add_executable(
@@ -69,15 +75,16 @@ add_executable(
 
 	${source}
 )
-add_dependencies(${PROJECT_NAME} libglad.a libglfw3.a libSOIL2.a) 
+add_dependencies(${PROJECT_NAME} lib_glad lib_glfw lib_soil2) 
 
 #Link with libraries
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-	target_link_libraries(${PROJECT_NAME} glfw3 gdi32 m)
+	target_link_libraries(${PROJECT_NAME} libglfw3.a gdi32 m)	
+	target_compile_options(${PROJECT_NAME} PUBLIC -mwindows)
 else()
-	target_link_libraries(${PROJECT_NAME} glfw3 m)
+	target_link_libraries(${PROJECT_NAME} libglfw3.a m)
 endif()
-target_link_libraries(${PROJECT_NAME} ${LIBSOIL2} ${LIBGLAD} m OpenGL::GL)
+target_link_libraries(${PROJECT_NAME} libsoil2.a libglad.a m OpenGL::GL)
 
 #build development version
 add_executable(
@@ -85,13 +92,13 @@ add_executable(
 
 	${source}
 )
-add_dependencies(${PROJECT_NAME}_dev libglad.a libglfw3.a libSOIL2.a)
+add_dependencies(${PROJECT_NAME}_dev lib_glad lib_glfw lib_soil2)
 #Link with libraries
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-	target_link_libraries(${PROJECT_NAME}_dev glfw3 gdi32 m)
+	target_link_libraries(${PROJECT_NAME}_dev libglfw3.a gdi32 m)
 else()
-	target_link_libraries(${PROJECT_NAME}_dev glfw3 m)
+	target_link_libraries(${PROJECT_NAME}_dev libglfw3.a m)
 endif()
-target_link_libraries(${PROJECT_NAME}_dev ${LIBSOIL2} ${LIBGLAD} m OpenGL::GL)
+target_link_libraries(${PROJECT_NAME}_dev libsoil2.a libglad.a m OpenGL::GL)
 target_compile_definitions(${PROJECT_NAME}_dev PUBLIC DEV_VERSION)
 target_compile_options(${PROJECT_NAME}_dev PUBLIC -g)
