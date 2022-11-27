@@ -123,4 +123,19 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	//Jump
 	if(!player->falling && isPressed(GLFW_KEY_SPACE))
 		player->vel.y = JUMP_SPEED;
+
+	//Place blocks
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		double cursorX, cursorY;
+		getCursorPos(&cursorX, &cursorY);
+		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE) * BLOCK_SIZE;	
+		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;
+		struct Sprite temp = createSpriteWithType(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE), BRICK);
+		struct Sprite* tempCollision;	
+		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->blocks, temp, &tempCollision))
+		{
+			insert(world->blocks, temp);
+		}
+	}
 }

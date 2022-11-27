@@ -9,6 +9,7 @@
 #include <stdlib.h>
 //Maximum number of keys that can be detected as pressed
 #define MAX_KEY_PRESSED 4
+#define MOUSE_BUTTON_COUNT 3
 #define UNPRESSED -1
 
 //if this is set to 1, quit
@@ -17,6 +18,7 @@ static int canExit = 0;
 static GLFWwindow* win;
 //Store the keys that are pressed
 static int pressed[MAX_KEY_PRESSED];
+static int mouse[MOUSE_BUTTON_COUNT];
 
 //Handle resizing of the window
 void handleWindowResize(GLFWwindow *win, int newWidth, int newHeight)
@@ -25,7 +27,7 @@ void handleWindowResize(GLFWwindow *win, int newWidth, int newHeight)
 }
 
 //Handle key input
-void handleKeyInput(GLFWwindow *win, int key, int scancode, int action, int mods)
+void handleKeyInput(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	if(action == GLFW_PRESS)
 	{
@@ -57,6 +59,35 @@ void handleKeyInput(GLFWwindow *win, int key, int scancode, int action, int mods
 	}
 }
 
+void handleMouseInput(GLFWwindow *window, int button, int action, int mods)
+{
+	if(action == GLFW_PRESS)
+	{
+		for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+			if(mouse[i] == button)
+				return;
+		for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+		{
+			if(mouse[i] == UNPRESSED)
+			{
+				mouse[i] = button;
+				return;
+			}
+		}
+	}
+	else if(action == GLFW_RELEASE)
+	{
+		for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+		{
+			if(mouse[i] == button)
+			{
+				mouse[i] = UNPRESSED;
+				return;
+			}
+		}
+	}
+}
+
 int isPressed(int key)
 {
 	for(int i = 0; i < MAX_KEY_PRESSED; i++)
@@ -65,10 +96,20 @@ int isPressed(int key)
 	return 0;
 }
 
+int mouseButtonHeld(int button)
+{
+	for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+		if(button == mouse[i])
+			return 1;
+	return 0;
+}
+
 void initWindow(void)
 {
 	for(int i = 0; i < MAX_KEY_PRESSED; i++)
 		pressed[i] = UNPRESSED;
+	for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+		mouse[i] = UNPRESSED;
 
 	//Initialize glfw
 	if(!glfwInit())
@@ -82,6 +123,7 @@ void initWindow(void)
 
 	glfwSetWindowSizeCallback(win, handleWindowResize);
 	glfwSetKeyCallback(win, handleKeyInput);
+	glfwSetMouseButtonCallback(win, handleMouseInput);
 
 	//Initialize glad
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

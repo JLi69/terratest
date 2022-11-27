@@ -12,6 +12,7 @@ void updateWindow(void);
 //Returns 1 if the key is pressed, 0 if the key is not 
 //pressed
 int isPressed(int key);
+int mouseButtonHeld(int button);
 
 //Quit the program and give an error
 void crash(const char *msg);
