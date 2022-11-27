@@ -1,2 +1,4 @@
 #ignore build files
 build
+
+*.swp
