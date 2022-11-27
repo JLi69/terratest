@@ -118,3 +118,19 @@ void quit(void)
 {
 	canExit = 1;
 }
+
+void getWindowSize(int *w, int *h)
+{
+	glfwGetWindowSize(win, w, h);
+}
+
+void getCursorPos(double *x, double *y)
+{
+	int winWidth, winHeight;
+	glfwGetWindowSize(win, &winWidth, &winHeight);
+	glfwGetCursorPos(win, x, y);
+
+	*y = (double)winHeight - *y;
+	*x -= winWidth / 2.0f;
+	*y -= winHeight / 2.0f;
+}

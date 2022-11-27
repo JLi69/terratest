@@ -12,9 +12,8 @@ enum SpriteType
 	GRASS,
 	DIRT,
 	STONE,
-	COAL,
-	IRON,
 	INDESTRUCTABLE,
+	BRICK
 };
 
 struct World

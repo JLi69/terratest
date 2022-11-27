@@ -155,19 +155,13 @@ struct World generateWorld(int seed, float amp, int interval)
 			struct Sprite tempBlock = createSpriteWithType(createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 														 y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f,
 														 BLOCK_SIZE, BLOCK_SIZE), STONE);
-			if(y + 3.0f > worldHeight[i])
+			if(y + 1.0f > worldHeight[i])
 				tempBlock.type = GRASS;
 			else if(y + 7.0f > worldHeight[i])
 				tempBlock.type = DIRT;
 			
-			//Generate ores
-			if(tempBlock.type == STONE && rand() % 1000 < 20)
-				tempBlock.type = COAL;
-			if(tempBlock.type == STONE && rand() % 1000 < 2 && y < amplitude / 4.0f * 3.0f)
-				tempBlock.type = IRON;
-			
 			//Bottom of world
-			if(y <= 4.0f && rand() % (int)(y + 1) == 0)
+			if(y <= 4.0f && (float)rand() / (float)RAND_MAX <= 1.0f / sqrtf(y + 1.0f))
 				tempBlock.type = INDESTRUCTABLE;
 
 			insert(world.blocks, tempBlock);

@@ -9,7 +9,7 @@
 
 void initGame(struct World *world, struct Sprite *player)
 {
-	const float height = 128.0f;
+	const float height = 8.0f;
 	*world = generateWorld(time(0), height, 256.0f);
 	
 	*player = createSprite(createRect(0.0f, 32.0f * 1.5f * height, 32.0f, 64.0f));

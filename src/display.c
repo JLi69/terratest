@@ -6,6 +6,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <math.h>
 
 static struct ShaderProgram shaders[MAX_SHADERS];
 static struct Buffers buffers[MAX_BUFFERS];
@@ -15,6 +16,7 @@ void initGL(void)
 {
 	//Set up shaders
 	shaders[0] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/texture.frag");
+	shaders[1] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/outline.frag");
 
 	//Set up vertex buffers
 	buffers[0] = createRectangleBuffer();
@@ -34,11 +36,12 @@ void initGL(void)
 void display(struct World world, struct Sprite player)
 {		
 	clear();	
-	updateActiveShaderWindowSize();
 
+	useShader(&shaders[0]);		
+	updateActiveShaderWindowSize();
 	//Draw background
 	turnOffTexture();
-	setRectColor(0.0f, 40.0f, 255.0f, 255.0f);	
+	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
 	setRectPos(0.0f, 0.0f);	
 	setRectSize(10000.0f, 10000.0f);	
 	drawRect();
@@ -63,6 +66,17 @@ void display(struct World world, struct Sprite player)
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
 	drawSpriteTree(world.blocks, camPos);
+
+	//Highlight block
+	double cursorX, cursorY;
+	getCursorPos(&cursorX, &cursorY);
+	useShader(&shaders[1]);
+	updateActiveShaderWindowSize();
+	turnOffTexture();	
+	setRectColor(255.0f, 255.0f, 255.0f, 255.0f);
+	setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
+	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+	drawRect();
 }
 
 void cleanup(void)

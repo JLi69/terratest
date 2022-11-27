@@ -18,5 +18,13 @@ void crash(const char *msg);
 //Quit the program
 void quit(void);
 
+//Wrapper functions for the glfw ones
+void getWindowSize(int *w, int *h);
+//Wrapper function for the glfw function,
+//however, it returns the cursor position
+//translated so that the origin is in the
+//center of the window
+void getCursorPos(double *x, double *y);
+
 #endif
 #define WINDOW_UTIL_H
