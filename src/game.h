@@ -9,6 +9,8 @@
 #define PLAYER_SPEED 256.0f
 #define JUMP_SPEED 320.0f
 
+#define CURSOR_SIZE 16.0f
+
 enum AnimationStates
 {
 	IDLE,

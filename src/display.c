@@ -23,7 +23,8 @@ void initGL(void)
 
 	//Set up textures
 	textures[0] = loadTexture("res/textures/player.png");
-	textures[1] = loadTexture("res/textures/tiles.png");
+	textures[1] = loadTexture("res/textures/tiles.png");	
+	textures[2] = loadTexture("res/textures/icons.png");
 
 	useShader(&shaders[0]);	
 	bindBuffers(buffers[0]);
@@ -44,20 +45,9 @@ void display(struct World world, struct Sprite player)
 	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
 	setRectPos(0.0f, 0.0f);	
 	setRectSize(10000.0f, 10000.0f);	
-	drawRect();
-
-	bindTexture(textures[0], GL_TEXTURE0);
-	//Draw player	
-	flip(player.flipped);
-	setTexFrac(1.0f / 16.0f, 1.0f);
-	setTexSize(256.0f, 32.0f);
-	setTexOffset((float)player.animationFrame * 1.0f / 16.0f, 0.0f);
+	drawRect();		
+	
 	turnOnTexture();
-	setRectSize(player.hitbox.dimensions.w, player.hitbox.dimensions.h);	
-	setRectPos(0.0f, 0.0f);	
-	drawRect();	
-	turnOffFlip();
-
 	bindTexture(textures[1], GL_TEXTURE0);
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
@@ -65,18 +55,44 @@ void display(struct World world, struct Sprite player)
 	//Draw blocks
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
-	drawSpriteTree(world.blocks, camPos);
+	drawSpriteTree(world.blocks, camPos);	
 
+	bindTexture(textures[0], GL_TEXTURE0);
+	//Draw player	
+	flip(player.flipped);
+	setTexFrac(1.0f / 16.0f, 1.0f);
+	setTexSize(256.0f, 32.0f);
+	setTexOffset((float)player.animationFrame * 1.0f / 16.0f, 0.0f);
+	setRectSize(player.hitbox.dimensions.w, player.hitbox.dimensions.h);	
+	setRectPos(0.0f, 0.0f);	
+	drawRect();	
+	turnOffFlip();
+
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+	setTexSize(256.0f, 256.0f);
 	//Highlight block
-	double cursorX, cursorY;
-	getCursorPos(&cursorX, &cursorY);
-	useShader(&shaders[1]);
-	updateActiveShaderWindowSize();
-	turnOffTexture();	
-	setRectColor(255.0f, 255.0f, 255.0f, 255.0f);
-	setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
-	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
-	drawRect();
+	if(!isPaused())
+	{
+		double cursorX, cursorY;
+		getCursorPos(&cursorX, &cursorY);
+	
+		useShader(&shaders[1]);						
+		updateActiveShaderWindowSize();
+		turnOffTexture();	
+		setRectColor(255.0f, 255.0f, 255.0f, 255.0f);
+		setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
+		setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+		drawRect();
+
+		//Draw cursor	
+		bindTexture(textures[2], GL_TEXTURE0);	
+		useShader(&shaders[0]);
+		setRectPos(cursorX, cursorY);		
+		setTexOffset(0.0f, 0.0f);
+		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
+		drawRect();	
+	}
 }
 
 void cleanup(void)

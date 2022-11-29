@@ -27,6 +27,14 @@ int collisionSearch(
 		struct SpriteQuadTree *tree,
 		struct Sprite sprite,
 		struct Sprite **collision);
+//Basically does the same thing as collisionSearch but it
+//is given a list of tags of sprites that it should ignore
+//this list must be terminated with a -1
+int collisionSearchFiltered(
+		struct SpriteQuadTree *tree,
+		struct Sprite sprite,
+		struct Sprite **collision,
+		const int *ignore);
 //Inserts a rectangle into the quadtree
 void insert(
 		struct SpriteQuadTree *tree,

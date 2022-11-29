@@ -1,5 +1,6 @@
 #include "quadtree.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 struct SpriteQuadTree* createQuadTree(union Point botleft, union Point topright)
 {
@@ -123,7 +124,57 @@ int collisionSearch(
 		for(int i = 0; i < tree->spriteCount; i++)
 		{
 			if(colliding(tree->sprites[i].hitbox, sprite.hitbox))
-			{	
+			{
+				*collision = &tree->sprites[i];
+				return 1;
+			}		
+		}	
+	}
+	else
+	{
+		int found = collisionSearch(tree->botLeft, sprite, collision);
+		if(found) return 1;	
+		found = collisionSearch(tree->botRight, sprite, collision);			
+		if(found) return 1;	
+		found = collisionSearch(tree->topLeft, sprite, collision);
+		if(found) return 1;	
+		found = collisionSearch(tree->topRight, sprite, collision);
+		if(found) return 1;	
+	}
+	return 0;
+}
+
+int collisionSearchFiltered(
+	struct SpriteQuadTree *tree,
+	struct Sprite sprite,
+	struct Sprite **collision,
+	const int *ignore)
+{
+	if(tree == NULL)
+		return 0;
+
+	struct Rectangle quadBound = createRectFromCorner(tree->botLeftCorner, tree->topRightCorner);
+	if(!colliding(quadBound, sprite.hitbox))
+		return 0;
+
+	//Leaf node
+	if(tree->botLeft == NULL &&
+	   tree->botRight == NULL &&
+	   tree->topLeft == NULL &&
+	   tree->botRight == NULL)
+	{
+		for(int i = 0; i < tree->spriteCount; i++)
+		{
+			if(colliding(tree->sprites[i].hitbox, sprite.hitbox))
+			{
+				int ind = 0;
+				while(ignore[ind] != -1 && ignore[ind] != tree->sprites[i].type) 
+				{
+					ind++;
+				}	
+				if(ignore[ind] == tree->sprites[i].type)
+					continue;
+
 				*collision = &tree->sprites[i];
 				return 1;
 			}		

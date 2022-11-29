@@ -14,6 +14,7 @@
 
 //if this is set to 1, quit
 static int canExit = 0;
+static int paused = 0;
 //The window
 static GLFWwindow* win;
 //Store the keys that are pressed
@@ -26,11 +27,28 @@ void handleWindowResize(GLFWwindow *win, int newWidth, int newHeight)
 	glViewport(0, 0, newWidth, newHeight);
 }
 
+void handleWindowMovement(GLFWwindow *win, int x, int y)
+{
+
+}
+
 //Handle key input
 void handleKeyInput(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	if(action == GLFW_PRESS)
 	{
+		//Pause/Unpause the game
+		if(key == GLFW_KEY_ESCAPE)
+		{
+			setPaused(!isPaused());
+			double cursorX, cursorY;
+			glfwGetCursorPos(win, &cursorX, &cursorY);
+			glfwSetInputMode(win, GLFW_CURSOR, 
+							 isPaused() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);	
+			glfwSetCursorPos(win, cursorX, cursorY);
+			return;	
+		}
+
 		//Check all the keys to see if the key is already pressed
 		for(int i = 0; i < MAX_KEY_PRESSED; i++)
 			if(pressed[i] == key)
@@ -124,6 +142,8 @@ void initWindow(void)
 	glfwSetWindowSizeCallback(win, handleWindowResize);
 	glfwSetKeyCallback(win, handleKeyInput);
 	glfwSetMouseButtonCallback(win, handleMouseInput);
+	glfwSetWindowPosCallback(win, handleWindowMovement);
+	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	//Initialize glad
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -140,6 +160,16 @@ void updateActiveShaderWindowSize(void)
 int canQuit(void)
 {
 	return canExit || glfwWindowShouldClose(win);
+}
+
+int isPaused(void)
+{
+	return paused;
+}
+
+void setPaused(int value)
+{
+	paused = value;
 }
 
 void updateWindow(void)

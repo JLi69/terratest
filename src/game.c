@@ -27,11 +27,15 @@ void loop(void)
 	{
 		gettimeofday(&beginFrame, 0);
 		display(world, player);
-		animateSprites(&world, &player, seconds);
-		updateGameobjects(&world, &player, seconds);
-		updateWindow();		
+		if(!isPaused())
+		{
+			animateSprites(&world, &player, seconds);
+			updateGameobjects(&world, &player, seconds);
+		}	
+		updateWindow();			
+
 		gettimeofday(&endFrame, 0);
-	
+
 		//Calculate the number of seconds a frame took
 		seconds = endFrame.tv_sec - beginFrame.tv_sec +
 				  1e-6 * (endFrame.tv_usec - beginFrame.tv_usec);

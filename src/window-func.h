@@ -6,6 +6,9 @@
 void initWindow(void);
 void updateActiveShaderWindowSize(void);
 int canQuit(void);
+int isPaused(void);
+//0 = not paused, 1 = paused
+void setPaused(int value);
 void updateWindow(void);
 
 //Helper function for checking if a key is pressed

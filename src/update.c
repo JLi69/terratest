@@ -7,9 +7,15 @@
 #include <stdio.h>
 #include <time.h>
 
+const int ignoreBlocksPlayer[] = { STUMP, LOG, FLOWER, TALL_GRASS, -1 };
+
 void initGame(struct World *world, struct Sprite *player)
 {
+#ifdef DEV_VERSION
+	const float height = 16.0f;
+#else
 	const float height = 128.0f;
+#endif
 	*world = generateWorld(time(0), height, 256.0f);
 	
 	*player = createSprite(createRect(0.0f, 32.0f * 1.5f * height, 32.0f, 64.0f));
@@ -17,7 +23,7 @@ void initGame(struct World *world, struct Sprite *player)
 	player->animating = 1;
 
 	struct Sprite* collision;
-	while(collisionSearch(world->blocks, *player, &collision))
+	while(collisionSearchFiltered(world->blocks, *player, &collision, &ignoreBlocksPlayer[0]))
 		player->hitbox.position.y += 32.0f;
 	player->canMove = 1;
 }
@@ -29,7 +35,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
 	//Check for collision
-	if(collisionSearch(world->blocks, *player, &collided))
+	if(collisionSearchFiltered(world->blocks, *player, &collided, &ignoreBlocksPlayer[0]))
 	{				
 		//Uncollide the player	
 		if(player->vel.x != 0.0f)
@@ -58,7 +64,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	//Move player in y direction
 	updateSpriteY(player, secondsPerFrame);	
 	//Check for collision	
-	if(collisionSearch(world->blocks, *player, &collided))
+	if(collisionSearchFiltered(world->blocks, *player, &collided, &ignoreBlocksPlayer[0]))
 	{		
 		//Uncollide the player
 		if(player->vel.y != 0.0f)

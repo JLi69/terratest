@@ -2,18 +2,31 @@
 #include "quadtree.h"
 
 #define WORLD_WIDTH 1024
-#define CAVE_VALUE 0.25f
+#define MIN_CAVE_VALUE -0.2f
+#define MAX_CAVE_VALUE 0.0f
 
 #define BLOCK_SIZE 32.0f
 
+#define TREE_MIN_HEIGHT 8
+#define TREE_MAX_HEIGHT 12
+#define TREE_PROB 8
+#define FLOWER_PROB 4
+#define STUMP_PROB 16
+#define TALL_GRASS_PROB 2
+
 enum SpriteType
 {
-	NONE,
+	NONE = 0,
 	GRASS,
 	DIRT,
 	STONE,
 	INDESTRUCTABLE,
-	BRICK
+	BRICK,
+	LEAF,
+	LOG,
+	STUMP,
+	FLOWER,
+	TALL_GRASS,
 };
 
 struct World

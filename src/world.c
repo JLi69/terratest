@@ -36,7 +36,7 @@ struct World generateWorld(int seed, float amp, int interval)
 
 	struct World world;
 	world.blocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f, -4.0f * amp * 32.0f),
-								  createPoint(WORLD_WIDTH * 32.0f, 4.0f * amp * 32.0f));
+								  createPoint(WORLD_WIDTH * 32.0f, 16.0f * amp * 32.0f));
 
 	float worldHeight[WORLD_WIDTH];
 	struct Vector2D randVecs1[WORLD_WIDTH + 1],
@@ -149,7 +149,8 @@ struct World generateWorld(int seed, float amp, int interval)
 	{
 		for(float y = 0.0f; y <= (worldHeight[i]); y += 1.0f)
 		{
-			if(caveValues[i + (int)y * WORLD_WIDTH] < -0.2f && y > 4.0f)
+			//Caves get bigger the deeper down you go
+			if(caveValues[i + (int)y * WORLD_WIDTH] < (MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > 4.0f)
 				continue;
 
 			struct Sprite tempBlock = createSpriteWithType(createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
@@ -163,6 +164,74 @@ struct World generateWorld(int seed, float amp, int interval)
 			//Bottom of world
 			if(y <= 4.0f && (float)rand() / (float)RAND_MAX <= 1.0f / sqrtf(y + 1.0f))
 				tempBlock.type = INDESTRUCTABLE;
+
+			//Place trees
+			if(tempBlock.type == GRASS)
+			{
+				if(rand() % TREE_PROB == 0)
+				{
+					struct Sprite treeBlock = createSpriteWithType(
+													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
+													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
+													BLOCK_SIZE, BLOCK_SIZE), STUMP);
+					insert(world.blocks, treeBlock);
+
+					int height = TREE_MIN_HEIGHT + rand() % (TREE_MAX_HEIGHT - TREE_MIN_HEIGHT + 1);
+					treeBlock.type = LOG;	
+					for(int j = 0; j < height; j++)
+					{
+						treeBlock.hitbox.position.y += BLOCK_SIZE;
+						insert(world.blocks, treeBlock);
+					}
+
+					struct Sprite leafBlock;
+					int radius = sqrt(height * 3) > 6 ? 6 : sqrt(height * 3);
+					for(int j = -radius; j <= radius; j++)
+					{	
+						for(int k = -radius; k <= radius; k++)
+						{
+							if(j * j + k * k < radius * radius)
+							{
+								leafBlock = createSpriteWithType(
+													createRect(treeBlock.hitbox.position.x + j * BLOCK_SIZE,
+													treeBlock.hitbox.position.y + k * BLOCK_SIZE,
+													BLOCK_SIZE, BLOCK_SIZE), LEAF);
+								struct Sprite* collision;
+								if(collisionSearch(world.blocks, leafBlock, &collision))
+								{
+									collision->type = LEAF;
+									continue;
+								}	
+								insert(world.blocks, leafBlock);
+							}
+						}
+					}
+				}
+				else if(rand() % STUMP_PROB == 0)
+				{
+					struct Sprite stumpBlock = createSpriteWithType(
+													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
+													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
+													BLOCK_SIZE, BLOCK_SIZE), STUMP);
+					insert(world.blocks, stumpBlock);	
+				}	
+				else if(rand() % FLOWER_PROB == 0)
+				{
+					struct Sprite flowerBlock = createSpriteWithType(
+													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
+													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
+													BLOCK_SIZE, BLOCK_SIZE), FLOWER);
+					insert(world.blocks, flowerBlock);	
+				}
+				else if(rand() % TALL_GRASS_PROB == 0)
+				{
+					struct Sprite tallGrassBlock = createSpriteWithType(
+													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
+													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
+													BLOCK_SIZE, BLOCK_SIZE), TALL_GRASS);
+					insert(world.blocks, tallGrassBlock); 
+				}
+			}
 
 			insert(world.blocks, tempBlock);
 			total++;
