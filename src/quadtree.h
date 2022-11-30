@@ -1,6 +1,6 @@
 #ifndef QUADTREE_H
 #include "sprite.h"
-#define QUAD_CAPACITY 64000
+#define QUAD_CAPACITY 1600
 
 //Rectangle quadtree
 struct SpriteQuadTree
@@ -27,6 +27,9 @@ int collisionSearch(
 		struct SpriteQuadTree *tree,
 		struct Sprite sprite,
 		struct Sprite **collision);
+
+//Ignore, might delete later
+/*
 //Basically does the same thing as collisionSearch but it
 //is given a list of tags of sprites that it should ignore
 //this list must be terminated with a -1
@@ -34,7 +37,8 @@ int collisionSearchFiltered(
 		struct SpriteQuadTree *tree,
 		struct Sprite sprite,
 		struct Sprite **collision,
-		const int *ignore);
+		const int *ignore);*/
+
 //Inserts a rectangle into the quadtree
 void insert(
 		struct SpriteQuadTree *tree,

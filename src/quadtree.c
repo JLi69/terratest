@@ -125,7 +125,7 @@ int collisionSearch(
 		{
 			if(colliding(tree->sprites[i].hitbox, sprite.hitbox))
 			{
-				*collision = &tree->sprites[i];
+				*collision = &tree->sprites[i];	
 				return 1;
 			}		
 		}	
@@ -144,6 +144,8 @@ int collisionSearch(
 	return 0;
 }
 
+//Ignore, might delete later
+/*
 int collisionSearchFiltered(
 	struct SpriteQuadTree *tree,
 	struct Sprite sprite,
@@ -167,32 +169,23 @@ int collisionSearchFiltered(
 		{
 			if(colliding(tree->sprites[i].hitbox, sprite.hitbox))
 			{
-				int ind = 0;
-				while(ignore[ind] != -1 && ignore[ind] != tree->sprites[i].type) 
-				{
-					ind++;
-				}	
-				if(ignore[ind] == tree->sprites[i].type)
-					continue;
-
-				*collision = &tree->sprites[i];
-				return 1;
+				*collision = &tree->sprites[i];	
+				
+				int ind = -1;
+				while(ignore[++ind] != -1 && ignore[ind] != (*collision)->type);
+				if(ignore[ind] != (*collision)->type)	
+					return 1;
 			}		
 		}	
 	}
-	else
-	{
-		int found = collisionSearch(tree->botLeft, sprite, collision);
-		if(found) return 1;	
-		found = collisionSearch(tree->botRight, sprite, collision);			
-		if(found) return 1;	
-		found = collisionSearch(tree->topLeft, sprite, collision);
-		if(found) return 1;	
-		found = collisionSearch(tree->topRight, sprite, collision);
-		if(found) return 1;	
-	}
-	return 0;
+
+	int found = collisionSearch(tree->botLeft, sprite, collision);
+	found = found || collisionSearch(tree->botRight, sprite, collision);			
+	found = found || collisionSearch(tree->topLeft, sprite, collision);
+	found = found || collisionSearch(tree->topRight, sprite, collision);
+	return found;	
 }
+*/
 
 void deleteSprite(struct SpriteQuadTree *tree, struct Sprite sprite)
 {

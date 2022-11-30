@@ -55,7 +55,8 @@ void display(struct World world, struct Sprite player)
 	//Draw blocks
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
-	drawSpriteTree(world.blocks, camPos);	
+	drawSpriteTree(world.transparentBlocks, camPos);	
+	drawSpriteTree(world.solidBlocks, camPos);		
 
 	bindTexture(textures[0], GL_TEXTURE0);
 	//Draw player	
@@ -93,6 +94,12 @@ void display(struct World world, struct Sprite player)
 		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
 		drawRect();	
 	}
+
+	//Test, delete later
+	/*useShader(&shaders[1]);
+	turnOffTexture();
+	updateActiveShaderWindowSize();
+	drawQTreeOutline(world.solidBlocks, -256.0f, 128.0f, 256.0f, 256.0f);*/
 }
 
 void cleanup(void)

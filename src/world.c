@@ -5,26 +5,6 @@
 #include <stdio.h>
 #include <math.h>
 
-struct World generateTest(void)
-{
-	struct World world;
-	world.blocks = createQuadTree(createPoint(-32000000000.0f, -1000.0f),
-									  createPoint(3200000000.0f, 1000.0f)); 
-		
-	insert(world.blocks, createSprite(createRect(16.0f, -32.0f, 32.0f, 32.0f)));		
-	insert(world.blocks, createSprite(createRect(16.0f, 0.0f, 32.0f, 32.0f)));	
-	for(float i = -6.0f; i <= 6.0f; i++)
-		for(float j = 0.0f; j <= 3.0f; j++)
-			insert(world.blocks, createSprite(createRect(i * 32.0f, -64.0f - j * 32.0f, 32.0f, 32.0f)));	
-	
-	insert(world.blocks, createSprite(createRect(-112.0f, 64.0f, 32.0f, 32.0f)));		
-	insert(world.blocks, createSprite(createRect(-80.0f, 64.0f, 32.0f, 32.0f)));	
-	insert(world.blocks, createSprite(createRect(-144.0f, 64.0f, 32.0f, 32.0f)));		
-	insert(world.blocks, createSprite(createRect(-112.0f, 64.0f, 32.0f, 32.0f)));
-
-	return world;
-}
-
 float interpolate(float a, float b, float weight)
 {
 	return (b - a) * weight + a;
@@ -35,8 +15,10 @@ struct World generateWorld(int seed, float amp, int interval)
 	srand(seed);
 
 	struct World world;
-	world.blocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f, -4.0f * amp * 32.0f),
-								  createPoint(WORLD_WIDTH * 32.0f, 16.0f * amp * 32.0f));
+	world.solidBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
+								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
+	world.transparentBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
+								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
 
 	float worldHeight[WORLD_WIDTH];
 	struct Vector2D randVecs1[WORLD_WIDTH + 1],
@@ -174,14 +156,14 @@ struct World generateWorld(int seed, float amp, int interval)
 													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), STUMP);
-					insert(world.blocks, treeBlock);
+					insert(world.transparentBlocks, treeBlock);
 
 					int height = TREE_MIN_HEIGHT + rand() % (TREE_MAX_HEIGHT - TREE_MIN_HEIGHT + 1);
 					treeBlock.type = LOG;	
 					for(int j = 0; j < height; j++)
 					{
 						treeBlock.hitbox.position.y += BLOCK_SIZE;
-						insert(world.blocks, treeBlock);
+						insert(world.transparentBlocks, treeBlock);
 					}
 
 					struct Sprite leafBlock;
@@ -196,13 +178,21 @@ struct World generateWorld(int seed, float amp, int interval)
 													createRect(treeBlock.hitbox.position.x + j * BLOCK_SIZE,
 													treeBlock.hitbox.position.y + k * BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), LEAF);
-								struct Sprite* collision;
-								if(collisionSearch(world.blocks, leafBlock, &collision))
+								insert(world.solidBlocks, leafBlock);
+								
+								//Vines
+								if(rand() % VINE_PROB == 0)
 								{
-									collision->type = LEAF;
-									continue;
-								}	
-								insert(world.blocks, leafBlock);
+									int vineLength = rand() % (MAX_VINE_LEN - MIN_VINE_LEN + 1) + MIN_VINE_LEN;
+									for(int v = 0; v < vineLength; v++)
+									{
+										struct Sprite vineBlock = createSpriteWithType(
+													createRect(leafBlock.hitbox.position.x,
+													leafBlock.hitbox.position.y - v * BLOCK_SIZE,
+													BLOCK_SIZE, BLOCK_SIZE), VINES);
+										insert(world.transparentBlocks, vineBlock);
+									}
+								}
 							}
 						}
 					}
@@ -213,7 +203,7 @@ struct World generateWorld(int seed, float amp, int interval)
 													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), STUMP);
-					insert(world.blocks, stumpBlock);	
+					insert(world.transparentBlocks, stumpBlock);	
 				}	
 				else if(rand() % FLOWER_PROB == 0)
 				{
@@ -221,7 +211,7 @@ struct World generateWorld(int seed, float amp, int interval)
 													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), FLOWER);
-					insert(world.blocks, flowerBlock);	
+					insert(world.transparentBlocks, flowerBlock);	
 				}
 				else if(rand() % TALL_GRASS_PROB == 0)
 				{
@@ -229,11 +219,11 @@ struct World generateWorld(int seed, float amp, int interval)
 													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), TALL_GRASS);
-					insert(world.blocks, tallGrassBlock); 
+					insert(world.transparentBlocks, tallGrassBlock); 
 				}
 			}
 
-			insert(world.blocks, tempBlock);
+			insert(world.solidBlocks, tempBlock);
 			total++;
 		}	
 	}
@@ -282,4 +272,19 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 		drawSpriteTree(tree->topLeft, camPos);
 		drawSpriteTree(tree->topRight, camPos);
 	}
+}
+
+void drawQTreeOutline(struct SpriteQuadTree *tree, float x, float y, float width, float height)
+{
+	if(tree == NULL)
+		return;
+
+	setRectPos(x, y);
+	setRectSize(width, height);
+	drawRect();
+
+	drawQTreeOutline(tree->botLeft, x - width / 4.0f, y - height / 4.0f, width / 2.0f, height / 2.0f);
+	drawQTreeOutline(tree->topLeft, x - width / 4.0f, y + height / 4.0f, width / 2.0f, height / 2.0f);
+	drawQTreeOutline(tree->topRight, x + width / 4.0f, y + height / 4.0f, width / 2.0f, height / 2.0f);
+	drawQTreeOutline(tree->botRight, x + width / 4.0f, y - height / 4.0f, width / 2.0f, height / 2.0f);
 }

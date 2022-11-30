@@ -1,7 +1,7 @@
 #ifndef WORLD_H
 #include "quadtree.h"
 
-#define WORLD_WIDTH 1024
+#define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
 #define MAX_CAVE_VALUE 0.0f
 
@@ -13,6 +13,9 @@
 #define FLOWER_PROB 4
 #define STUMP_PROB 16
 #define TALL_GRASS_PROB 2
+#define VINE_PROB 12
+#define MIN_VINE_LEN 4
+#define MAX_VINE_LEN 8
 
 enum SpriteType
 {
@@ -27,20 +30,23 @@ enum SpriteType
 	STUMP,
 	FLOWER,
 	TALL_GRASS,
+	VINES
 };
 
 struct World
 {
-	struct SpriteQuadTree* blocks;
+	struct SpriteQuadTree *solidBlocks, //Blocks that can't be walked through
+						  *transparentBlocks; //Blocks that can be walked through
 };
 
-struct World generateTest(void);
 struct World generateWorld(
 	int seed,
 	float amp,
 	int interval
 	);
 void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos);
+void drawQTreeOutline(struct SpriteQuadTree *tree,
+					  float x, float y, float width, float height);
 
 #endif
 #define WORLD_H

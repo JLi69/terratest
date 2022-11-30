@@ -7,15 +7,9 @@
 #include <stdio.h>
 #include <time.h>
 
-const int ignoreBlocksPlayer[] = { STUMP, LOG, FLOWER, TALL_GRASS, -1 };
-
 void initGame(struct World *world, struct Sprite *player)
 {
-#ifdef DEV_VERSION
-	const float height = 16.0f;
-#else
 	const float height = 128.0f;
-#endif
 	*world = generateWorld(time(0), height, 256.0f);
 	
 	*player = createSprite(createRect(0.0f, 32.0f * 1.5f * height, 32.0f, 64.0f));
@@ -23,7 +17,7 @@ void initGame(struct World *world, struct Sprite *player)
 	player->animating = 1;
 
 	struct Sprite* collision;
-	while(collisionSearchFiltered(world->blocks, *player, &collision, &ignoreBlocksPlayer[0]))
+	while(collisionSearch(world->solidBlocks, *player, &collision))
 		player->hitbox.position.y += 32.0f;
 	player->canMove = 1;
 }
@@ -35,7 +29,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
 	//Check for collision
-	if(collisionSearchFiltered(world->blocks, *player, &collided, &ignoreBlocksPlayer[0]))
+	if(collisionSearch(world->solidBlocks, *player, &collided))
 	{				
 		//Uncollide the player	
 		if(player->vel.x != 0.0f)
@@ -64,7 +58,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	//Move player in y direction
 	updateSpriteY(player, secondsPerFrame);	
 	//Check for collision	
-	if(collisionSearchFiltered(world->blocks, *player, &collided, &ignoreBlocksPlayer[0]))
+	if(collisionSearch(world->solidBlocks, *player, &collided))
 	{		
 		//Uncollide the player
 		if(player->vel.y != 0.0f)
@@ -101,7 +95,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 							 createRect(player->hitbox.position.x, player->hitbox.position.y - 0.01f,
 										player->hitbox.dimensions.w, player->hitbox.dimensions.h));
 		struct Sprite* tempCollison;	
-		if(collisionSearch(world->blocks, temp, &tempCollison))
+		if(collisionSearch(world->solidBlocks, temp, &tempCollison))
 			player->animationState = IDLE;
 	}
 
@@ -139,9 +133,9 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;
 		struct Sprite temp = createSpriteWithType(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE), BRICK);
 		struct Sprite* tempCollision;	
-		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->blocks, temp, &tempCollision))
+		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
-			insert(world->blocks, temp);
+			insert(world->solidBlocks, temp);
 		}
 	}
 	//Destroy blocks
@@ -153,10 +147,23 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;	
 		struct Sprite selected = createSprite(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE));
 		struct Sprite* tempCollision = NULL;
-		collisionSearch(world->blocks, selected, &tempCollision);
+		
+		//Delete solid block
+		collisionSearch(world->solidBlocks, selected, &tempCollision);
 		if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
 		{
-			deleteSprite(world->blocks, selected);
+			deleteSprite(world->solidBlocks, selected);
+		}
+
+		//Delete transparent block
+		if(tempCollision == NULL) //Only delete if you haven't already broken a block already
+								  //TODO: Add cooldown for breaking blocks
+		{
+			collisionSearch(world->transparentBlocks, selected, &tempCollision);
+			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
+			{
+				deleteSprite(world->transparentBlocks, selected);
+			}
 		}
 	}
 }
