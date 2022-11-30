@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.11)
 project(terratest)
 
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -static-libgcc -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -O3 -static-libgcc -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive")
 
 	add_custom_target(
 	lib_glad
@@ -80,7 +80,6 @@ add_dependencies(${PROJECT_NAME} lib_glad lib_glfw lib_soil2)
 #Link with libraries
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 	target_link_libraries(${PROJECT_NAME} libglfw3.a gdi32 m)	
-	target_compile_options(${PROJECT_NAME} PUBLIC -mwindows)
 else()
 	target_link_libraries(${PROJECT_NAME} libglfw3.a m)
 endif()
