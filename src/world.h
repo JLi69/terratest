@@ -17,6 +17,10 @@
 #define MIN_VINE_LEN 4
 #define MAX_VINE_LEN 8
 
+#define COAL_PROB 128
+#define IRON_PROB 512
+#define DIAMOND_PROB 4096
+
 enum SpriteType
 {
 	NONE = 0,
@@ -30,7 +34,10 @@ enum SpriteType
 	STUMP,
 	FLOWER,
 	TALL_GRASS,
-	VINES
+	VINES,
+	COAL,
+	IRON,
+	DIAMOND
 };
 
 struct World

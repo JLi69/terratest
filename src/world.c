@@ -163,6 +163,12 @@ struct World generateWorld(int seed, float amp, int interval)
 					for(int j = 0; j < height; j++)
 					{
 						treeBlock.hitbox.position.y += BLOCK_SIZE;
+						struct Sprite* collision;
+						if(collisionSearch(world.transparentBlocks, treeBlock, &collision))
+						{	
+							collision->type = LOG;
+							continue;
+						}
 						insert(world.transparentBlocks, treeBlock);
 					}
 
@@ -184,12 +190,16 @@ struct World generateWorld(int seed, float amp, int interval)
 								if(rand() % VINE_PROB == 0)
 								{
 									int vineLength = rand() % (MAX_VINE_LEN - MIN_VINE_LEN + 1) + MIN_VINE_LEN;
+									struct Sprite* collision;	
 									for(int v = 0; v < vineLength; v++)
 									{
 										struct Sprite vineBlock = createSpriteWithType(
 													createRect(leafBlock.hitbox.position.x,
 													leafBlock.hitbox.position.y - v * BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), VINES);
+										if(collisionSearch(world.solidBlocks, vineBlock, &collision))
+											continue;
+
 										insert(world.transparentBlocks, vineBlock);
 									}
 								}
@@ -221,6 +231,16 @@ struct World generateWorld(int seed, float amp, int interval)
 													BLOCK_SIZE, BLOCK_SIZE), TALL_GRASS);
 					insert(world.transparentBlocks, tallGrassBlock); 
 				}
+			}
+
+			if(tempBlock.type == STONE)
+			{
+				if(rand() % COAL_PROB == 0)
+					tempBlock.type = COAL;
+				else if(rand() % IRON_PROB == 0 && y <= 128.0f)
+					tempBlock.type = IRON;	
+				else if(rand() % DIAMOND_PROB == 0 && y <= 32.0f)
+					tempBlock.type = DIAMOND;	
 			}
 
 			insert(world.solidBlocks, tempBlock);
