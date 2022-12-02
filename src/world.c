@@ -324,7 +324,9 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 	{
 		for(int i = 0; i < tree->spriteCount; i++)
 		{
-			if(!colliding(tree->sprites[i].hitbox, camViewBox))
+			if(!colliding(tree->sprites[i].hitbox, camViewBox) || 
+			   (tree->sprites[i].hitbox.position.x >= tree->topRightCorner.x ||
+			    tree->sprites[i].hitbox.position.y >= tree->topRightCorner.y))
 				continue;
 			if(tree->sprites[i].type != prevSpriteType)
 			{
@@ -333,7 +335,7 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 			}
 			//Water is transparent	
 			if(tree->sprites[i].type == WATER)
-				setTransparency(0.5f);
+				setTransparency(0.65f);
 			else
 				setTransparency(1.0f);
 			setRectPos(tree->sprites[i].hitbox.position.x - camPos.x,

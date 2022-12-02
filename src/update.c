@@ -30,6 +30,8 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	{
 		if(collided->type == LAVA)
 			player->vel.x *= 0.1f;
+		else if(collided->type == WATER)
+			player->vel.x *= 0.5f;
 	}
 
 	//Move player in the x direction
