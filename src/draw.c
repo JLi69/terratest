@@ -70,3 +70,8 @@ void flip(int flipped)
 {
 	glUniform1i(getUniformLocation("uFlip", getActiveShader()), flipped);
 }
+
+void setTransparency(float a)
+{	
+	glUniform1f(getUniformLocation("uTransparency", getActiveShader()), a);
+}

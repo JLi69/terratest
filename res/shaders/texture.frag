@@ -11,6 +11,7 @@ in vec2 tc;
 uniform vec2 uTexFrac = vec2(1.0f, 1.0f);
 uniform vec2 uTexOffset = vec2(0.0f, 0.0f);
 uniform vec2 uTexSize = vec2(16.0f, 16.0f);
+uniform float uTransparency = 1.0f;
 
 void main()
 {
@@ -40,5 +41,6 @@ void main()
 			texCoord.y = uTexOffset.y;
 
 		color = texture(tex, texCoord);
+		color.a *= uTransparency; 
 	}
 }

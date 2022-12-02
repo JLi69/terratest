@@ -26,6 +26,12 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 {	
 	struct Sprite* collided = (void*)0;	
 
+	if(collisionSearch(world->liquidBlocks, *player, &collided))
+	{
+		if(collided->type == LAVA)
+			player->vel.x *= 0.1f;
+	}
+
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
 	//Check for collision

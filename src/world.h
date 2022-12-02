@@ -18,8 +18,13 @@
 #define MAX_VINE_LEN 8
 
 #define COAL_PROB 128
-#define IRON_PROB 512
-#define DIAMOND_PROB 4096
+#define IRON_PROB 256
+#define DIAMOND_PROB 640
+#define GOLD_PROB 384
+#define RAINBOW_PROB 2048
+
+#define WATER_LEVEL 256.0f
+#define CAVE_WATER_LEVEL 240.0f
 
 enum SpriteType
 {
@@ -37,13 +42,20 @@ enum SpriteType
 	VINES,
 	COAL,
 	IRON,
-	DIAMOND
+	DIAMOND,
+	GOLD,
+	RAINBOW_ORE,
+	MAGMA_STONE,
+	LAVA,
+	WATER,
+	SAND
 };
 
 struct World
 {
 	struct SpriteQuadTree *solidBlocks, //Blocks that can't be walked through
-						  *transparentBlocks; //Blocks that can be walked through
+						  *transparentBlocks, //Blocks that can be walked through
+						  *liquidBlocks; //Blocks that are liquids (water, lava)
 };
 
 struct World generateWorld(

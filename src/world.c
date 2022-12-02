@@ -19,6 +19,8 @@ struct World generateWorld(int seed, float amp, int interval)
 								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
 	world.transparentBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
 								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
+	world.liquidBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
+								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
 
 	float worldHeight[WORLD_WIDTH];
 	struct Vector2D randVecs1[WORLD_WIDTH + 1],
@@ -131,15 +133,58 @@ struct World generateWorld(int seed, float amp, int interval)
 	{
 		for(float y = 0.0f; y <= (worldHeight[i]); y += 1.0f)
 		{
-			//Caves get bigger the deeper down you go
-			if(caveValues[i + (int)y * WORLD_WIDTH] < (MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > 4.0f)
-				continue;
-
+			
 			struct Sprite tempBlock = createSpriteWithType(createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 														 y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f,
 														 BLOCK_SIZE, BLOCK_SIZE), STONE);
+			//Caves get bigger the deeper down you go
+			if(caveValues[i + (int)y * WORLD_WIDTH] <
+					(MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > 4.0f)
+			{
+				if(y <= 16.0f)
+				{
+					tempBlock.type = LAVA;
+					insert(world.liquidBlocks, tempBlock);
+				}
+				else if(y <= WATER_LEVEL && y > 0 && caveValues[i + (int)(y - 1) * WORLD_WIDTH] >=
+					(MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > CAVE_WATER_LEVEL)
+				{
+					tempBlock.type = SAND;
+					struct Sprite waterBlock = createSpriteWithType(
+											   createRect(tempBlock.hitbox.position.x, 
+														  tempBlock.hitbox.position.y,
+														  BLOCK_SIZE, BLOCK_SIZE),
+											   WATER);
+
+					for(int waterLevel = y; waterLevel <= WATER_LEVEL; waterLevel++)
+					{
+						insert(world.liquidBlocks, waterBlock);
+						waterBlock.hitbox.position.y += BLOCK_SIZE;	
+					}		
+				}
+				continue;
+			}
+
+			
 			if(y + 1.0f > worldHeight[i])
+			{	
 				tempBlock.type = GRASS;
+				if(y <= WATER_LEVEL)
+				{
+					tempBlock.type = SAND;
+					struct Sprite waterBlock = createSpriteWithType(
+											   createRect(tempBlock.hitbox.position.x, 
+														  tempBlock.hitbox.position.y,
+														  BLOCK_SIZE, BLOCK_SIZE),
+											   WATER);
+
+					for(int waterLevel = y; waterLevel <= WATER_LEVEL; waterLevel++)
+					{
+						insert(world.liquidBlocks, waterBlock);
+						waterBlock.hitbox.position.y += BLOCK_SIZE;	
+					}		
+				}
+			}	
 			else if(y + 7.0f > worldHeight[i])
 				tempBlock.type = DIRT;
 			
@@ -149,7 +194,8 @@ struct World generateWorld(int seed, float amp, int interval)
 
 			//Place trees
 			if(tempBlock.type == GRASS)
-			{
+			{	
+
 				if(rand() % TREE_PROB == 0)
 				{
 					struct Sprite treeBlock = createSpriteWithType(
@@ -237,10 +283,16 @@ struct World generateWorld(int seed, float amp, int interval)
 			{
 				if(rand() % COAL_PROB == 0)
 					tempBlock.type = COAL;
-				else if(rand() % IRON_PROB == 0 && y <= 128.0f)
+				else if(rand() % IRON_PROB == 0 && y <= 200.0f)
 					tempBlock.type = IRON;	
-				else if(rand() % DIAMOND_PROB == 0 && y <= 32.0f)
-					tempBlock.type = DIAMOND;	
+				else if(rand() % GOLD_PROB == 0 && y <= 128.0f)
+					tempBlock.type = GOLD;		
+				else if(rand() % DIAMOND_PROB == 0 && y <= 48.0f)
+					tempBlock.type = DIAMOND;
+				else if(rand() % RAINBOW_PROB == 0 && y <= 32.0f)
+					tempBlock.type = RAINBOW_ORE;
+				else if(y <= 32.0f && rand() % (int)(y * y * 0.05f + 1.0f) <= sqrtf(y))
+					tempBlock.type = MAGMA_STONE;
 			}
 
 			insert(world.solidBlocks, tempBlock);
@@ -277,8 +329,13 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 			if(tree->sprites[i].type != prevSpriteType)
 			{
 				setTexOffset(1.0f / 16.0f * (float)((tree->sprites[i].type - 1) % 16), 1.0f / 16.0f * (float)((tree->sprites[i].type - 1) / 16));
-				prevSpriteType = tree->sprites[i].type; 
+				prevSpriteType = tree->sprites[i].type; 	
 			}
+			//Water is transparent	
+			if(tree->sprites[i].type == WATER)
+				setTransparency(0.5f);
+			else
+				setTransparency(1.0f);
 			setRectPos(tree->sprites[i].hitbox.position.x - camPos.x,
 					   tree->sprites[i].hitbox.position.y - camPos.y);
 			drawRect();

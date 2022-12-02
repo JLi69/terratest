@@ -14,6 +14,7 @@ void setTexSize(float texWidth, float texHeight);
 void turnOnFlip(void);
 void turnOffFlip(void);
 void flip(int flipped);
+void setTransparency(float a);
 
 #endif
 #define DRAW_H
