@@ -10,6 +10,28 @@ float interpolate(float a, float b, float weight)
 	return (b - a) * weight + a;
 }
 
+void floodFill(float maxHeight, int type, float x, float y, 
+			   struct SpriteQuadTree *blocks, struct SpriteQuadTree *solidBlocks, float amp)
+{
+	if(y > maxHeight)
+		return;
+	if(x <= -WORLD_WIDTH / 2.0f * BLOCK_SIZE || x >= WORLD_WIDTH / 2.0f * BLOCK_SIZE)
+		return;
+
+	struct Sprite block = createSpriteWithType(createRect(x, y - amp * BLOCK_SIZE / 2.0f, BLOCK_SIZE, BLOCK_SIZE), type);
+	struct Sprite* collided;
+	if(collisionSearch(solidBlocks, block, &collided))
+		return;
+	if(collisionSearch(blocks, block, &collided))
+		return;	
+	insert(blocks, block);
+
+	floodFill(maxHeight, type, x + BLOCK_SIZE, y, blocks, solidBlocks, amp);
+	floodFill(maxHeight, type, x, y + BLOCK_SIZE, blocks, solidBlocks, amp);
+	floodFill(maxHeight, type, x - BLOCK_SIZE, y, blocks, solidBlocks, amp);
+	floodFill(maxHeight, type, x, y - BLOCK_SIZE, blocks, solidBlocks, amp);
+}
+
 struct World generateWorld(int seed, float amp, int interval)
 {
 	srand(seed);
@@ -131,36 +153,21 @@ struct World generateWorld(int seed, float amp, int interval)
 	int total = 0;
 	for(int i = 0; i < WORLD_WIDTH; i++)
 	{
-		for(float y = 0.0f; y <= (worldHeight[i]); y += 1.0f)
+		for(float y = -32.0f; y <= (worldHeight[i]); y += 1.0f)
 		{
 			
-			struct Sprite tempBlock = createSpriteWithType(createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
+			struct Sprite tempBlock = createSpriteWithType(createRect(
+														 (float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 														 y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f,
 														 BLOCK_SIZE, BLOCK_SIZE), STONE);
 			//Caves get bigger the deeper down you go
-			if(caveValues[i + (int)y * WORLD_WIDTH] <
+			if(y > 0 && caveValues[i + (int)y * WORLD_WIDTH] <
 					(MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > 4.0f)
 			{
 				if(y <= 16.0f)
 				{
 					tempBlock.type = LAVA;
 					insert(world.liquidBlocks, tempBlock);
-				}
-				else if(y <= WATER_LEVEL && y > 0 && caveValues[i + (int)(y - 1) * WORLD_WIDTH] >=
-					(MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > CAVE_WATER_LEVEL)
-				{
-					tempBlock.type = SAND;
-					struct Sprite waterBlock = createSpriteWithType(
-											   createRect(tempBlock.hitbox.position.x, 
-														  tempBlock.hitbox.position.y,
-														  BLOCK_SIZE, BLOCK_SIZE),
-											   WATER);
-
-					for(int waterLevel = y; waterLevel <= WATER_LEVEL; waterLevel++)
-					{
-						insert(world.liquidBlocks, waterBlock);
-						waterBlock.hitbox.position.y += BLOCK_SIZE;	
-					}		
 				}
 				continue;
 			}
@@ -171,25 +178,14 @@ struct World generateWorld(int seed, float amp, int interval)
 				tempBlock.type = GRASS;
 				if(y <= WATER_LEVEL)
 				{
-					tempBlock.type = SAND;
-					struct Sprite waterBlock = createSpriteWithType(
-											   createRect(tempBlock.hitbox.position.x, 
-														  tempBlock.hitbox.position.y,
-														  BLOCK_SIZE, BLOCK_SIZE),
-											   WATER);
-
-					for(int waterLevel = y; waterLevel <= WATER_LEVEL; waterLevel++)
-					{
-						insert(world.liquidBlocks, waterBlock);
-						waterBlock.hitbox.position.y += BLOCK_SIZE;	
-					}		
+					tempBlock.type = SAND;	
 				}
 			}	
 			else if(y + 7.0f > worldHeight[i])
 				tempBlock.type = DIRT;
 			
 			//Bottom of world
-			if(y <= 4.0f && (float)rand() / (float)RAND_MAX <= 1.0f / sqrtf(y + 1.0f))
+			if((y < 0.0f) || (y <= 4.0f && (float)rand() / (float)RAND_MAX <= 1.0f / sqrtf(y + 1.0f)))
 				tempBlock.type = INDESTRUCTABLE;
 
 			//Place trees
@@ -202,6 +198,9 @@ struct World generateWorld(int seed, float amp, int interval)
 													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), STUMP);
+					struct Sprite* tempCollision;
+					if(collisionSearch(world.transparentBlocks, treeBlock, &tempCollision))
+						tempCollision->type = STUMP;
 					insert(world.transparentBlocks, treeBlock);
 
 					int height = TREE_MIN_HEIGHT + rand() % (TREE_MAX_HEIGHT - TREE_MIN_HEIGHT + 1);
@@ -300,6 +299,17 @@ struct World generateWorld(int seed, float amp, int interval)
 		}	
 	}
 
+	for(int i = 0; i < WORLD_WIDTH; i++)
+	{
+		if(WATER_LEVEL < worldHeight[i])
+			continue;
+		floodFill(WATER_LEVEL * BLOCK_SIZE, WATER, 
+				  i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
+				  WATER_LEVEL * BLOCK_SIZE - BLOCK_SIZE,
+				  world.liquidBlocks, world.solidBlocks,
+				  amp);
+	}
+
 	printf("Inserted %d blocks!\n", total);
 	free(caveValues);
 
@@ -353,6 +363,7 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 	}
 }
 
+#ifdef DEV_VERSION
 void drawQTreeOutline(struct SpriteQuadTree *tree, float x, float y, float width, float height)
 {
 	if(tree == NULL)
@@ -367,3 +378,4 @@ void drawQTreeOutline(struct SpriteQuadTree *tree, float x, float y, float width
 	drawQTreeOutline(tree->topRight, x + width / 4.0f, y + height / 4.0f, width / 2.0f, height / 2.0f);
 	drawQTreeOutline(tree->botRight, x + width / 4.0f, y - height / 4.0f, width / 2.0f, height / 2.0f);
 }
+#endif

@@ -23,8 +23,7 @@
 #define GOLD_PROB 384
 #define RAINBOW_PROB 2048
 
-#define WATER_LEVEL 256.0f
-#define CAVE_WATER_LEVEL 240.0f
+#define WATER_LEVEL 230.0f
 
 enum SpriteType
 {
@@ -58,14 +57,20 @@ struct World
 						  *liquidBlocks; //Blocks that are liquids (water, lava)
 };
 
+void floodFill(float maxHeight, int type, float x, float y,
+			   struct SpriteQuadTree *blocks,
+			   struct SpriteQuadTree *solidBlocks,
+			   float amp);
 struct World generateWorld(
 	int seed,
 	float amp,
 	int interval
 	);
 void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos);
+#ifdef DEV_VERSION
 void drawQTreeOutline(struct SpriteQuadTree *tree,
 					  float x, float y, float width, float height);
+#endif
 
 #endif
 #define WORLD_H

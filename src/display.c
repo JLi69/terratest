@@ -38,6 +38,7 @@ void display(struct World world, struct Sprite player)
 {		
 	clear();	
 
+	setTransparency(1.0f);
 	useShader(&shaders[0]);		
 	updateActiveShaderWindowSize();
 	//Draw background
@@ -103,11 +104,17 @@ void display(struct World world, struct Sprite player)
 		drawRect();	
 	}
 
-	//Test, delete later
-	/*useShader(&shaders[1]);
-	turnOffTexture();
-	updateActiveShaderWindowSize();
-	drawQTreeOutline(world.solidBlocks, -256.0f, 128.0f, 256.0f, 256.0f);*/
+	//Display quadtree
+#ifdef DEV_VERSION
+	if(isPressed(GLFW_KEY_F2))
+	{
+		useShader(&shaders[1]);	
+		setRectColor(0.0f, 255.0f, 0.0f, 255.0f);
+		turnOffTexture();
+		updateActiveShaderWindowSize();
+		drawQTreeOutline(world.solidBlocks, 0.0f, 0.0f, 512.0f, 512.0f);
+	}
+#endif
 }
 
 void cleanup(void)

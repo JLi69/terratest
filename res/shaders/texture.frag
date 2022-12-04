@@ -36,9 +36,7 @@ void main()
 		}
 
 		if(texCoord.y > uTexOffset.y + uTexFrac.y)
-			texCoord.y = (floor(uTexSize.y * (uTexOffset.y + uTexFrac.y)) + 0.5) / uTexSize.y - 0.01;
-		if(texCoord.y < uTexOffset.y)
-			texCoord.y = uTexOffset.y;
+			texCoord.y = (floor(uTexSize.y * (uTexOffset.y + uTexFrac.y)) + 0.5) / uTexSize.y - 1.0 / uTexSize.y;
 
 		color = texture(tex, texCoord);
 		color.a *= uTransparency; 

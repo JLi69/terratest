@@ -75,3 +75,8 @@ void setTransparency(float a)
 {	
 	glUniform1f(getUniformLocation("uTransparency", getActiveShader()), a);
 }
+
+void setOutline(float width)
+{
+	glUniform1f(getUniformLocation("uOutline", getActiveShader()), width);
+}

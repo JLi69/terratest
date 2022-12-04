@@ -85,6 +85,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 			else if(player->hitbox.position.y <= 
 					collided->hitbox.position.y - collided->hitbox.dimensions.h / 2.0f)
 			{
+				player->falling = 1;	
 				player->vel.y = -0.5f;
 				player->hitbox.position.y =
 					collided->hitbox.position.y -
@@ -144,6 +145,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
 			insert(world->solidBlocks, temp);
+			deleteSprite(world->liquidBlocks, temp);	
 		}
 	}
 	//Destroy blocks
