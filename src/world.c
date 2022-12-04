@@ -4,6 +4,7 @@
 #include "sprite.h"
 #include <stdio.h>
 #include <math.h>
+#include "window-func.h"
 
 float interpolate(float a, float b, float weight)
 {
@@ -33,7 +34,9 @@ void floodFill(float maxHeight, int type, float x, float y,
 }
 
 struct World generateWorld(int seed, float amp, int interval)
-{
+{	
+	updateWindow();
+
 	srand(seed);
 
 	struct World world;
@@ -153,9 +156,27 @@ struct World generateWorld(int seed, float amp, int interval)
 	int total = 0;
 	for(int i = 0; i < WORLD_WIDTH; i++)
 	{
+		if(canQuit())
+			exit(EXIT_SUCCESS);
+		//Loading bar
+		if(i % 128 == 0)	
+		{
+			clear();
+			updateActiveShaderWindowSize();
+			turnOffTexture();
+			setRectColor(255.0f, 0.0f, 0.0f, 255.0f);
+			setRectPos(0.0f, 0.0f);
+			setRectSize(640.0f, 32.0f);	
+			drawRect();
+			setRectColor(0.0f, 255.0f, 0.0f, 255.0f);
+			setRectPos(-320.0f + 320.0f * (float)i / (float)WORLD_WIDTH, 0.0f);
+			setRectSize(640.0f * (float)i / (float)WORLD_WIDTH, 32.0f);
+			drawRect();			
+			updateWindow();
+		}
+
 		for(float y = -32.0f; y <= (worldHeight[i]); y += 1.0f)
 		{
-			
 			struct Sprite tempBlock = createSpriteWithType(createRect(
 														 (float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 														 y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f,
@@ -295,7 +316,7 @@ struct World generateWorld(int seed, float amp, int interval)
 			}
 
 			insert(world.solidBlocks, tempBlock);
-			total++;
+			total++;	
 		}	
 	}
 

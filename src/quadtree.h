@@ -1,6 +1,6 @@
 #ifndef QUADTREE_H
 #include "sprite.h"
-#define QUAD_CAPACITY 1600
+#define QUAD_CAPACITY 128
 
 //Rectangle quadtree
 struct SpriteQuadTree

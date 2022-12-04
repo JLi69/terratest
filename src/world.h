@@ -1,9 +1,9 @@
 #ifndef WORLD_H
 #include "quadtree.h"
 
-#define WORLD_WIDTH 8192
+#define WORLD_WIDTH 16384
 #define MIN_CAVE_VALUE -0.2f
-#define MAX_CAVE_VALUE 0.0f
+#define MAX_CAVE_VALUE 0.1f
 
 #define BLOCK_SIZE 32.0f
 
