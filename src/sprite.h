@@ -34,6 +34,7 @@ struct Sprite
 	struct Vector2D vel;
 	short int falling, canMove, flipped, animating;
 	int animationFrame;
+	float timeSinceLastUpdate;
 
 	unsigned int type, animationState;
 };

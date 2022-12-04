@@ -57,6 +57,7 @@ struct Sprite createSprite(struct Rectangle hitbox)
 	spr.animating = 0;
 	spr.animationFrame = 0;
 	spr.type = 0;
+	spr.timeSinceLastUpdate = 0.0f;
 	return spr;
 }
 
@@ -72,6 +73,7 @@ struct Sprite createSpriteWithType(struct Rectangle hitbox, int type)
 	spr.animating = 0;
 	spr.animationFrame = 0;
 	spr.type = type;
+	spr.timeSinceLastUpdate = 0.0f;	
 	return spr;
 }
 

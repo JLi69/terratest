@@ -25,6 +25,11 @@
 
 #define WATER_LEVEL 230.0f
 
+#define SIM_DIST 3000.0f
+
+#define WATER_UPDATE_TIME 0.1f
+#define LAVA_UPDATE_TIME 0.6f
+
 enum SpriteType
 {
 	NONE = 0,
@@ -67,6 +72,11 @@ struct World generateWorld(
 	int interval
 	);
 void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos);
+void updateLiquid(struct SpriteQuadTree *liquids,
+				  struct SpriteQuadTree *liquidRoot,
+				  struct SpriteQuadTree *solidBlocks,
+				  struct Vector2D camPos,
+				  float timePassed);
 #ifdef DEV_VERSION
 void drawQTreeOutline(struct SpriteQuadTree *tree,
 					  float x, float y, float width, float height);

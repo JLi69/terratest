@@ -108,6 +108,10 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 			player->animationState = IDLE;
 	}
 
+	//Liquid physics	
+	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
+	updateLiquid(world->liquidBlocks, world->liquidBlocks, world->solidBlocks, camPos, secondsPerFrame);
+
 	//Move character with arrow keys
 	if(isPressed(GLFW_KEY_A))
 	{
@@ -145,7 +149,22 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
 			insert(world->solidBlocks, temp);
-			deleteSprite(world->liquidBlocks, temp);	
+			deleteSprite(world->liquidBlocks, temp);
+
+			//Update all liquid blocks around it
+			struct Sprite* neighbor;
+			struct Sprite spr;
+			float adjX[] = { BLOCK_SIZE, -BLOCK_SIZE, 0.0f, 0.0f };
+			float adjY[] = { 0.0f, 0.0f, BLOCK_SIZE, -BLOCK_SIZE };
+			for(int i = 0; i < 4; i++)
+			{
+				spr = createSprite(createRect(temp.hitbox.position.x + adjX[i],
+											  temp.hitbox.position.y + adjY[i],
+											  BLOCK_SIZE,
+											  BLOCK_SIZE));
+				if(collisionSearch(world->liquidBlocks, spr, &neighbor))
+					neighbor->canMove = 1;
+			}
 		}
 	}
 	//Destroy blocks
@@ -163,6 +182,21 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
 		{
 			deleteSprite(world->solidBlocks, selected);
+		
+			//Update all liquid blocks around it
+			struct Sprite* neighbor;
+			struct Sprite spr;
+			float adjX[] = { BLOCK_SIZE, -BLOCK_SIZE, 0.0f, 0.0f };
+			float adjY[] = { 0.0f, 0.0f, BLOCK_SIZE, -BLOCK_SIZE };
+			for(int i = 0; i < 4; i++)
+			{
+				spr = createSprite(createRect(selected.hitbox.position.x + adjX[i],
+											  selected.hitbox.position.y + adjY[i],
+											  BLOCK_SIZE,
+											  BLOCK_SIZE));
+				if(collisionSearch(world->liquidBlocks, spr, &neighbor))
+					neighbor->canMove = 1;
+			}
 		}
 
 		//Delete transparent block
