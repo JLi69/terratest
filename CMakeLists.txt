@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.11)
 project(terratest)
 
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -O3 -static-libgcc -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -O3 -static-libgcc -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive -Wl,--stack,4194304")
 
 	add_custom_target(
 	lib_glad
@@ -100,4 +100,4 @@ else()
 endif()
 target_link_libraries(${PROJECT_NAME}_dev libsoil2.a libglad.a m OpenGL::GL)
 target_compile_definitions(${PROJECT_NAME}_dev PUBLIC DEV_VERSION)
-target_compile_options(${PROJECT_NAME}_dev PUBLIC -g)
+target_compile_options(${PROJECT_NAME}_dev PUBLIC "-Wl,--stack,4194304 -g")
