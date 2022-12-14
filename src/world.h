@@ -50,16 +50,13 @@ enum SpriteType
 	GOLD,
 	RAINBOW_ORE,
 	MAGMA_STONE,
-	LAVA,
-	WATER,
 	SAND
 };
 
 struct World
 {
 	struct SpriteQuadTree *solidBlocks, //Blocks that can't be walked through
-						  *transparentBlocks, //Blocks that can be walked through
-						  *liquidBlocks; //Blocks that are liquids (water, lava)
+						  *transparentBlocks; //Blocks that can be walked through
 };
 
 void floodFill(float maxHeight, int type, float x, float y,

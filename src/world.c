@@ -44,8 +44,6 @@ struct World generateWorld(int seed, float amp, int interval)
 								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
 	world.transparentBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
 								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
-	world.liquidBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
-								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
 
 	float worldHeight[WORLD_WIDTH];
 	struct Vector2D randVecs1[WORLD_WIDTH + 1],
@@ -185,11 +183,8 @@ struct World generateWorld(int seed, float amp, int interval)
 			if(y > 0 && caveValues[i + (int)y * WORLD_WIDTH] <
 					(MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > 4.0f)
 			{
-				if(y <= 16.0f)
-				{
-					tempBlock.type = LAVA;
-					insert(world.liquidBlocks, tempBlock);
-				}
+				//Place lava into the world
+
 				continue;
 			}
 
@@ -221,7 +216,7 @@ struct World generateWorld(int seed, float amp, int interval)
 													BLOCK_SIZE, BLOCK_SIZE), STUMP);
 					struct Sprite* tempCollision;
 					if(collisionSearch(world.transparentBlocks, treeBlock, &tempCollision))
-						tempCollision->type = STUMP;
+						deleteSprite(world.transparentBlocks, *tempCollision);	
 					insert(world.transparentBlocks, treeBlock);
 
 					int height = TREE_MIN_HEIGHT + rand() % (TREE_MAX_HEIGHT - TREE_MIN_HEIGHT + 1);
@@ -229,12 +224,10 @@ struct World generateWorld(int seed, float amp, int interval)
 					for(int j = 0; j < height; j++)
 					{
 						treeBlock.hitbox.position.y += BLOCK_SIZE;
-						struct Sprite* collision;
-						if(collisionSearch(world.transparentBlocks, treeBlock, &collision))
-						{	
-							collision->type = LOG;
-							continue;
-						}
+						struct Sprite* collision;	
+						if(collisionSearch(world.transparentBlocks, treeBlock, &collision))	
+							deleteSprite(world.transparentBlocks, *collision);	
+						
 						insert(world.transparentBlocks, treeBlock);
 					}
 
@@ -320,7 +313,8 @@ struct World generateWorld(int seed, float amp, int interval)
 		}	
 	}
 
-	for(int i = 0; i < WORLD_WIDTH; i++)
+	//Place water into the world
+	/*for(int i = 0; i < WORLD_WIDTH; i++)
 	{
 		if(WATER_LEVEL < worldHeight[i])
 			continue;
@@ -329,7 +323,7 @@ struct World generateWorld(int seed, float amp, int interval)
 				  WATER_LEVEL * BLOCK_SIZE - BLOCK_SIZE,
 				  world.liquidBlocks, world.solidBlocks,
 				  amp);
-	}
+	}*/
 
 	printf("Inserted %d blocks!\n", total);
 	free(caveValues);
@@ -364,11 +358,6 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
 				setTexOffset(1.0f / 16.0f * (float)((tree->sprites[i].type - 1) % 16), 1.0f / 16.0f * (float)((tree->sprites[i].type - 1) / 16));
 				prevSpriteType = tree->sprites[i].type; 	
 			}
-			//Water is transparent	
-			if(tree->sprites[i].type == WATER)
-				setTransparency(0.65f);
-			else
-				setTransparency(1.0f);
 			setRectPos(tree->sprites[i].hitbox.position.x - camPos.x,
 					   tree->sprites[i].hitbox.position.y - camPos.y);
 			drawRect();

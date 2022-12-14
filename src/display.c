@@ -75,7 +75,6 @@ void display(struct World world, struct Sprite player)
 	setTexOffset(0.0f, 0.0f);
 	//Draw blocks
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
-	drawSpriteTree(world.liquidBlocks, camPos);	
 	drawSpriteTree(world.solidBlocks, camPos);		
 
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);

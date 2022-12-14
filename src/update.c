@@ -26,14 +26,6 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 {	
 	struct Sprite* collided = (void*)0;	
 
-	if(collisionSearch(world->liquidBlocks, *player, &collided))
-	{
-		if(collided->type == LAVA)
-			player->vel.x *= 0.1f;
-		else if(collided->type == WATER)
-			player->vel.x *= 0.5f;
-	}
-
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
 	//Check for collision
@@ -108,10 +100,6 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 			player->animationState = IDLE;
 	}
 
-	//Liquid physics	
-	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
-	updateLiquid(world->liquidBlocks, world->liquidBlocks, world->solidBlocks, camPos, secondsPerFrame);
-
 	//Move character with arrow keys
 	if(isPressed(GLFW_KEY_A))
 	{
@@ -148,23 +136,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		struct Sprite* tempCollision;	
 		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
-			insert(world->solidBlocks, temp);
-			deleteSprite(world->liquidBlocks, temp);
-
-			//Update all liquid blocks around it
-			struct Sprite* neighbor;
-			struct Sprite spr;
-			float adjX[] = { BLOCK_SIZE, -BLOCK_SIZE, 0.0f, 0.0f };
-			float adjY[] = { 0.0f, 0.0f, BLOCK_SIZE, -BLOCK_SIZE };
-			for(int i = 0; i < 4; i++)
-			{
-				spr = createSprite(createRect(temp.hitbox.position.x + adjX[i],
-											  temp.hitbox.position.y + adjY[i],
-											  BLOCK_SIZE,
-											  BLOCK_SIZE));
-				if(collisionSearch(world->liquidBlocks, spr, &neighbor))
-					neighbor->canMove = 1;
-			}
+			insert(world->solidBlocks, temp);	
 		}
 	}
 	//Destroy blocks
@@ -181,22 +153,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		collisionSearch(world->solidBlocks, selected, &tempCollision);
 		if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
 		{
-			deleteSprite(world->solidBlocks, selected);
-		
-			//Update all liquid blocks around it
-			struct Sprite* neighbor;
-			struct Sprite spr;
-			float adjX[] = { BLOCK_SIZE, -BLOCK_SIZE, 0.0f, 0.0f };
-			float adjY[] = { 0.0f, 0.0f, BLOCK_SIZE, -BLOCK_SIZE };
-			for(int i = 0; i < 4; i++)
-			{
-				spr = createSprite(createRect(selected.hitbox.position.x + adjX[i],
-											  selected.hitbox.position.y + adjY[i],
-											  BLOCK_SIZE,
-											  BLOCK_SIZE));
-				if(collisionSearch(world->liquidBlocks, spr, &neighbor))
-					neighbor->canMove = 1;
-			}
+			deleteSprite(world->solidBlocks, selected);	
 		}
 
 		//Delete transparent block
