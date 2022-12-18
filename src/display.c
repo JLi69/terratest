@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <math.h>
+#include <stdio.h>
 
 static struct ShaderProgram shaders[MAX_SHADERS];
 static struct Buffers buffers[MAX_BUFFERS];
@@ -25,6 +26,7 @@ void initGL(void)
 	textures[0] = loadTexture("res/textures/player.png");
 	textures[1] = loadTexture("res/textures/tiles.png");	
 	textures[2] = loadTexture("res/textures/icons.png");
+	textures[3] = loadTexture("res/textures/liquids.png");
 
 	useShader(&shaders[0]);	
 	bindBuffers(buffers[0]);
@@ -69,13 +71,17 @@ void display(struct World world, struct Sprite player)
 	drawRect();	
 	turnOffFlip();
 
-	bindTexture(textures[1], GL_TEXTURE0);
+	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
 	setTexOffset(0.0f, 0.0f);
-	//Draw blocks
-	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+	//Draw liquid blocks			
+	bindTexture(textures[3], GL_TEXTURE0);
+	drawLiquid(world.liquidBlocks, camPos, 64, 64, world.solidBlocks, world.blockArea);
+	//Draw blocks	
+	bindTexture(textures[1], GL_TEXTURE0);
 	drawSpriteTree(world.solidBlocks, camPos);		
+	
 
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);

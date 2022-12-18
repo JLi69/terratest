@@ -11,7 +11,7 @@ void initGame(struct World *world, struct Sprite *player)
 {
 	const float height = 128.0f;
 	*world = generateWorld(time(0), height, 256.0f);
-	
+
 	*player = createSprite(createRect(0.0f, 32.0f * 1.5f * height, 32.0f, 64.0f));
 	player->animationState = IDLE;
 	player->animating = 1;
@@ -25,6 +25,8 @@ void initGame(struct World *world, struct Sprite *player)
 void updateGameobjects(struct World *world, struct Sprite *player, float secondsPerFrame)
 {	
 	struct Sprite* collided = (void*)0;	
+
+	printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
 
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);

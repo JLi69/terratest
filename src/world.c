@@ -11,26 +11,27 @@ float interpolate(float a, float b, float weight)
 	return (b - a) * weight + a;
 }
 
-void floodFill(float maxHeight, int type, float x, float y, 
-			   struct SpriteQuadTree *blocks, struct SpriteQuadTree *solidBlocks, float amp)
+void floodFill(int x, int y, int maxY, enum LiquidType liquid,
+			   struct Liquid *liquidBlocks, 
+			   struct SpriteQuadTree *world,
+			   int worldArea, float amp, int depth)
 {
-	if(y > maxHeight)
-		return;
-	if(x <= -WORLD_WIDTH / 2.0f * BLOCK_SIZE || x >= WORLD_WIDTH / 2.0f * BLOCK_SIZE)
+	if(depth > 32000)
 		return;
 
-	struct Sprite block = createSpriteWithType(createRect(x, y - amp * BLOCK_SIZE / 2.0f, BLOCK_SIZE, BLOCK_SIZE), type);
-	struct Sprite* collided;
-	if(collisionSearch(solidBlocks, block, &collided))
+	if(x < world->botLeftCorner.x / BLOCK_SIZE + 1 ||
+	   x > world->topRightCorner.x / BLOCK_SIZE - 1)
 		return;
-	if(collisionSearch(blocks, block, &collided))
-		return;	
-	insert(blocks, block);
+	if(y > maxY || y < world->botLeftCorner.y / BLOCK_SIZE)
+		return;
+	if(getLiquid(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea).type != EMPTY_LIQUID)
+		return;
+	setLiquidType(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea, liquid);
 
-	floodFill(maxHeight, type, x + BLOCK_SIZE, y, blocks, solidBlocks, amp);
-	floodFill(maxHeight, type, x, y + BLOCK_SIZE, blocks, solidBlocks, amp);
-	floodFill(maxHeight, type, x - BLOCK_SIZE, y, blocks, solidBlocks, amp);
-	floodFill(maxHeight, type, x, y - BLOCK_SIZE, blocks, solidBlocks, amp);
+	floodFill(x - 1, y, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
+	floodFill(x + 1, y, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
+	floodFill(x, y - 1, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
+	floodFill(x, y + 1, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
 }
 
 struct World generateWorld(int seed, float amp, int interval)
@@ -40,10 +41,18 @@ struct World generateWorld(int seed, float amp, int interval)
 	srand(seed);
 
 	struct World world;
-	world.solidBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
-								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
-	world.transparentBlocks = createQuadTree(createPoint(-WORLD_WIDTH * 32.0f * 2.0f, -4.0f * amp * 32.0f),
-								  createPoint(WORLD_WIDTH * 32.0f * 2.0f, 16.0f * amp * 32.0f));
+	world.solidBlocks = createQuadTree(
+								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
+								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
+	world.transparentBlocks = createQuadTree(
+								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
+								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
+
+	world.blockArea = WORLD_WIDTH * 2 * 8 * (int)amp;
+	world.liquidBlocks = (struct Liquid*)malloc(sizeof(struct Liquid) * world.blockArea);
+	//Set all liquid blocks as empty
+	for(int i = 0; i < world.blockArea; i++)
+		world.liquidBlocks[i] = createLiquid(EMPTY_LIQUID, 0.0f); //Fill world with empty liquid
 
 	float worldHeight[WORLD_WIDTH];
 	struct Vector2D randVecs1[WORLD_WIDTH + 1],
@@ -184,7 +193,9 @@ struct World generateWorld(int seed, float amp, int interval)
 					(MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > 4.0f)
 			{
 				//Place lava into the world
-
+				if(y < 16.0f)
+					setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
+								  world.blockArea, LAVA);
 				continue;
 			}
 
@@ -309,21 +320,21 @@ struct World generateWorld(int seed, float amp, int interval)
 			}
 
 			insert(world.solidBlocks, tempBlock);
-			total++;	
+			total++;
+
+			setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
+								  world.blockArea, SOLID);
 		}	
 	}
 
 	//Place water into the world
-	/*for(int i = 0; i < WORLD_WIDTH; i++)
+	for(int i = 0; i < WORLD_WIDTH; i++)
 	{
 		if(WATER_LEVEL < worldHeight[i])
 			continue;
-		floodFill(WATER_LEVEL * BLOCK_SIZE, WATER, 
-				  i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
-				  WATER_LEVEL * BLOCK_SIZE - BLOCK_SIZE,
-				  world.liquidBlocks, world.solidBlocks,
-				  amp);
-	}*/
+		floodFill(i - WORLD_WIDTH / 2.0f, WATER_LEVEL, WATER_LEVEL, WATER, 
+				  world.liquidBlocks, world.solidBlocks, world.blockArea, amp, 0);
+	}
 
 	printf("Inserted %d blocks!\n", total);
 	free(caveValues);

@@ -1,3 +1,6 @@
+//TODO: IMPROVE MEMORY USAGE
+//Don't have the entire world loaded into memory
+
 #ifndef WORLD_H
 #include "quadtree.h"
 
@@ -27,9 +30,6 @@
 
 #define SIM_DIST 3000.0f
 
-#define WATER_UPDATE_TIME 0.1f
-#define LAVA_UPDATE_TIME 0.6f
-
 enum SpriteType
 {
 	NONE = 0,
@@ -53,27 +53,60 @@ enum SpriteType
 	SAND
 };
 
+enum LiquidType
+{
+	EMPTY_LIQUID = 0,
+	SOLID,
+	WATER,
+	LAVA
+};
+
+struct Liquid
+{
+	enum LiquidType type;
+	float mass; //a value between 0.0 and 1.0 though if it is under more
+				//water then it could be slightly higher than 1.0
+};
+
 struct World
 {
 	struct SpriteQuadTree *solidBlocks, //Blocks that can't be walked through
 						  *transparentBlocks; //Blocks that can be walked through
+	int blockArea; //Maximum number of blocks that can fit into the world
+				   //if they are all arranged in a grid pattern
+	struct Liquid* liquidBlocks; //Liquid blocks
 };
 
-void floodFill(float maxHeight, int type, float x, float y,
-			   struct SpriteQuadTree *blocks,
-			   struct SpriteQuadTree *solidBlocks,
-			   float amp);
 struct World generateWorld(
 	int seed,
 	float amp,
 	int interval
 	);
 void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos);
-void updateLiquid(struct SpriteQuadTree *liquids,
-				  struct SpriteQuadTree *liquidRoot,
+
+//Liquid functions
+void updateLiquid(struct Liquid *liquids,
 				  struct SpriteQuadTree *solidBlocks,
 				  struct Vector2D camPos,
-				  float timePassed);
+				  float timePassed, int updateDist);
+void drawLiquid(struct Liquid *liquids,
+				  struct Vector2D camPos,
+				  int viewDistX, int viewDistY,
+				  struct SpriteQuadTree *world, int maxIndex);
+//Pass in X and Y as world coordinates, not grid coordinates
+struct Liquid getLiquid(struct Liquid *liquids,
+						int x, int y, struct SpriteQuadTree *world,
+						int maxIndex);
+void setLiquidType(struct Liquid *liquids,
+				   int x, int y, struct SpriteQuadTree *world,
+				   int maxIndex,
+				   enum LiquidType type);
+void setLiquidMass(struct Liquid *liquids, 
+				   int x, int y, struct SpriteQuadTree *world,
+				   int maxIndex,
+				   float mass);
+struct Liquid createLiquid(enum LiquidType type, float mass);
+
 #ifdef DEV_VERSION
 void drawQTreeOutline(struct SpriteQuadTree *tree,
 					  float x, float y, float width, float height);
