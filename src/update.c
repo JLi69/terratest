@@ -127,17 +127,25 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	if(!player->falling && isPressed(GLFW_KEY_SPACE))
 		player->vel.y = JUMP_SPEED;
 
+	//Update liquid blocks	
+	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
+	updateLiquid(world->liquidBlocks, world->solidBlocks, camPos, secondsPerFrame, 64, world->blockArea);
+
 	//Place blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
 	{
 		double cursorX, cursorY;
-		getCursorPos(&cursorX, &cursorY);
+		getCursorPos(&cursorX, &cursorY);	
+
 		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE) * BLOCK_SIZE;	
-		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;
+		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;	
+
 		struct Sprite temp = createSpriteWithType(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE), BRICK);
 		struct Sprite* tempCollision;	
 		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
+			setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 1.0f);
+			setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, SOLID);
 			insert(world->solidBlocks, temp);	
 		}
 	}
@@ -148,6 +156,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		getCursorPos(&cursorX, &cursorY);
 		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE) * BLOCK_SIZE;	
 		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;	
+
 		struct Sprite selected = createSprite(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE));
 		struct Sprite* tempCollision = NULL;
 		
@@ -155,6 +164,8 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		collisionSearch(world->solidBlocks, selected, &tempCollision);
 		if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
 		{
+			setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
+			setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);
 			deleteSprite(world->solidBlocks, selected);	
 		}
 

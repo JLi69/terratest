@@ -16,6 +16,7 @@ void turnOffFlip(void);
 void flip(int flipped);
 void setTransparency(float a);
 void setOutline(float width);
+void setLevel(float level);
 
 #endif
 #define DRAW_H

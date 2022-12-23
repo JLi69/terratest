@@ -80,3 +80,8 @@ void setOutline(float width)
 {
 	glUniform1f(getUniformLocation("uOutline", getActiveShader()), width);
 }
+
+void setLevel(float level)
+{
+	glUniform1f(getUniformLocation("uLevel", getActiveShader()), level);
+}

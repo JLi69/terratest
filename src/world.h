@@ -88,7 +88,8 @@ void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos);
 void updateLiquid(struct Liquid *liquids,
 				  struct SpriteQuadTree *solidBlocks,
 				  struct Vector2D camPos,
-				  float timePassed, int updateDist);
+				  float timePassed, int updateDist,
+				  int maxIndex);
 void drawLiquid(struct Liquid *liquids,
 				  struct Vector2D camPos,
 				  int viewDistX, int viewDistY,

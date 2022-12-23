@@ -27,6 +27,7 @@ void floodFill(int x, int y, int maxY, enum LiquidType liquid,
 	if(getLiquid(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea).type != EMPTY_LIQUID)
 		return;
 	setLiquidType(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea, liquid);
+	setLiquidMass(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea, 1.0f);
 
 	floodFill(x - 1, y, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
 	floodFill(x + 1, y, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
@@ -194,8 +195,12 @@ struct World generateWorld(int seed, float amp, int interval)
 			{
 				//Place lava into the world
 				if(y < 16.0f)
+				{
 					setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
 								  world.blockArea, LAVA);
+					setLiquidMass(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
+								  world.blockArea, 1.0f);	
+				}
 				continue;
 			}
 
@@ -255,7 +260,17 @@ struct World generateWorld(int seed, float amp, int interval)
 													treeBlock.hitbox.position.y + k * BLOCK_SIZE,
 													BLOCK_SIZE, BLOCK_SIZE), LEAF);
 								insert(world.solidBlocks, leafBlock);
-								
+							
+								//Leaf is solid
+								setLiquidType(world.liquidBlocks,
+										treeBlock.hitbox.position.x / BLOCK_SIZE + j,
+										treeBlock.hitbox.position.y / BLOCK_SIZE + k, world.solidBlocks,
+										world.blockArea, SOLID);
+								setLiquidMass(world.liquidBlocks,
+										treeBlock.hitbox.position.x / BLOCK_SIZE + j,
+										treeBlock.hitbox.position.y / BLOCK_SIZE + k, world.solidBlocks,
+										world.blockArea, 1.0f);
+						
 								//Vines
 								if(rand() % VINE_PROB == 0)
 								{
@@ -324,6 +339,8 @@ struct World generateWorld(int seed, float amp, int interval)
 
 			setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
 								  world.blockArea, SOLID);
+			setLiquidMass(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
+								  world.blockArea, 1.0f);	
 		}	
 	}
 

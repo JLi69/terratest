@@ -12,9 +12,16 @@ uniform vec2 uTexFrac = vec2(1.0f, 1.0f);
 uniform vec2 uTexOffset = vec2(0.0f, 0.0f);
 uniform vec2 uTexSize = vec2(16.0f, 16.0f);
 uniform float uTransparency = 1.0f;
+uniform float uLevel = 2.0f;
 
 void main()
 {
+	if(tc.y > uLevel)
+	{
+		color = vec4(0.0, 0.0, 0.0, 0.0);
+		return;
+	}
+
 	color = uColor;
 
 	if(uUseTexture)
