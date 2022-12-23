@@ -107,7 +107,7 @@ void updateLiquid(struct Liquid *liquids,
 
 	int minX = (int)(camPos.x / BLOCK_SIZE) - updateDist,
 		minY = (int)(camPos.y / BLOCK_SIZE) - updateDist,
-		sz = updateDist * 2 + 1;
+		sz = updateDist * 2 + 1;	
 
 	for(int x = (int)(camPos.x / BLOCK_SIZE) - updateDist; x <= (int)(camPos.x / BLOCK_SIZE) + updateDist; x++)
 	{
@@ -123,13 +123,36 @@ void updateLiquid(struct Liquid *liquids,
 			else if(getLiquid(liquids, x, y, solidBlocks, maxIndex).type == WATER ||
 					getLiquid(liquids, x, y, solidBlocks, maxIndex).type == LAVA)
 			{
+				//If it's lava, check neighbors and find if it is neighboring water, if it is, then turn it solid
+				//and insert stone into the block quadtree
+				if(getLiquid(liquids, x, y, solidBlocks, maxIndex).type == LAVA)
+				{
+					int xoff[] = { 1, -1, 0,  0 };
+					int yoff[] = { 0,  0, 1, -1 };
+					int found = 0;
+					for(int i = 0; i < 4 && !found; i++)
+					{
+						if(getLiquid(liquids, x + xoff[i], y + yoff[i], solidBlocks, maxIndex).type == WATER)
+						{	
+							newLiquids[(x - minX) + (y - minY) * sz].type = SOLID;	
+							newLiquids[(x - minX) + (y - minY) * sz].mass = 0.0f;
+							insert(solidBlocks, createSpriteWithType(createRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), STONE));	
+							setLiquidType(liquids, x, y, solidBlocks, maxIndex, SOLID);
+							found = 1;	
+						}
+					}
+
+					if(found) continue;
+				}
+
 				flow = 0.0f;
 
 				remainingMass = getLiquid(liquids, x, y, solidBlocks, maxIndex).mass;
 				newLiquids[x - minX + (y - minY) * sz].type = getLiquid(liquids, x, y, solidBlocks, maxIndex).type;	
 				newLiquids[x - minX + (y - minY) * sz].mass += remainingMass;
 
-				if(getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).type != SOLID)
+				if(getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).type == EMPTY_LIQUID ||
+				   getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).type == getLiquid(liquids, x, y, solidBlocks, maxIndex).type)
 				{
 					flow = getStableState(remainingMass + getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).mass) 
 						   - getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).mass;
@@ -147,7 +170,8 @@ void updateLiquid(struct Liquid *liquids,
 
 				if(remainingMass <= 0) continue;
 
-				if(getLiquid(liquids, x - 1, y, solidBlocks, maxIndex).type != SOLID
+				if((getLiquid(liquids, x - 1, y, solidBlocks, maxIndex).type == EMPTY_LIQUID ||
+					getLiquid(liquids, x - 1, y, solidBlocks, maxIndex).type == getLiquid(liquids, x, y, solidBlocks, maxIndex).type)
 					&& getLiquid(liquids, x - 1, y, solidBlocks, maxIndex).mass >= 0.0f)
 				{
 					flow = (getLiquid(liquids, x, y, solidBlocks, maxIndex).mass - getLiquid(liquids, x - 1, y, solidBlocks, maxIndex).mass) / 4.0f;
@@ -165,7 +189,8 @@ void updateLiquid(struct Liquid *liquids,
 
 				if(remainingMass <= 0) continue;
 			
-				if(getLiquid(liquids, x + 1, y, solidBlocks, maxIndex).type != SOLID
+				if((getLiquid(liquids, x + 1, y, solidBlocks, maxIndex).type == EMPTY_LIQUID ||
+					getLiquid(liquids, x + 1, y, solidBlocks, maxIndex).type == getLiquid(liquids, x, y, solidBlocks, maxIndex).type)
 					&& getLiquid(liquids, x + 1, y, solidBlocks, maxIndex).mass >= 0.0f)
 				{
 					flow = (getLiquid(liquids, x, y, solidBlocks, maxIndex).mass - getLiquid(liquids, x + 1, y, solidBlocks, maxIndex).mass) / 4.0f;
@@ -181,7 +206,8 @@ void updateLiquid(struct Liquid *liquids,
 					} 
 				}
 
-				if(getLiquid(liquids, x, y + 1, solidBlocks, maxIndex).type != SOLID)
+				if(getLiquid(liquids, x, y + 1, solidBlocks, maxIndex).type == EMPTY_LIQUID ||
+					getLiquid(liquids, x, y + 1, solidBlocks, maxIndex).type == getLiquid(liquids, x, y, solidBlocks, maxIndex).type)
 				{
 					flow = remainingMass - getStableState(remainingMass + getLiquid(liquids, x, y + 1, solidBlocks, maxIndex).mass);
 					if(flow > MIN_FLOW)
