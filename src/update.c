@@ -23,7 +23,10 @@ void initGame(struct World *world, struct Sprite *player)
 }
 
 void updateGameobjects(struct World *world, struct Sprite *player, float secondsPerFrame)
-{	
+{
+	static float liquidUpdateTimer = 0.0f;
+	liquidUpdateTimer += secondsPerFrame;
+
 	struct Sprite* collided = (void*)0;	
 
 	printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
@@ -129,7 +132,11 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 
 	//Update liquid blocks	
 	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
-	updateLiquid(world->liquidBlocks, world->solidBlocks, camPos, secondsPerFrame, 64, world->blockArea);
+	if(liquidUpdateTimer > 0.03f)
+	{
+		updateLiquid(world->liquidBlocks, world->solidBlocks, camPos, secondsPerFrame, 64, world->blockArea);
+		liquidUpdateTimer = 0.0f;	
+	}
 
 	//Place blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
