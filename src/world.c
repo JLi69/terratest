@@ -266,10 +266,6 @@ struct World generateWorld(int seed, float amp, int interval)
 										treeBlock.hitbox.position.x / BLOCK_SIZE + j,
 										treeBlock.hitbox.position.y / BLOCK_SIZE + k, world.solidBlocks,
 										world.blockArea, SOLID);
-								setLiquidMass(world.liquidBlocks,
-										treeBlock.hitbox.position.x / BLOCK_SIZE + j,
-										treeBlock.hitbox.position.y / BLOCK_SIZE + k, world.solidBlocks,
-										world.blockArea, 1.0f);
 						
 								//Vines
 								if(rand() % VINE_PROB == 0)
@@ -339,8 +335,6 @@ struct World generateWorld(int seed, float amp, int interval)
 
 			setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
 								  world.blockArea, SOLID);
-			setLiquidMass(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
-								  world.blockArea, 1.0f);	
 		}	
 	}
 

@@ -87,7 +87,7 @@ float constrain(float val, float min, float max)
 
 float minVal(float a, float b)
 {
-	return a > b ? a : b;
+	return a > b ? b : a;
 }
 
 void updateLiquid(struct Liquid *liquids,
@@ -111,7 +111,7 @@ void updateLiquid(struct Liquid *liquids,
 
 	for(int x = (int)(camPos.x / BLOCK_SIZE) - updateDist; x <= (int)(camPos.x / BLOCK_SIZE) + updateDist; x++)
 	{
-		for(int y = (int)(camPos.y / BLOCK_SIZE) - updateDist; y <= (int)(camPos.y / BLOCK_SIZE) + updateDist; y++)
+		for(int y = (int)(camPos.y / BLOCK_SIZE) + updateDist; y >= (int)(camPos.y / BLOCK_SIZE) - updateDist; y--)
 		{	
 			//Solid
 			if(getLiquid(liquids, x, y, solidBlocks, maxIndex).type == SOLID)
@@ -155,7 +155,7 @@ void updateLiquid(struct Liquid *liquids,
 				   getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).type == getLiquid(liquids, x, y, solidBlocks, maxIndex).type)
 				{
 					flow = getStableState(remainingMass + getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).mass) 
-						   - getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).mass;
+						   - getLiquid(liquids, x, y - 1, solidBlocks, maxIndex).mass;	
 					if(flow > MIN_FLOW)
 						flow *= 0.5f;
 					flow = constrain(flow, 0.0f, minVal(MAX_SPEED, remainingMass));
@@ -234,12 +234,13 @@ void updateLiquid(struct Liquid *liquids,
 			if(x - minX + (y - minY) * sz >= area)
 			{
 				fprintf(stderr, "(%d, %d) (%d %d) %d %d OUT OF BOUNDS!\n", x, y, minX, minY, x - minX + (y - minY) * sz, area);
-				exit(EXIT_FAILURE);	
+				continue;	
 			}
 			setLiquidType(liquids, x, y, solidBlocks, maxIndex, newLiquids[x - minX + (y - minY) * sz].type);  
 			setLiquidMass(liquids, x, y, solidBlocks, maxIndex, newLiquids[x - minX + (y - minY) * sz].mass);
 			if(getLiquid(liquids, x, y, solidBlocks, maxIndex).type == SOLID) continue;
-			if(getLiquid(liquids, x, y, solidBlocks, maxIndex).mass <= MIN_LIQUID)	
+			if(getLiquid(liquids, x, y, solidBlocks, maxIndex).mass <= MIN_LIQUID ||
+			  newLiquids[(x - minX) + (y - minY) * sz].type == EMPTY_LIQUID)	
 			{
 				setLiquidType(liquids, x, y, solidBlocks, maxIndex, EMPTY_LIQUID);  		
 				setLiquidMass(liquids, x, y, solidBlocks, maxIndex, 0.0f);

@@ -29,7 +29,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 
 	struct Sprite* collided = (void*)0;	
 
-	printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
+	//printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
 
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
@@ -151,7 +151,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		struct Sprite* tempCollision;	
 		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
-			setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 1.0f);
+			setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
 			setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, SOLID);
 			insert(world->solidBlocks, temp);	
 		}
