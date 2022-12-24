@@ -13,6 +13,7 @@ uniform vec2 uTexOffset = vec2(0.0f, 0.0f);
 uniform vec2 uTexSize = vec2(16.0f, 16.0f);
 uniform float uTransparency = 1.0f;
 uniform float uLevel = 2.0f;
+uniform float uBrightness = 1.0f;
 
 void main()
 {
@@ -22,7 +23,7 @@ void main()
 		return;
 	}
 
-	color = uColor;
+	color = uColor * uBrightness;
 
 	if(uUseTexture)
 	{
@@ -46,6 +47,9 @@ void main()
 			texCoord.y = (floor(uTexSize.y * (uTexOffset.y + uTexFrac.y)) + 0.5) / uTexSize.y - 1.0 / uTexSize.y;
 
 		color = texture(tex, texCoord);
+		color.r *= uBrightness;
+		color.g *= uBrightness;
+		color.b *= uBrightness;
 		color.a *= uTransparency; 
 	}
 }

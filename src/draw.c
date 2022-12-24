@@ -85,3 +85,8 @@ void setLevel(float level)
 {
 	glUniform1f(getUniformLocation("uLevel", getActiveShader()), level);
 }
+
+void setBrightness(float brightness)
+{
+	glUniform1f(getUniformLocation("uBrightness", getActiveShader()), brightness);
+}

@@ -58,7 +58,10 @@ void display(struct World world, struct Sprite player)
 	//Draw blocks
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
-	drawSpriteTree(world.transparentBlocks, camPos);	
+	setBrightness(0.6f);
+	drawSpriteTree(world.backgroundBlocks, camPos);	
+	setBrightness(1.0f);
+	drawSpriteTree(world.transparentBlocks, camPos);		
 
 	bindTexture(textures[0], GL_TEXTURE0);
 	//Draw player	
@@ -76,8 +79,6 @@ void display(struct World world, struct Sprite player)
 	setTexSize(256.0f, 256.0f);		
 	setTexOffset(0.0f, 0.0f);
 	//Draw liquid blocks			
-	//bindTexture(textures[3], GL_TEXTURE0);
-	//drawLiquid(world.liquidBlocks, camPos, 64, 64, world.solidBlocks, world.blockArea);
 	//Draw blocks	
 	bindTexture(textures[1], GL_TEXTURE0);
 	drawSpriteTree(world.solidBlocks, camPos);		

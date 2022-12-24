@@ -149,7 +149,18 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 
 		struct Sprite temp = createSpriteWithType(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE), BRICK);
 		struct Sprite* tempCollision;	
-		if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
+	
+		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
+		{
+			collisionSearch(world->backgroundBlocks, temp, &tempCollision);
+			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE && !collisionSearch(world->solidBlocks, temp, &tempCollision))
+			{
+				setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
+				setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);	
+				insert(world->backgroundBlocks, temp);		
+			}
+		}
+		else if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
 			setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
 			setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, SOLID);
@@ -168,12 +179,25 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		struct Sprite* tempCollision = NULL;
 		
 		//Delete solid block
-		collisionSearch(world->solidBlocks, selected, &tempCollision);
-		if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
+		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 		{
-			setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
-			setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);
-			deleteSprite(world->solidBlocks, selected);	
+			collisionSearch(world->backgroundBlocks, selected, &tempCollision);
+			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE && !collisionSearch(world->solidBlocks, selected, &tempCollision))
+			{
+				setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
+				setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);
+				deleteSprite(world->backgroundBlocks, selected);	
+			}
+		}
+		else
+		{
+			collisionSearch(world->solidBlocks, selected, &tempCollision);
+			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
+			{
+				setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
+				setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);
+				deleteSprite(world->solidBlocks, selected);	
+			}
 		}
 
 		//Delete transparent block

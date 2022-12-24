@@ -4,7 +4,7 @@
 #ifndef WORLD_H
 #include "quadtree.h"
 
-#define WORLD_WIDTH 16384
+#define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
 #define MAX_CAVE_VALUE 0.1f
 
@@ -71,7 +71,8 @@ struct Liquid
 struct World
 {
 	struct SpriteQuadTree *solidBlocks, //Blocks that can't be walked through
-						  *transparentBlocks; //Blocks that can be walked through
+						  *transparentBlocks, //Blocks that can be walked through
+						  *backgroundBlocks;	
 	int blockArea; //Maximum number of blocks that can fit into the world
 				   //if they are all arranged in a grid pattern
 	struct Liquid* liquidBlocks; //Liquid blocks

@@ -45,6 +45,9 @@ struct World generateWorld(int seed, float amp, int interval)
 	world.solidBlocks = createQuadTree(
 								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
 								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
+	world.backgroundBlocks = createQuadTree(
+								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
+								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
 	world.transparentBlocks = createQuadTree(
 								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
 								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
@@ -189,6 +192,14 @@ struct World generateWorld(int seed, float amp, int interval)
 														 (float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
 														 y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f,
 														 BLOCK_SIZE, BLOCK_SIZE), STONE);
+
+			//Insert background blocks	
+			if(y + 1.0f > worldHeight[i] && y <= WATER_LEVEL)
+				tempBlock.type = SAND;	
+			else if(y + 7.0f > worldHeight[i])
+				tempBlock.type = DIRT;
+			insert(world.backgroundBlocks, tempBlock);
+
 			//Caves get bigger the deeper down you go
 			if(y > 0 && caveValues[i + (int)y * WORLD_WIDTH] <
 					(MAX_CAVE_VALUE - MIN_CAVE_VALUE) * (amp - y) / amp + MIN_CAVE_VALUE && y > 4.0f)
@@ -204,7 +215,6 @@ struct World generateWorld(int seed, float amp, int interval)
 				continue;
 			}
 
-			
 			if(y + 1.0f > worldHeight[i])
 			{	
 				tempBlock.type = GRASS;
@@ -212,9 +222,7 @@ struct World generateWorld(int seed, float amp, int interval)
 				{
 					tempBlock.type = SAND;	
 				}
-			}	
-			else if(y + 7.0f > worldHeight[i])
-				tempBlock.type = DIRT;
+			}
 			
 			//Bottom of world
 			if((y < 0.0f) || (y <= 4.0f && (float)rand() / (float)RAND_MAX <= 1.0f / sqrtf(y + 1.0f)))
@@ -330,7 +338,8 @@ struct World generateWorld(int seed, float amp, int interval)
 					tempBlock.type = MAGMA_STONE;
 			}
 
-			insert(world.solidBlocks, tempBlock);
+			insert(world.solidBlocks, tempBlock);	
+
 			total++;
 
 			setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
