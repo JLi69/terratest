@@ -76,6 +76,7 @@ struct World
 	int blockArea; //Maximum number of blocks that can fit into the world
 				   //if they are all arranged in a grid pattern
 	struct Liquid* liquidBlocks; //Liquid blocks
+	float dayCycle; //Current time of day in the world
 };
 
 struct World generateWorld(

@@ -42,6 +42,8 @@ struct World generateWorld(int seed, float amp, int interval)
 	srand(seed);
 
 	struct World world;
+	world.dayCycle = 0.25f;	
+
 	world.solidBlocks = createQuadTree(
 								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
 								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));

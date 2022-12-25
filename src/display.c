@@ -18,6 +18,7 @@ void initGL(void)
 	//Set up shaders
 	shaders[0] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/texture.frag");
 	shaders[1] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/outline.frag");
+	shaders[2] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/sun.frag");
 
 	//Set up vertex buffers
 	buffers[0] = createRectangleBuffer();
@@ -36,20 +37,57 @@ void initGL(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+//0.0 = midnight, 1.0 = afternoon
+void background(float dayCycleTime, float offsetx, float offsety)
+{
+	//Draw background
+	setBrightness((dayCycleTime - 1.0f) * (dayCycleTime) * -4.0f);
+	turnOffTexture();
+	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
+	setRectPos(0.0f, 0.0f);	
+	setRectSize(10000.0f, 10000.0f);	
+	drawRect();	
+
+	setBrightness(1.0f);
+	useShader(&shaders[2]);
+	//Draw the sun	
+	if(dayCycleTime > 0.25f && dayCycleTime < 0.75f)
+	{
+		updateActiveShaderWindowSize();	
+		turnOffTexture();
+		setRectColor(255.0f, 255.0f, 0.0f, 255.0f);	
+		setRectPos(/*-offsetx * 1.0f / BLOCK_SIZE * 1.0f / 4.0f + */
+					-sinf(dayCycleTime * 2.0f * 3.14159f) * 1024.0f,
+					-cosf(dayCycleTime * 2.0f * 3.14159f) * 960.0f - 500.0f);	
+		setRectSize(128.0f, 128.0f);	
+		drawRect();
+	}
+	//Draw the moon
+	if(dayCycleTime < 0.25f || dayCycleTime > 0.75f)
+	{
+		updateActiveShaderWindowSize();	
+		turnOffTexture();
+		setRectColor(255.0f, 255.0f, 255.0f, 255.0f);	
+		setRectPos(/*-offsetx * 1.0f / BLOCK_SIZE * 1.0f / 4.0f + */
+					sinf(dayCycleTime * 2.0f * 3.14159f) * 1024.0f,
+					cosf(dayCycleTime * 2.0f * 3.14159f) * 960.0f - 500.0f);	
+		setRectSize(128.0f, 128.0f);	
+		drawRect();
+	}
+
+	useShader(&shaders[0]);
+}
+
 void display(struct World world, struct Sprite player)
 {		
 	clear();	
 
 	setTransparency(1.0f);
 	useShader(&shaders[0]);		
-	updateActiveShaderWindowSize();
-	//Draw background
-	turnOffTexture();
-	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
-	setRectPos(0.0f, 0.0f);	
-	setRectSize(10000.0f, 10000.0f);	
-	drawRect();		
-	
+	updateActiveShaderWindowSize();	
+
+	background(world.dayCycle, player.hitbox.position.x, player.hitbox.position.y);
+
 	turnOnTexture();
 	bindTexture(textures[1], GL_TEXTURE0);
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);

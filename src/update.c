@@ -154,11 +154,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		{
 			collisionSearch(world->backgroundBlocks, temp, &tempCollision);
 			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE && !collisionSearch(world->solidBlocks, temp, &tempCollision))
-			{
-				setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
-				setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);	
 				insert(world->backgroundBlocks, temp);		
-			}
 		}
 		else if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
 		{
@@ -183,11 +179,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		{
 			collisionSearch(world->backgroundBlocks, selected, &tempCollision);
 			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE && !collisionSearch(world->solidBlocks, selected, &tempCollision))
-			{
-				setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
-				setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);
 				deleteSprite(world->backgroundBlocks, selected);	
-			}
 		}
 		else
 		{
@@ -211,4 +203,9 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 			}
 		}
 	}
+
+	//Update time in the world
+	world->dayCycle += secondsPerFrame * 1.0f / 60.0f;
+	if(world->dayCycle > 1.0f)
+		world->dayCycle = 0.0f;
 }
