@@ -18,6 +18,9 @@ void setTransparency(float a);
 void setOutline(float width);
 void setLevel(float level);
 void setBrightness(float brightness);
+//For sun/moon shader
+void setRayCount(float rays);
+void setPhase(float phase);
 
 #endif
 #define DRAW_H

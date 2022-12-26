@@ -90,3 +90,13 @@ void setBrightness(float brightness)
 {
 	glUniform1f(getUniformLocation("uBrightness", getActiveShader()), brightness);
 }
+
+void setRayCount(float rays)
+{	
+	glUniform1f(getUniformLocation("uRays", getActiveShader()), rays);
+}
+
+void setPhase(float phase)
+{
+	glUniform1f(getUniformLocation("uPhase", getActiveShader()), phase);
+}

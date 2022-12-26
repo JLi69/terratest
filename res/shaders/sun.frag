@@ -15,11 +15,15 @@ uniform float uTransparency = 1.0f;
 uniform float uLevel = 2.0f;
 uniform float uBrightness = 1.0f;
 
+uniform float uRays = 16.0;
+uniform float uPhase = 0.5; //Moon phase
+
 void main()
 {
 	float dist = (tc.x - 0.5) * (tc.x - 0.5) + (tc.y - 0.5) * (tc.y - 0.5),
-		  maxDist = pow(0.35 + sin(16.0 * atan((tc.y - 0.5) / (tc.x - 0.5))) * 0.05, 2);
-	if(tc.y > uLevel || dist >= maxDist)
+		  maxDist = pow(0.35 + sin(uRays * atan((tc.y - 0.5) / (tc.x - 0.5))) * 0.05, 2);
+	float phaseDist = (tc.x - 0.5 - uPhase * 0.5 * sqrt(3.0)) * (tc.x - 0.5 - uPhase * 0.5 * sqrt(3.0)) + (tc.y - 0.5 - 0.5 * uPhase) * (tc.y - 0.5 - 0.5 * uPhase);
+	if(tc.y > uLevel || dist >= maxDist || phaseDist < maxDist)
 	{
 		color = vec4(0.0, 0.0, 0.0, 0.0);
 		return;

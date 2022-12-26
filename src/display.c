@@ -54,6 +54,8 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 	//Draw the sun	
 	if(dayCycleTime > 0.25f && dayCycleTime < 0.75f)
 	{
+		setRayCount(12.0f);
+		setPhase(2.0f);
 		updateActiveShaderWindowSize();	
 		turnOffTexture();
 		setRectColor(255.0f, 255.0f, 0.0f, 255.0f);	
@@ -65,6 +67,8 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 	//Draw the moon
 	if(dayCycleTime < 0.25f || dayCycleTime > 0.75f)
 	{
+		setRayCount(0.0f);
+		setPhase(0.25f);
 		updateActiveShaderWindowSize();	
 		turnOffTexture();
 		setRectColor(255.0f, 255.0f, 255.0f, 255.0f);	
