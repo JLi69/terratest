@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 void initGame(struct World *world, struct Sprite *player)
 {
@@ -205,7 +206,20 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	}
 
 	//Update time in the world
-	world->dayCycle += secondsPerFrame * 1.0f / 60.0f;
+	world->dayCycle += secondsPerFrame * 1.0f / 60.0f * 1.0f / 20.0f;
 	if(world->dayCycle > 1.0f)
 		world->dayCycle = 0.0f;
+
+	//Update clouds
+	for(int i = 0; i < MAX_CLOUD; i++)
+	{
+		world->clouds[i].hitbox.position.x += 16.0f * secondsPerFrame;
+		if(world->clouds[i].hitbox.position.x > 960.0f + world->clouds[i].hitbox.dimensions.w / 2.0f)
+		{
+			float sz = (float)rand() / (float)RAND_MAX * 32.0f + 64.0f;
+			world->clouds[i].hitbox.position.x = -960.0f - world->clouds[i].hitbox.dimensions.w / 2.0f;
+			world->clouds[i].hitbox.position.y = (float)rand() / (float)RAND_MAX * 960.0f;
+			world->clouds[i].hitbox.dimensions.w = world->clouds[i].hitbox.dimensions.h = sz;	
+		}
+	}
 }

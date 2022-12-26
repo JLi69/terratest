@@ -30,6 +30,8 @@
 
 #define SIM_DIST 3000.0f
 
+#define MAX_CLOUD 32
+
 enum SpriteType
 {
 	NONE = 0,
@@ -77,6 +79,7 @@ struct World
 				   //if they are all arranged in a grid pattern
 	struct Liquid* liquidBlocks; //Liquid blocks
 	float dayCycle; //Current time of day in the world
+	struct Sprite clouds[MAX_CLOUD];
 };
 
 struct World generateWorld(

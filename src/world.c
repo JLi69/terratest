@@ -42,7 +42,7 @@ struct World generateWorld(int seed, float amp, int interval)
 	srand(seed);
 
 	struct World world;
-	world.dayCycle = 0.25f;	
+	world.dayCycle = 0.4f;	
 
 	world.solidBlocks = createQuadTree(
 								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
@@ -360,6 +360,16 @@ struct World generateWorld(int seed, float amp, int interval)
 
 	printf("Inserted %d blocks!\n", total);
 	free(caveValues);
+
+	//Insert clouds into the world
+	for(int i = 0; i < MAX_CLOUD; i++)
+	{
+		float sz = (float)rand() / (float)RAND_MAX * 32.0f + 64.0f;
+		world.clouds[i] = createSprite(createRect(
+						(float)rand() / (float)RAND_MAX * 1920.0f - 960.0f,
+						(float)rand() / (float)RAND_MAX * 960.0f,
+						sz, sz));
+	}
 
 	return world;
 }
