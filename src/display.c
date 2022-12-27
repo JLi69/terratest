@@ -68,7 +68,7 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 	if(dayCycleTime < 0.25f || dayCycleTime > 0.75f)
 	{
 		setRayCount(0.0f);
-		setPhase(0.25f);
+		setPhase(0.91f);
 		updateActiveShaderWindowSize();	
 		turnOffTexture();
 		setRectColor(255.0f, 255.0f, 255.0f, 255.0f);	

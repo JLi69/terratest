@@ -22,14 +22,22 @@ void main()
 {
 	float dist = (tc.x - 0.5) * (tc.x - 0.5) + (tc.y - 0.5) * (tc.y - 0.5),
 		  maxDist = pow(0.35 + sin(uRays * atan((tc.y - 0.5) / (tc.x - 0.5))) * 0.05, 2);
-	float phaseDist = (tc.x - 0.5 - uPhase * 0.5 * sqrt(3.0)) * (tc.x - 0.5 - uPhase * 0.5 * sqrt(3.0)) + (tc.y - 0.5 - 0.5 * uPhase) * (tc.y - 0.5 - 0.5 * uPhase);
-	if(tc.y > uLevel || dist >= maxDist || phaseDist < maxDist)
+
+	//Moon phase appearance
+	vec3 sunPos = vec3(-32.0 * cos(uPhase * 2.0 * 3.14159), -32.0 * cos(uPhase * 2.0 * 3.14159), 32.0 * sin(uPhase * 2.0 * 3.14159));
+	vec3 moonVec = normalize(vec3(tc.x - 0.5, tc.y - 0.5, sqrt(0.5 * 0.5 - 2.0 * pow(tc.y - 0.5, 2.0) - 2.0 * pow(tc.x - 0.5, 2.0))));
+	float phaseDotProd = dot(sunPos, normalize(moonVec));
+
+	if(tc.y > uLevel || dist >= maxDist)
 	{
 		color = vec4(0.0, 0.0, 0.0, 0.0);
 		return;
 	}
 
-	color = uColor * uBrightness;
+	if(uRays == 0.0) //is the moon, do moon phases
+		color = uColor * uBrightness * phaseDotProd;
+	else //Probably not the moon, do not do moon phases
+		color = uColor * uBrightness;
 	color.a *= (1.0 - dist / maxDist);
 
 	if(uUseTexture)
