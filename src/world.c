@@ -259,7 +259,8 @@ struct World generateWorld(int seed, float amp, int interval)
 									int vineLength = rand() % (MAX_VINE_LEN - MIN_VINE_LEN + 1) + MIN_VINE_LEN;
 									for(int v = 0; v < vineLength; v++)
 									{
-										if(getBlock(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, world.worldBoundingRect).type != NONE)
+										if(getBlock(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, world.worldBoundingRect).type != NONE &&
+											getBlock(world.blocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, world.worldBoundingRect).type == NONE)
 											continue;
 										setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, VINES, world.worldBoundingRect);	
 									}
@@ -299,6 +300,7 @@ struct World generateWorld(int seed, float amp, int interval)
 			}
 
 			setBlockType(world.blocks, i - WORLD_WIDTH / 2, y, world.blockArea, type, world.worldBoundingRect);
+			setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y, world.blockArea, NONE, world.worldBoundingRect);
 			total++;
 		}	
 	}

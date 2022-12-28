@@ -35,7 +35,9 @@ void drawBlocks(struct Block *blocks,
 	{
 		for(int y = camPos.y / BLOCK_SIZE - viewDistY; y <= camPos.y / BLOCK_SIZE + viewDistY; y++)
 		{
-			if(getBlock(blocks, x, y, maxIndex, boundRect).type == NONE)
+			if(getBlock(blocks, x, y, maxIndex, boundRect).type == NONE ||
+				getBlock(blocks, x, y, maxIndex, boundRect).type == WATER ||
+				getBlock(blocks, x, y, maxIndex, boundRect).type == LAVA)
 				continue;
 
 			if(getBlock(blocks, x, y, maxIndex, boundRect).type != prev)
@@ -56,10 +58,50 @@ void drawBlocks(struct Block *blocks,
 			case HIDDEN: setBrightness(0.0f); break;
 			}
 
-			if(prev == LAVA || prev == WATER)
-				setLevel(getBlock(blocks, x, y, maxIndex, boundRect).mass);
-			else
-				setLevel(1.0f);
+			setRectPos(x * BLOCK_SIZE - camPos.x,
+					   y * BLOCK_SIZE - camPos.y);	
+			drawRect();
+		}
+	}
+
+	setBrightness(1.0f);
+	setTransparency(1.0f);
+}
+
+void drawLiquids(struct Block *blocks,
+				  struct Vector2D camPos,
+				  int viewDistX, int viewDistY,
+				  int maxIndex,
+				  struct BoundingRect boundRect, float brightness)
+{
+	enum BlockType prev = NONE;
+	for(int x = camPos.x / BLOCK_SIZE - viewDistX; x <= camPos.x / BLOCK_SIZE + viewDistX; x++)
+	{
+		for(int y = camPos.y / BLOCK_SIZE - viewDistY; y <= camPos.y / BLOCK_SIZE + viewDistY; y++)
+		{
+			if(getBlock(blocks, x, y, maxIndex, boundRect).type != WATER &&
+				getBlock(blocks, x, y, maxIndex, boundRect).type != LAVA)
+				continue;
+
+			if(getBlock(blocks, x, y, maxIndex, boundRect).type != prev)
+			{	
+				setTexOffset(1.0f / 16.0f * (float)((getBlock(blocks, x, y, maxIndex, boundRect).type - 1) % 16),
+							 1.0f / 16.0f * (float)((getBlock(blocks, x, y, maxIndex, boundRect).type - 1) / 16));
+				prev = getBlock(blocks, x, y, maxIndex, boundRect).type; 	
+				if(prev == WATER) //Transparent water
+					setTransparency(0.7f);
+				else
+					setTransparency(1.0f);
+			}
+
+			switch(getBlock(blocks, x, y, maxIndex, boundRect).visibility)
+			{
+			case REVEALED: setBrightness(brightness); break;
+			case DARK: setBrightness(brightness * 0.2f); break;
+			case HIDDEN: setBrightness(0.0f); break;
+			}
+
+			setLevel(getBlock(blocks, x, y, maxIndex, boundRect).mass);
 			setRectPos(x * BLOCK_SIZE - camPos.x,
 					   y * BLOCK_SIZE - camPos.y);	
 			drawRect();

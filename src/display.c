@@ -115,7 +115,32 @@ void display(struct World world, struct Sprite player)
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
 	drawBlocks(world.backgroundBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 0.6f);	
-	drawBlocks(world.transparentBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);	
+	drawBlocks(world.transparentBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);		
+
+	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+	setTexSize(256.0f, 256.0f);		
+	setTexOffset(0.0f, 0.0f);
+	//Draw solid blocks	
+	bindTexture(textures[1], GL_TEXTURE0);
+	drawBlocks(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);		
+
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+	setTexSize(256.0f, 256.0f);
+	//Highlight block
+	if(!isPaused())
+	{
+		double cursorX, cursorY;
+		getCursorPos(&cursorX, &cursorY);
+
+		//Break block animation	
+		bindTexture(textures[2], GL_TEXTURE0);	
+		setTexOffset(roundf(getBlockBreakTimer() * 4.0f) / 16.0f + 1.0f / 16.0f, 0.0f);
+		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+		setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
+		setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+		drawRect();
+	}	
 
 	bindTexture(textures[0], GL_TEXTURE0);
 	//Draw player	
@@ -128,17 +153,14 @@ void display(struct World world, struct Sprite player)
 	drawRect();	
 	turnOffFlip();
 
+	//Draw liquid blocks	
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
 	setTexOffset(0.0f, 0.0f);
-	//Draw liquid blocks and solid blocks	
 	bindTexture(textures[1], GL_TEXTURE0);
-	drawBlocks(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);		
+	drawLiquids(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);
 
-	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
-	setTexSize(256.0f, 256.0f);
-	//Highlight block
 	if(!isPaused())
 	{
 		double cursorX, cursorY;
@@ -159,14 +181,8 @@ void display(struct World world, struct Sprite player)
 		setTexOffset(0.0f, 0.0f);
 		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
-		drawRect();	
-
-		setTexOffset(roundf(getBlockBreakTimer() * 4.0f) / 16.0f + 1.0f / 16.0f, 0.0f);
-		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
-		setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
-		setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
 		drawRect();
-	}	
+	}
 }
 
 void cleanup(void)

@@ -109,6 +109,10 @@ void drawBlocks(struct Block *blocks,
 				  struct Vector2D camPos,
 				  int viewDistX, int viewDistY,
 				  int maxIndex, struct BoundingRect boundRect, float brightness);
+void drawLiquids(struct Block *blocks,
+				  struct Vector2D camPos,
+				  int viewDistX, int viewDistY,
+				  int maxIndex, struct BoundingRect boundRect, float brightness);
 //Pass in X and Y as world coordinates, not grid coordinates
 struct Block getBlock(struct Block *blocks,
 						int x, int y,
