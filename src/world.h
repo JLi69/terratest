@@ -57,6 +57,13 @@ enum BlockType
 	LAVA
 };
 
+enum Visibility
+{
+	REVEALED,
+	DARK,
+	HIDDEN
+};
+
 struct BoundingRect
 {
 	int minX, maxX, minY, maxY;
@@ -67,6 +74,7 @@ struct Block
 	enum BlockType type;
 	float mass; //a value between 0.0 and 1.0 though if it is under more
 				//water then it could be slightly higher than 1.0
+	enum Visibility visibility;
 };
 
 struct World
@@ -87,6 +95,11 @@ struct World generateWorld(
 	int interval
 	);
 
+//Run this function once
+void revealVisible(struct World *world);
+//Reveal neighbors of (x, y) along with (x, y)
+void revealNeighbors(struct World *world, int x, int y);
+
 //Liquid functions
 void updateBlocks(struct Block *blocks,
 				  struct Vector2D camPos,
@@ -95,7 +108,7 @@ void updateBlocks(struct Block *blocks,
 void drawBlocks(struct Block *blocks,
 				  struct Vector2D camPos,
 				  int viewDistX, int viewDistY,
-				  int maxIndex, struct BoundingRect boundRect);
+				  int maxIndex, struct BoundingRect boundRect, float brightness);
 //Pass in X and Y as world coordinates, not grid coordinates
 struct Block getBlock(struct Block *blocks,
 						int x, int y,
@@ -108,6 +121,11 @@ void setBlockMass(struct Block *blocks,
 				   int x, int y,
 				   int maxIndex,
 				   float mass, struct BoundingRect boundRect);
+void setBlockVisibility(struct Block *blocks, 
+				   int x, int y,
+				   int maxIndex,
+				   enum Visibility visibility,
+				   struct BoundingRect boundRect);
 struct Block createBlock(enum BlockType type, float mass);
 
 int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *blocks,

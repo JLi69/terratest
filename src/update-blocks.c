@@ -28,7 +28,7 @@ void drawBlocks(struct Block *blocks,
 				  struct Vector2D camPos,
 				  int viewDistX, int viewDistY,
 				  int maxIndex,
-				  struct BoundingRect boundRect)
+				  struct BoundingRect boundRect, float brightness)
 {
 	enum BlockType prev = NONE;
 	for(int x = camPos.x / BLOCK_SIZE - viewDistX; x <= camPos.x / BLOCK_SIZE + viewDistX; x++)
@@ -49,6 +49,13 @@ void drawBlocks(struct Block *blocks,
 					setTransparency(1.0f);
 			}
 
+			switch(getBlock(blocks, x, y, maxIndex, boundRect).visibility)
+			{
+			case REVEALED: setBrightness(brightness); break;
+			case DARK: setBrightness(brightness * 0.2f); break;
+			case HIDDEN: setBrightness(0.0f); break;
+			}
+
 			if(prev == LAVA || prev == WATER)
 				setLevel(getBlock(blocks, x, y, maxIndex, boundRect).mass);
 			else
@@ -60,6 +67,7 @@ void drawBlocks(struct Block *blocks,
 	}
 
 	setLevel(1.0f);
+	setBrightness(1.0f);
 	setTransparency(1.0f);
 }
 
@@ -282,7 +290,7 @@ void setBlockType(struct Block *blocks,
 	blocks[gridY * getWorldGridWidth(boundRect) + gridX].type = type;
 }
 
-void setBlockMass(struct Block *liquids, 
+void setBlockMass(struct Block *blocks, 
 				   int x, int y,
 				   int maxIndex,
 				   float mass,
@@ -298,7 +306,26 @@ void setBlockMass(struct Block *liquids,
 		return;
 	if(gridY * getWorldGridWidth(boundRect) + gridX >= maxIndex || gridY * getWorldGridWidth(boundRect) + gridX < 0)
 		return;
-	liquids[gridY * getWorldGridWidth(boundRect) + gridX].mass = mass;
+	blocks[gridY * getWorldGridWidth(boundRect) + gridX].mass = mass;
+}
+
+void setBlockVisibility(struct Block *blocks, 
+				   int x, int y,
+				   int maxIndex,
+				   enum Visibility visibility,
+				   struct BoundingRect boundRect)
+{
+	//Translate x and y to be grid coordinates
+	int gridX = translateWorldXToGridX(x, boundRect.minX);
+	int gridY = translateWorldYToGridY(y, boundRect.minY);
+	if(x < boundRect.minX ||
+	   x > boundRect.maxX ||
+	   y < boundRect.minY ||
+	   y > boundRect.maxY)
+		return;
+	if(gridY * getWorldGridWidth(boundRect) + gridX >= maxIndex || gridY * getWorldGridWidth(boundRect) + gridX < 0)
+		return;
+	blocks[gridY * getWorldGridWidth(boundRect) + gridX].visibility = visibility;
 }
 
 int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *blocks,
@@ -330,5 +357,6 @@ struct Block createBlock(enum BlockType type, float mass)
 	struct Block block;
 	block.type = type;
 	block.mass = mass;
+	block.visibility = HIDDEN;
 	return block;
 }

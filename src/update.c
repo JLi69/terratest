@@ -12,6 +12,7 @@ void initGame(struct World *world, struct Sprite *player)
 {
 	const float height = 128.0f;
 	*world = generateWorld(time(0), height, 256.0f);
+	revealVisible(world);
 
 	*player = createSprite(createRect(0.0f, 32.0f * 4.0f * height, 32.0f, 64.0f));
 	player->animationState = IDLE;
@@ -181,9 +182,14 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		{
 			if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
 				setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
-			else if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
-					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA)
-				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+			else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
+					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
+					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
+					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
+			{	
+				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);				
+				revealNeighbors(world, cursorX, cursorY);	
+			}	
 		}	
 	}
 

@@ -261,7 +261,7 @@ struct World generateWorld(int seed, float amp, int interval)
 									{
 										if(getBlock(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, world.worldBoundingRect).type != NONE)
 											continue;
-										setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, VINES, world.worldBoundingRect);
+										setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, VINES, world.worldBoundingRect);	
 									}
 								}
 							}
@@ -274,11 +274,11 @@ struct World generateWorld(int seed, float amp, int interval)
 				}	
 				else if(rand() % FLOWER_PROB == 0)
 				{	
-					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, FLOWER, world.worldBoundingRect);	
+					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, FLOWER, world.worldBoundingRect);		
 				}
 				else if(rand() % TALL_GRASS_PROB == 0)
 				{
-					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, TALL_GRASS, world.worldBoundingRect);	
+					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, TALL_GRASS, world.worldBoundingRect);
 				}
 			}
 

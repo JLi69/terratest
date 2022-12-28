@@ -114,10 +114,8 @@ void display(struct World world, struct Sprite player)
 	//Draw blocks
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
-	setBrightness(0.6f);
-	drawBlocks(world.backgroundBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect);	
-	setBrightness(1.0f);
-	drawBlocks(world.transparentBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect);	
+	drawBlocks(world.backgroundBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 0.6f);	
+	drawBlocks(world.transparentBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);	
 
 	bindTexture(textures[0], GL_TEXTURE0);
 	//Draw player	
@@ -136,7 +134,7 @@ void display(struct World world, struct Sprite player)
 	setTexOffset(0.0f, 0.0f);
 	//Draw liquid blocks and solid blocks	
 	bindTexture(textures[1], GL_TEXTURE0);
-	drawBlocks(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect);		
+	drawBlocks(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);		
 
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);
