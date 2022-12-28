@@ -1,6 +1,7 @@
 #include "world.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "draw.h"
 
 #define MAX_LIQUID 1.0f
@@ -401,4 +402,14 @@ struct Block createBlock(enum BlockType type, float mass)
 	block.mass = mass;
 	block.visibility = HIDDEN;
 	return block;
+}
+
+int touching(struct World world, int x, int y, enum BlockType type)
+{
+	return getBlock(world.blocks, x, y + 1, world.blockArea, world.worldBoundingRect).type == type ||
+		   getBlock(world.blocks, (int)roundf(x + 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type ||
+		   getBlock(world.blocks, (int)roundf(x - 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type ||
+		   getBlock(world.transparentBlocks, x, y + 1, world.blockArea, world.worldBoundingRect).type == type ||
+		   getBlock(world.transparentBlocks, (int)roundf(x + 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type ||
+		   getBlock(world.transparentBlocks, (int)roundf(x - 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type;
 }

@@ -29,12 +29,26 @@ void initGame(struct World *world, struct Sprite *player)
 
 void updateGameobjects(struct World *world, struct Sprite *player, float secondsPerFrame)
 {
+	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
 	static float blockUpdateTimer = 0.0f;
 	blockUpdateTimer += secondsPerFrame;
 
 	struct Sprite collided;	
 
 	//printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
+
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER))
+	{
+		player->vel.x *= 0.4f;
+		if(player->vel.y > 0.0f)
+			player->vel.y *= 0.6f;
+	}
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA))
+	{	
+		player->vel.x *= 0.2f;
+		if(player->vel.y > 0.0f)
+			player->vel.y *= 0.4f;	
+	}
 
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
@@ -131,12 +145,20 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		if(player->animationState == WALKING)
 			player->animationState = IDLE;
 	}
+	
+	//Check if player can jump
+	if(!player->falling || 
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER) || 
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES))
+		player->canJump = 1;
+	else
+		player->canJump = 0;
+
 	//Jump
-	if(!player->falling && isPressed(GLFW_KEY_SPACE))
+	if(player->canJump && isPressed(GLFW_KEY_SPACE))
 		player->vel.y = JUMP_SPEED;
 
 	//Update liquid blocks	
-	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
 	if(blockUpdateTimer > 0.03f)
 	{
 		updateBlocks(world->blocks, camPos, blockUpdateTimer, 64, world->blockArea, world->worldBoundingRect);

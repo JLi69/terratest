@@ -135,5 +135,9 @@ struct Block createBlock(enum BlockType type, float mass);
 int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *blocks,
 						 int maxIndex, struct BoundingRect boundRect, struct Sprite *collided);
 
+//returns 1 if the object is touching a block of certain type
+//returns 0 if not
+int touching(struct World world, int x, int y, enum BlockType type);
+
 #endif
 #define WORLD_H

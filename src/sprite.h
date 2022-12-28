@@ -32,7 +32,7 @@ struct Sprite
 {
 	struct Rectangle hitbox;
 	struct Vector2D vel;
-	short int falling, canMove, flipped, animating;
+	short int falling, canMove, flipped, animating, canJump;
 	int animationFrame;
 	float timeSinceLastUpdate;
 
