@@ -160,7 +160,13 @@ void display(struct World world, struct Sprite player)
 		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
 		drawRect();	
-	}
+
+		setTexOffset(roundf(getBlockBreakTimer() * 4.0f) / 16.0f + 1.0f / 16.0f, 0.0f);
+		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+		setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
+		setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+		drawRect();
+	}	
 }
 
 void cleanup(void)

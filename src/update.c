@@ -8,6 +8,8 @@
 #include <time.h>
 #include <stdlib.h>
 
+static float breakBlockTimer = 0.0f;
+
 void initGame(struct World *world, struct Sprite *player)
 {
 	const float height = 128.0f;
@@ -32,7 +34,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 
 	struct Sprite collided;	
 
-	printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
+	//printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
 
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
@@ -172,26 +174,50 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		getCursorPos(&cursorX, &cursorY);
 		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE);	
 		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE);
-
-		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
-		{
-			if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
-				setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
-		}
+	
+		if((isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)) &&
+			getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE &&
+			getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE)
+			breakBlockTimer += secondsPerFrame;
+		else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE &&
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE) &&
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
+			breakBlockTimer += secondsPerFrame;
+		else if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE &&
+				getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE)
+			breakBlockTimer += secondsPerFrame;
 		else
+			breakBlockTimer = 0.0f;
+
+		if(breakBlockTimer > 1.0f)
 		{
-			if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
-				setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
-			else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
-					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
-					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
-					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
-			{	
-				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);				
-				revealNeighbors(world, cursorX, cursorY);	
-			}	
-		}	
+			if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
+			{
+				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
+					setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+			}
+			else
+			{
+				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
+					setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+				else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
+						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
+						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
+						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
+				{	
+					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
+					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);				
+					revealNeighbors(world, cursorX, cursorY);	
+				}	
+			}
+			
+			breakBlockTimer = 0.0f;
+		}
 	}
+	else
+		breakBlockTimer = 0.0f;
 
 	//Update time in the world
 	world->dayCycle += secondsPerFrame * 1.0f / 60.0f * 1.0f / 20.0f;
@@ -210,4 +236,9 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 			world->clouds[i].hitbox.dimensions.w = world->clouds[i].hitbox.dimensions.h = sz;	
 		}
 	}
+}
+
+float getBlockBreakTimer()
+{
+	return breakBlockTimer;
 }

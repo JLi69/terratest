@@ -23,6 +23,8 @@ void initGL(void);
 //Initializes game objects
 void initGame(struct World *world, struct Sprite *player);
 
+float getBlockBreakTimer();
+
 void display(struct World world, struct Sprite player);
 void updateGameobjects(struct World *world, struct Sprite *player, float secondsPerFrame);
 void loop(void);
