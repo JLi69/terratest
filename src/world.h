@@ -2,7 +2,7 @@
 //Don't have the entire world loaded into memory
 
 #ifndef WORLD_H
-#include "quadtree.h"
+#include "sprite.h"
 
 #define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
@@ -32,7 +32,7 @@
 
 #define MAX_CLOUD 32
 
-enum SpriteType
+enum BlockType 
 {
 	NONE = 0,
 	GRASS,
@@ -52,34 +52,33 @@ enum SpriteType
 	GOLD,
 	RAINBOW_ORE,
 	MAGMA_STONE,
-	SAND
-};
-
-enum LiquidType
-{
-	EMPTY_LIQUID = 0,
-	SOLID,
+	SAND,
 	WATER,
 	LAVA
 };
 
-struct Liquid
+struct BoundingRect
 {
-	enum LiquidType type;
+	int minX, maxX, minY, maxY;
+};
+
+struct Block 
+{
+	enum BlockType type;
 	float mass; //a value between 0.0 and 1.0 though if it is under more
 				//water then it could be slightly higher than 1.0
 };
 
 struct World
 {
-	struct SpriteQuadTree *solidBlocks, //Blocks that can't be walked through
-						  *transparentBlocks, //Blocks that can be walked through
-						  *backgroundBlocks;	
 	int blockArea; //Maximum number of blocks that can fit into the world
 				   //if they are all arranged in a grid pattern
-	struct Liquid* liquidBlocks; //Liquid blocks
+	struct Block *blocks, //Solid blocks and liquid blocks 
+				 *transparentBlocks, //Blocks that can be walked through
+				 *backgroundBlocks; 
 	float dayCycle; //Current time of day in the world
 	struct Sprite clouds[MAX_CLOUD];
+	struct BoundingRect worldBoundingRect;
 };
 
 struct World generateWorld(
@@ -87,36 +86,32 @@ struct World generateWorld(
 	float amp,
 	int interval
 	);
-void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos);
 
 //Liquid functions
-void updateLiquid(struct Liquid *liquids,
-				  struct SpriteQuadTree *solidBlocks,
+void updateBlocks(struct Block *blocks,
 				  struct Vector2D camPos,
 				  float timePassed, int updateDist,
-				  int maxIndex);
-void drawLiquid(struct Liquid *liquids,
+				  int maxIndex, struct BoundingRect boundRect);
+void drawBlocks(struct Block *blocks,
 				  struct Vector2D camPos,
 				  int viewDistX, int viewDistY,
-				  struct SpriteQuadTree *world, int maxIndex);
+				  int maxIndex, struct BoundingRect boundRect);
 //Pass in X and Y as world coordinates, not grid coordinates
-struct Liquid getLiquid(struct Liquid *liquids,
-						int x, int y, struct SpriteQuadTree *world,
-						int maxIndex);
-void setLiquidType(struct Liquid *liquids,
-				   int x, int y, struct SpriteQuadTree *world,
+struct Block getBlock(struct Block *blocks,
+						int x, int y,
+						int maxIndex, struct BoundingRect boundRect);
+void setBlockType(struct Block *blocks,
+				   int x, int y,
 				   int maxIndex,
-				   enum LiquidType type);
-void setLiquidMass(struct Liquid *liquids, 
-				   int x, int y, struct SpriteQuadTree *world,
+				   enum BlockType type, struct BoundingRect boundRect);
+void setBlockMass(struct Block *blocks, 
+				   int x, int y,
 				   int maxIndex,
-				   float mass);
-struct Liquid createLiquid(enum LiquidType type, float mass);
+				   float mass, struct BoundingRect boundRect);
+struct Block createBlock(enum BlockType type, float mass);
 
-#ifdef DEV_VERSION
-void drawQTreeOutline(struct SpriteQuadTree *tree,
-					  float x, float y, float width, float height);
-#endif
+int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *blocks,
+						 int maxIndex, struct BoundingRect boundRect, struct Sprite *collided);
 
 #endif
 #define WORLD_H

@@ -27,8 +27,7 @@ void initGL(void)
 	textures[0] = loadTexture("res/textures/player.png");
 	textures[1] = loadTexture("res/textures/tiles.png");	
 	textures[2] = loadTexture("res/textures/icons.png");
-	textures[3] = loadTexture("res/textures/liquids.png");	
-	textures[4] = loadTexture("res/textures/sky.png");
+	textures[3] = loadTexture("res/textures/sky.png");
 
 	useShader(&shaders[0]);	
 	bindBuffers(buffers[0]);
@@ -82,7 +81,7 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 	turnOnTexture();
 
 	//Draw clouds		
-	bindTexture(textures[4], GL_TEXTURE0);	
+	bindTexture(textures[3], GL_TEXTURE0);	
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
 	setTexOffset(0.0f, 0.0f);
@@ -116,9 +115,9 @@ void display(struct World world, struct Sprite player)
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
 	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
 	setBrightness(0.6f);
-	drawSpriteTree(world.backgroundBlocks, camPos);	
+	drawBlocks(world.backgroundBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect);	
 	setBrightness(1.0f);
-	drawSpriteTree(world.transparentBlocks, camPos);		
+	drawBlocks(world.transparentBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect);	
 
 	bindTexture(textures[0], GL_TEXTURE0);
 	//Draw player	
@@ -135,13 +134,9 @@ void display(struct World world, struct Sprite player)
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
 	setTexOffset(0.0f, 0.0f);
-	//Draw liquid blocks			
-	//Draw blocks	
+	//Draw liquid blocks and solid blocks	
 	bindTexture(textures[1], GL_TEXTURE0);
-	drawSpriteTree(world.solidBlocks, camPos);		
-	//Draw liquid blocks			
-	bindTexture(textures[3], GL_TEXTURE0);
-	drawLiquid(world.liquidBlocks, camPos, 32, 20, world.solidBlocks, world.blockArea);
+	drawBlocks(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect);		
 
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);
@@ -168,18 +163,6 @@ void display(struct World world, struct Sprite player)
 		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
 		drawRect();	
 	}
-
-	//Display quadtree
-#ifdef DEV_VERSION
-	if(isPressed(GLFW_KEY_F2))
-	{
-		useShader(&shaders[1]);	
-		setRectColor(0.0f, 255.0f, 0.0f, 255.0f);
-		turnOffTexture();
-		updateActiveShaderWindowSize();
-		drawQTreeOutline(world.solidBlocks, 0.0f, 0.0f, 512.0f, 512.0f);
-	}
-#endif
 }
 
 void cleanup(void)

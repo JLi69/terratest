@@ -13,49 +13,50 @@ void initGame(struct World *world, struct Sprite *player)
 	const float height = 128.0f;
 	*world = generateWorld(time(0), height, 256.0f);
 
-	*player = createSprite(createRect(0.0f, 32.0f * 1.5f * height, 32.0f, 64.0f));
+	*player = createSprite(createRect(0.0f, 32.0f * 4.0f * height, 32.0f, 64.0f));
 	player->animationState = IDLE;
 	player->animating = 1;
 
-	struct Sprite* collision;
-	while(collisionSearch(world->solidBlocks, *player, &collision))
-		player->hitbox.position.y += 32.0f;
+	struct Sprite collision;
+	while(!blockCollisionSearch(*player, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
+		player->hitbox.position.y -= 32.0f;
+	player->hitbox.position.y += 32.0f;
 	player->canMove = 1;
 }
 
 void updateGameobjects(struct World *world, struct Sprite *player, float secondsPerFrame)
 {
-	static float liquidUpdateTimer = 0.0f;
-	liquidUpdateTimer += secondsPerFrame;
+	static float blockUpdateTimer = 0.0f;
+	blockUpdateTimer += secondsPerFrame;
 
-	struct Sprite* collided = (void*)0;	
+	struct Sprite collided;	
 
-	//printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
+	printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
 
 	//Move player in the x direction
 	updateSpriteX(player, secondsPerFrame);
 	//Check for collision
-	if(collisionSearch(world->solidBlocks, *player, &collided))
+	if(blockCollisionSearch(*player, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{				
 		//Uncollide the player	
 		if(player->vel.x != 0.0f)
 		{
 			if(player->hitbox.position.x >=
-			   collided->hitbox.position.x + collided->hitbox.dimensions.w / 2.0f)
+			   collided.hitbox.position.x + collided.hitbox.dimensions.w / 2.0f)
 			{
 				player->vel.x = 0.0f;
 				player->hitbox.position.x =
-					collided->hitbox.position.x +
-					collided->hitbox.dimensions.w / 2.0f +
+					collided.hitbox.position.x +
+					collided.hitbox.dimensions.w / 2.0f +
 					player->hitbox.dimensions.w / 2.0f;	
 			}	
 			else if(player->hitbox.position.x <= 
-					collided->hitbox.position.x - collided->hitbox.dimensions.x / 2.0f)
+					collided.hitbox.position.x - collided.hitbox.dimensions.x / 2.0f)
 			{
 				player->vel.x = 0.0f;
 				player->hitbox.position.x =
-					collided->hitbox.position.x -
-					collided->hitbox.dimensions.w / 2.0f -
+					collided.hitbox.position.x -
+					collided.hitbox.dimensions.w / 2.0f -
 					player->hitbox.dimensions.w / 2.0f;	
 			}	
 		}
@@ -64,30 +65,30 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	//Move player in y direction
 	updateSpriteY(player, secondsPerFrame);	
 	//Check for collision	
-	if(collisionSearch(world->solidBlocks, *player, &collided))
+	if(blockCollisionSearch(*player, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{		
 		//Uncollide the player
 		if(player->vel.y != 0.0f)
 		{
 			if(player->hitbox.position.y >=
-			   collided->hitbox.position.y + collided->hitbox.dimensions.h / 2.0f)
+			   collided.hitbox.position.y + collided.hitbox.dimensions.h / 2.0f)
 			{
 				player->vel.y = 0.0f;
 				player->hitbox.position.y =
-					collided->hitbox.position.y +
-					collided->hitbox.dimensions.h / 2.0f +
+					collided.hitbox.position.y +
+					collided.hitbox.dimensions.h / 2.0f +
 					player->hitbox.dimensions.h / 2.0f;	
 				//The player is supported by a block	
 				player->falling = 0;	
 			}	
 			else if(player->hitbox.position.y <= 
-					collided->hitbox.position.y - collided->hitbox.dimensions.h / 2.0f)
+					collided.hitbox.position.y - collided.hitbox.dimensions.h / 2.0f)
 			{
 				player->falling = 1;	
 				player->vel.y = -0.5f;
 				player->hitbox.position.y =
-					collided->hitbox.position.y -
-					collided->hitbox.dimensions.h / 2.0f -
+					collided.hitbox.position.y -
+					collided.hitbox.dimensions.h / 2.0f -
 					player->hitbox.dimensions.h / 2.0f;	
 			}	
 		}	
@@ -101,8 +102,8 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		struct Sprite temp = createSprite(
 							 createRect(player->hitbox.position.x, player->hitbox.position.y - 0.01f,
 										player->hitbox.dimensions.w, player->hitbox.dimensions.h));
-		struct Sprite* tempCollison;	
-		if(collisionSearch(world->solidBlocks, temp, &tempCollison))
+		struct Sprite tempCollison;	
+		if(blockCollisionSearch(temp, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &tempCollison))
 			player->animationState = IDLE;
 	}
 
@@ -133,10 +134,10 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 
 	//Update liquid blocks	
 	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
-	if(liquidUpdateTimer > 0.03f)
+	if(blockUpdateTimer > 0.03f)
 	{
-		updateLiquid(world->liquidBlocks, world->solidBlocks, camPos, secondsPerFrame, 64, world->blockArea);
-		liquidUpdateTimer = 0.0f;	
+		updateBlocks(world->blocks, camPos, blockUpdateTimer, 64, world->blockArea, world->worldBoundingRect);
+		blockUpdateTimer = 0.0f;	
 	}
 
 	//Place blocks
@@ -144,65 +145,46 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	{
 		double cursorX, cursorY;
 		getCursorPos(&cursorX, &cursorY);	
+		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE);	
+		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE);	
 
-		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE) * BLOCK_SIZE;	
-		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;	
-
-		struct Sprite temp = createSpriteWithType(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE), BRICK);
-		struct Sprite* tempCollision;	
-	
+		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));
+		
 		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 		{
-			collisionSearch(world->backgroundBlocks, temp, &tempCollision);
-			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE && !collisionSearch(world->solidBlocks, temp, &tempCollision))
-				insert(world->backgroundBlocks, temp);		
-		}
-		else if(!colliding(temp.hitbox, player->hitbox) && !collisionSearch(world->solidBlocks, temp, &tempCollision))
+			//TODO: Add inventory so that player can place blocks other than brick
+			if(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
+				setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, BRICK, world->worldBoundingRect);
+		}	
+		else if(!colliding(temp.hitbox, player->hitbox) &&
+				(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA))
 		{
-			setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
-			setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, SOLID);
-			insert(world->solidBlocks, temp);	
+			setBlockType(world->blocks, cursorX, cursorY, world->blockArea, BRICK, world->worldBoundingRect);	
 		}
 	}
 	//Destroy blocks
-	else if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		double cursorX, cursorY;
 		getCursorPos(&cursorX, &cursorY);
-		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE) * BLOCK_SIZE;	
-		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE) * BLOCK_SIZE;	
+		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE);	
+		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE);
 
-		struct Sprite selected = createSprite(createRect(cursorX, cursorY, BLOCK_SIZE, BLOCK_SIZE));
-		struct Sprite* tempCollision = NULL;
-		
-		//Delete solid block
 		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 		{
-			collisionSearch(world->backgroundBlocks, selected, &tempCollision);
-			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE && !collisionSearch(world->solidBlocks, selected, &tempCollision))
-				deleteSprite(world->backgroundBlocks, selected);	
+			if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
+				setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
 		}
 		else
 		{
-			collisionSearch(world->solidBlocks, selected, &tempCollision);
-			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
-			{
-				setLiquidMass(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, 0.0f);
-				setLiquidType(world->liquidBlocks, cursorX / BLOCK_SIZE, cursorY / BLOCK_SIZE, world->solidBlocks, world->blockArea, EMPTY_LIQUID);
-				deleteSprite(world->solidBlocks, selected);	
-			}
-		}
-
-		//Delete transparent block
-		if(tempCollision == NULL) //Only delete if you haven't already broken a block already
-								  //TODO: Add cooldown for breaking blocks
-		{
-			collisionSearch(world->transparentBlocks, selected, &tempCollision);
-			if(tempCollision != NULL && tempCollision->type != INDESTRUCTABLE)
-			{
-				deleteSprite(world->transparentBlocks, selected);
-			}
-		}
+			if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
+				setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+			else if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
+					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA)
+				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+		}	
 	}
 
 	//Update time in the world

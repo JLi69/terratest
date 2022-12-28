@@ -11,28 +11,30 @@ float interpolate(float a, float b, float weight)
 	return (b - a) * weight + a;
 }
 
-void floodFill(int x, int y, int maxY, enum LiquidType liquid,
-			   struct Liquid *liquidBlocks, 
-			   struct SpriteQuadTree *world,
-			   int worldArea, float amp, int depth)
+void floodFill(int x, int y, int maxY, enum BlockType type,
+			   struct Block *blocks, 
+			   int worldArea, int depth, struct BoundingRect boundRect)
 {
-	if(depth > 32000)
+	if(depth > 16000)
 		return;
 
-	if(x < world->botLeftCorner.x / BLOCK_SIZE + 1 ||
-	   x > world->topRightCorner.x / BLOCK_SIZE - 1)
-		return;
-	if(y > maxY || y < world->botLeftCorner.y / BLOCK_SIZE)
-		return;
-	if(getLiquid(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea).type != EMPTY_LIQUID)
-		return;
-	setLiquidType(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea, liquid);
-	setLiquidMass(liquidBlocks, x, y - (int)(amp / 2.0f), world, worldArea, 1.0f);
+	//printf("%d %d\n", x, y);
 
-	floodFill(x - 1, y, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
-	floodFill(x + 1, y, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
-	floodFill(x, y - 1, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
-	floodFill(x, y + 1, maxY, liquid, liquidBlocks, world, worldArea, amp, depth + 1);
+	if(x >= boundRect.maxX + 1 ||
+	   x <= boundRect.minX - 1)
+		return;
+	if(y > maxY || y <= boundRect.minY)
+		return;
+	if(getBlock(blocks, x, y, worldArea, boundRect).type != NONE)
+		return;
+
+	setBlockType(blocks, x, y, worldArea, type, boundRect);
+	setBlockMass(blocks, x, y, worldArea, 1.0f, boundRect);
+
+	floodFill(x - 1, y, maxY, type, blocks, worldArea, depth + 1, boundRect);
+	floodFill(x + 1, y, maxY, type, blocks, worldArea, depth + 1, boundRect);
+	floodFill(x, y - 1, maxY, type, blocks, worldArea, depth + 1, boundRect);
+	floodFill(x, y + 1, maxY, type, blocks, worldArea, depth + 1, boundRect);
 }
 
 struct World generateWorld(int seed, float amp, int interval)
@@ -42,23 +44,23 @@ struct World generateWorld(int seed, float amp, int interval)
 	srand(seed);
 
 	struct World world;
+
+	world.worldBoundingRect.minX = -WORLD_WIDTH / 2;
+	world.worldBoundingRect.maxX = WORLD_WIDTH / 2;
+	world.worldBoundingRect.minY = -4.0f * amp;
+	world.worldBoundingRect.maxY = 4.0f * amp;
+	printf("World bounds: [x: %d %d, y: %d %d]\n", world.worldBoundingRect.minX, world.worldBoundingRect.maxX, world.worldBoundingRect.minY, world.worldBoundingRect.maxY);
+
+	world.blockArea = WORLD_WIDTH * 8 * (int)amp;
+
 	world.dayCycle = 0.4f;	
 
-	world.solidBlocks = createQuadTree(
-								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
-								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
-	world.backgroundBlocks = createQuadTree(
-								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
-								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
-	world.transparentBlocks = createQuadTree(
-								  createPoint(-WORLD_WIDTH * BLOCK_SIZE, -4.0f * amp * BLOCK_SIZE),
-								  createPoint(WORLD_WIDTH * BLOCK_SIZE, 4.0f * amp * BLOCK_SIZE));
-
-	world.blockArea = WORLD_WIDTH * 2 * 8 * (int)amp;
-	world.liquidBlocks = (struct Liquid*)malloc(sizeof(struct Liquid) * world.blockArea);
+	world.blocks = (struct Block*)malloc(sizeof(struct Block) * world.blockArea);
+	world.backgroundBlocks = (struct Block*)malloc(sizeof(struct Block) * world.blockArea); 
+	world.transparentBlocks = (struct Block*)malloc(sizeof(struct Block) * world.blockArea);
 	//Set all liquid blocks as empty
 	for(int i = 0; i < world.blockArea; i++)
-		world.liquidBlocks[i] = createLiquid(EMPTY_LIQUID, 0.0f); //Fill world with empty liquid
+		world.blocks[i] = world.backgroundBlocks[i] = world.transparentBlocks[i] = createBlock(NONE, 0.0f); //Fill world with empty blocks 
 
 	float worldHeight[WORLD_WIDTH];
 	struct Vector2D randVecs1[WORLD_WIDTH + 1],
@@ -172,7 +174,7 @@ struct World generateWorld(int seed, float amp, int interval)
 		if(canQuit())
 			exit(EXIT_SUCCESS);
 		//Loading bar
-		if(i % 128 == 0)	
+		if(i % 512 == 0)	
 		{
 			clear();
 			updateActiveShaderWindowSize();
@@ -190,17 +192,13 @@ struct World generateWorld(int seed, float amp, int interval)
 
 		for(float y = -32.0f; y <= (worldHeight[i]); y += 1.0f)
 		{
-			struct Sprite tempBlock = createSpriteWithType(createRect(
-														 (float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
-														 y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f,
-														 BLOCK_SIZE, BLOCK_SIZE), STONE);
-
+			enum BlockType type = STONE;
 			//Insert background blocks	
 			if(y + 1.0f > worldHeight[i] && y <= WATER_LEVEL)
-				tempBlock.type = SAND;	
+				type = SAND;	
 			else if(y + 7.0f > worldHeight[i])
-				tempBlock.type = DIRT;
-			insert(world.backgroundBlocks, tempBlock);
+				type = DIRT;
+			setBlockType(world.backgroundBlocks, i - WORLD_WIDTH / 2, y, world.blockArea, type, world.worldBoundingRect);
 
 			//Caves get bigger the deeper down you go
 			if(y > 0 && caveValues[i + (int)y * WORLD_WIDTH] <
@@ -209,53 +207,41 @@ struct World generateWorld(int seed, float amp, int interval)
 				//Place lava into the world
 				if(y < 16.0f)
 				{
-					setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
-								  world.blockArea, LAVA);
-					setLiquidMass(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
-								  world.blockArea, 1.0f);	
+					setBlockType(world.blocks, i - WORLD_WIDTH / 2, y,
+								  world.blockArea, LAVA, world.worldBoundingRect);
+					setBlockMass(world.blocks, i - WORLD_WIDTH / 2, y,
+								  world.blockArea, 1.0f, world.worldBoundingRect);	
 				}
 				continue;
 			}
 
 			if(y + 1.0f > worldHeight[i])
 			{	
-				tempBlock.type = GRASS;
+				type = GRASS;
 				if(y <= WATER_LEVEL)
 				{
-					tempBlock.type = SAND;	
+					type = SAND;	
 				}
 			}
 			
 			//Bottom of world
 			if((y < 0.0f) || (y <= 4.0f && (float)rand() / (float)RAND_MAX <= 1.0f / sqrtf(y + 1.0f)))
-				tempBlock.type = INDESTRUCTABLE;
+				type = INDESTRUCTABLE;
 
 			//Place trees
-			if(tempBlock.type == GRASS)
+			if(type == GRASS)
 			{	
 
 				if(rand() % TREE_PROB == 0)
-				{
-					struct Sprite treeBlock = createSpriteWithType(
-													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
-													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
-													BLOCK_SIZE, BLOCK_SIZE), STUMP);
-					struct Sprite* tempCollision;
-					if(collisionSearch(world.transparentBlocks, treeBlock, &tempCollision))
-						deleteSprite(world.transparentBlocks, *tempCollision);	
-					insert(world.transparentBlocks, treeBlock);
+				{	
+					struct Sprite* tempCollision;	
 
 					int height = TREE_MIN_HEIGHT + rand() % (TREE_MAX_HEIGHT - TREE_MIN_HEIGHT + 1);
-					treeBlock.type = LOG;	
-					for(int j = 0; j < height; j++)
+					for(int j = 1; j < height; j++)
 					{
-						treeBlock.hitbox.position.y += BLOCK_SIZE;
-						struct Sprite* collision;	
-						if(collisionSearch(world.transparentBlocks, treeBlock, &collision))	
-							deleteSprite(world.transparentBlocks, *collision);	
-						
-						insert(world.transparentBlocks, treeBlock);
+						setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + j, world.blockArea, LOG, world.worldBoundingRect);
 					}
+					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, STUMP, world.worldBoundingRect);
 
 					struct Sprite leafBlock;
 					int radius = sqrt(height * 3) > 6 ? 6 : sqrt(height * 3);
@@ -265,33 +251,17 @@ struct World generateWorld(int seed, float amp, int interval)
 						{
 							if(j * j + k * k < radius * radius)
 							{
-								leafBlock = createSpriteWithType(
-													createRect(treeBlock.hitbox.position.x + j * BLOCK_SIZE,
-													treeBlock.hitbox.position.y + k * BLOCK_SIZE,
-													BLOCK_SIZE, BLOCK_SIZE), LEAF);
-								insert(world.solidBlocks, leafBlock);
-							
-								//Leaf is solid
-								setLiquidType(world.liquidBlocks,
-										treeBlock.hitbox.position.x / BLOCK_SIZE + j,
-										treeBlock.hitbox.position.y / BLOCK_SIZE + k, world.solidBlocks,
-										world.blockArea, SOLID);
+								setBlockType(world.blocks, i - WORLD_WIDTH / 2 + k, y + height + j, world.blockArea, LEAF, world.worldBoundingRect);
 						
 								//Vines
 								if(rand() % VINE_PROB == 0)
 								{
 									int vineLength = rand() % (MAX_VINE_LEN - MIN_VINE_LEN + 1) + MIN_VINE_LEN;
-									struct Sprite* collision;	
 									for(int v = 0; v < vineLength; v++)
 									{
-										struct Sprite vineBlock = createSpriteWithType(
-													createRect(leafBlock.hitbox.position.x,
-													leafBlock.hitbox.position.y - v * BLOCK_SIZE,
-													BLOCK_SIZE, BLOCK_SIZE), VINES);
-										if(collisionSearch(world.solidBlocks, vineBlock, &collision))
+										if(getBlock(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, world.worldBoundingRect).type != NONE)
 											continue;
-
-										insert(world.transparentBlocks, vineBlock);
+										setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2 + k, y + height + j - v, world.blockArea, VINES, world.worldBoundingRect);
 									}
 								}
 							}
@@ -300,52 +270,36 @@ struct World generateWorld(int seed, float amp, int interval)
 				}
 				else if(rand() % STUMP_PROB == 0)
 				{
-					struct Sprite stumpBlock = createSpriteWithType(
-													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
-													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
-													BLOCK_SIZE, BLOCK_SIZE), STUMP);
-					insert(world.transparentBlocks, stumpBlock);	
+					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, STUMP, world.worldBoundingRect);
 				}	
 				else if(rand() % FLOWER_PROB == 0)
-				{
-					struct Sprite flowerBlock = createSpriteWithType(
-													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
-													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
-													BLOCK_SIZE, BLOCK_SIZE), FLOWER);
-					insert(world.transparentBlocks, flowerBlock);	
+				{	
+					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, FLOWER, world.worldBoundingRect);	
 				}
 				else if(rand() % TALL_GRASS_PROB == 0)
 				{
-					struct Sprite tallGrassBlock = createSpriteWithType(
-													createRect((float)i * BLOCK_SIZE - WORLD_WIDTH / 2.0f * BLOCK_SIZE,
-													y * BLOCK_SIZE - amp * BLOCK_SIZE / 2.0f + BLOCK_SIZE,
-													BLOCK_SIZE, BLOCK_SIZE), TALL_GRASS);
-					insert(world.transparentBlocks, tallGrassBlock); 
+					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, TALL_GRASS, world.worldBoundingRect);	
 				}
 			}
 
-			if(tempBlock.type == STONE)
+			if(type == STONE)
 			{
 				if(rand() % COAL_PROB == 0)
-					tempBlock.type = COAL;
+					type = COAL;
 				else if(rand() % IRON_PROB == 0 && y <= 200.0f)
-					tempBlock.type = IRON;	
+					type = IRON;	
 				else if(rand() % GOLD_PROB == 0 && y <= 128.0f)
-					tempBlock.type = GOLD;		
+					type = GOLD;		
 				else if(rand() % DIAMOND_PROB == 0 && y <= 48.0f)
-					tempBlock.type = DIAMOND;
+					type = DIAMOND;
 				else if(rand() % RAINBOW_PROB == 0 && y <= 32.0f)
-					tempBlock.type = RAINBOW_ORE;
+					type = RAINBOW_ORE;
 				else if(y <= 32.0f && rand() % (int)(y * y * 0.05f + 1.0f) <= sqrtf(y))
-					tempBlock.type = MAGMA_STONE;
+					type = MAGMA_STONE;
 			}
 
-			insert(world.solidBlocks, tempBlock);	
-
+			setBlockType(world.blocks, i - WORLD_WIDTH / 2, y, world.blockArea, type, world.worldBoundingRect);
 			total++;
-
-			setLiquidType(world.liquidBlocks, i - WORLD_WIDTH / 2, y - amp / 2.0f, world.solidBlocks,
-								  world.blockArea, SOLID);
 		}	
 	}
 
@@ -355,7 +309,7 @@ struct World generateWorld(int seed, float amp, int interval)
 		if(WATER_LEVEL < worldHeight[i])
 			continue;
 		floodFill(i - WORLD_WIDTH / 2.0f, WATER_LEVEL, WATER_LEVEL, WATER, 
-				  world.liquidBlocks, world.solidBlocks, world.blockArea, amp, 0);
+				  world.blocks, world.blockArea, 0, world.worldBoundingRect);
 	}
 
 	printf("Inserted %d blocks!\n", total);
@@ -373,62 +327,3 @@ struct World generateWorld(int seed, float amp, int interval)
 
 	return world;
 }
-
-//Draws out the world
-void drawSpriteTree(struct SpriteQuadTree *tree, struct Vector2D camPos)
-{
-	static int prevSpriteType = NONE;
-
-	struct Rectangle camViewBox = createRect(camPos.x, camPos.y, 2000.0f, 1200.0f),
-					 quadBound = createRectFromCorner(tree->botLeftCorner, tree->topRightCorner);
-	if(!colliding(camViewBox, quadBound))
-		return;
-
-	//Leaf node
-	if(tree->botLeft == NULL &&
-	   tree->botRight == NULL &&
-	   tree->topLeft == NULL &&
-	   tree->botRight == NULL)
-	{
-		for(int i = 0; i < tree->spriteCount; i++)
-		{
-			if(!colliding(tree->sprites[i].hitbox, camViewBox) || 
-			   (tree->sprites[i].hitbox.position.x >= tree->topRightCorner.x ||
-			    tree->sprites[i].hitbox.position.y >= tree->topRightCorner.y))
-				continue;
-			if(tree->sprites[i].type != prevSpriteType)
-			{
-				setTexOffset(1.0f / 16.0f * (float)((tree->sprites[i].type - 1) % 16), 1.0f / 16.0f * (float)((tree->sprites[i].type - 1) / 16));
-				prevSpriteType = tree->sprites[i].type; 	
-			}
-			setRectPos(tree->sprites[i].hitbox.position.x - camPos.x,
-					   tree->sprites[i].hitbox.position.y - camPos.y);
-			drawRect();
-		}	
-		prevSpriteType = NONE;
-	}
-	else
-	{
-		drawSpriteTree(tree->botLeft, camPos);
-		drawSpriteTree(tree->botRight, camPos);
-		drawSpriteTree(tree->topLeft, camPos);
-		drawSpriteTree(tree->topRight, camPos);
-	}
-}
-
-#ifdef DEV_VERSION
-void drawQTreeOutline(struct SpriteQuadTree *tree, float x, float y, float width, float height)
-{
-	if(tree == NULL)
-		return;
-
-	setRectPos(x, y);
-	setRectSize(width, height);
-	drawRect();
-
-	drawQTreeOutline(tree->botLeft, x - width / 4.0f, y - height / 4.0f, width / 2.0f, height / 2.0f);
-	drawQTreeOutline(tree->topLeft, x - width / 4.0f, y + height / 4.0f, width / 2.0f, height / 2.0f);
-	drawQTreeOutline(tree->topRight, x + width / 4.0f, y + height / 4.0f, width / 2.0f, height / 2.0f);
-	drawQTreeOutline(tree->botRight, x + width / 4.0f, y - height / 4.0f, width / 2.0f, height / 2.0f);
-}
-#endif
