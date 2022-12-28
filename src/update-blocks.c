@@ -133,7 +133,7 @@ void updateBlocks(struct Block *blocks,
 						if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER)
 						{	
 							newBlocks[(x - minX) + (y - minY) * sz].type = STONE;	
-							newBlocks[(x - minX) + (y - minY) * sz].mass = 0.0f;
+							newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
 							setBlockType(blocks, x, y, maxIndex, STONE, boundRect);
 							found = 1;	
 						}
