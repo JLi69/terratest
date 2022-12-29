@@ -1,6 +1,7 @@
 #include "gl-func.h"
 #include "draw.h"
 #include <glad/glad.h>
+#include <math.h>
 
 void clear(void)
 {	
@@ -99,4 +100,20 @@ void setRayCount(float rays)
 void setPhase(float phase)
 {
 	glUniform1f(getUniformLocation("uPhase", getActiveShader()), phase);
+}
+
+void drawInteger(int value, float x, float y, float digitSz)
+{
+	setRectSize(digitSz, digitSz);
+	int digitCount = (int)log10((double)value) + 1;
+	int xOffset = 0.0f;
+	for(int i = digitCount - 1; i >= 0; i--)
+	{
+		int digit = value / (pow(10, i));
+		value -= pow(10, i) * digit;
+		setTexOffset(1.0f / 16.0f * digit, 1.0f / 16.0f);
+		setRectPos(xOffset + x - (digitCount - 1) / 2.0f * digitSz, y);
+		xOffset += digitSz;
+		drawRect();
+	}
 }

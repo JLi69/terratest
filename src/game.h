@@ -19,21 +19,15 @@ enum AnimationStates
 	FALLING,
 };
 
-struct Player
-{
-	struct Sprite playerSpr;
-	struct Inventory inventory;
-};
-
 //Initializes shaders and buffers
 void initGL(void);
 //Initializes game objects
-void initGame(struct World *world, struct Sprite *player);
+void initGame(struct World *world, struct Player *player);
 
 float getBlockBreakTimer();
 
-void display(struct World world, struct Sprite player);
-void updateGameobjects(struct World *world, struct Sprite *player, float secondsPerFrame);
+void display(struct World world, struct Player player);
+void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame);
 void loop(void);
 void animateSprites(struct World *world, struct Sprite *player, float secondsPerFrame);
 

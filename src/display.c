@@ -97,7 +97,7 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 	setTransparency(1.0f);
 }
 
-void display(struct World world, struct Sprite player)
+void display(struct World world, struct Player player)
 {		
 	clear();	
 
@@ -105,7 +105,7 @@ void display(struct World world, struct Sprite player)
 	useShader(&shaders[0]);		
 	updateActiveShaderWindowSize();	
 
-	background(world.dayCycle, player.hitbox.position.x, player.hitbox.position.y, world);
+	background(world.dayCycle, player.playerSpr.hitbox.position.x, player.playerSpr.hitbox.position.y, world);
 
 	turnOnTexture();
 	bindTexture(textures[1], GL_TEXTURE0);
@@ -114,7 +114,7 @@ void display(struct World world, struct Sprite player)
 	setTexOffset(0.0f, 0.0f);
 	//Draw blocks
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);
-	struct Vector2D camPos = createVector(player.hitbox.position.x, player.hitbox.position.y);
+	struct Vector2D camPos = createVector(player.playerSpr.hitbox.position.x, player.playerSpr.hitbox.position.y);
 	drawBlocks(world.backgroundBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 0.6f);	
 	drawBlocks(world.transparentBlocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);		
 
@@ -145,11 +145,11 @@ void display(struct World world, struct Sprite player)
 
 	bindTexture(textures[0], GL_TEXTURE0);
 	//Draw player	
-	flip(player.flipped);
+	flip(player.playerSpr.flipped);
 	setTexFrac(1.0f / 16.0f, 1.0f);
 	setTexSize(256.0f, 32.0f);
-	setTexOffset((float)player.animationFrame * 1.0f / 16.0f, 0.0f);
-	setRectSize(player.hitbox.dimensions.w, player.hitbox.dimensions.h);	
+	setTexOffset((float)player.playerSpr.animationFrame * 1.0f / 16.0f, 0.0f);
+	setRectSize(player.playerSpr.hitbox.dimensions.w, player.playerSpr.hitbox.dimensions.h);	
 	setRectPos(0.0f, 0.0f);	
 	drawRect();	
 	turnOffFlip();
@@ -189,6 +189,15 @@ void display(struct World world, struct Sprite player)
 		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
 		drawRect();
 	}
+
+	setTexSize(256.0f, 256.0f);
+	int winWidth, winHeight;
+	getWindowSize(&winWidth, &winHeight);		
+	bindTexture(textures[4], GL_TEXTURE0);	
+	displayInventoryItemIcons(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f, 28.0f, 20.0f);		
+	bindTexture(textures[2], GL_TEXTURE0);	
+	displayInventoryOutline(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f, 48.0f, 0.0f);
+	displayInventoryNumbers(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f - 8.0f, 16.0f, 48.0f);
 }
 
 void cleanup(void)

@@ -10,26 +10,27 @@
 
 static float breakBlockTimer = 0.0f;
 
-void initGame(struct World *world, struct Sprite *player)
+void initGame(struct World *world, struct Player *player)
 {
 	const float height = 128.0f;
 	*world = generateWorld(time(0), height, 256.0f);
 	revealVisible(world);
 
-	*player = createSprite(createRect(0.0f, 32.0f * 4.0f * height, 32.0f, 64.0f));
-	player->animationState = IDLE;
-	player->animating = 1;
+	player->playerSpr = createSprite(createRect(0.0f, 32.0f * 4.0f * height, 32.0f, 64.0f));
+	player->playerSpr.animationState = IDLE;
+	player->playerSpr.animating = 1;
+	player->inventory = createInventory(9); //inventory of size 9
 
 	struct Sprite collision;
-	while(!blockCollisionSearch(*player, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
-		player->hitbox.position.y -= 32.0f;
-	player->hitbox.position.y += 32.0f;
-	player->canMove = 1;
+	while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
+		player->playerSpr.hitbox.position.y -= 32.0f;
+	player->playerSpr.hitbox.position.y += 32.0f;
+	player->playerSpr.canMove = 1;
 }
 
-void updateGameobjects(struct World *world, struct Sprite *player, float secondsPerFrame)
+void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame)
 {
-	struct Vector2D camPos = createVector(player->hitbox.position.x, player->hitbox.position.y);
+	struct Vector2D camPos = createVector(player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y);
 	static float blockUpdateTimer = 0.0f;
 	blockUpdateTimer += secondsPerFrame;
 
@@ -39,124 +40,124 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER))
 	{
-		player->vel.x *= 0.4f;
-		if(player->vel.y > 0.0f)
-			player->vel.y *= 0.6f;
+		player->playerSpr.vel.x *= 0.4f;
+		if(player->playerSpr.vel.y > 0.0f)
+			player->playerSpr.vel.y *= 0.6f;
 	}
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA))
 	{	
-		player->vel.x *= 0.2f;
-		if(player->vel.y > 0.0f)
-			player->vel.y *= 0.4f;	
+		player->playerSpr.vel.x *= 0.2f;
+		if(player->playerSpr.vel.y > 0.0f)
+			player->playerSpr.vel.y *= 0.4f;	
 	}
 
 	//Move player in the x direction
-	updateSpriteX(player, secondsPerFrame);
+	updateSpriteX(&player->playerSpr, secondsPerFrame);
 	//Check for collision
-	if(blockCollisionSearch(*player, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
+	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{				
 		//Uncollide the player	
-		if(player->vel.x != 0.0f)
+		if(player->playerSpr.vel.x != 0.0f)
 		{
-			if(player->hitbox.position.x >=
+			if(player->playerSpr.hitbox.position.x >=
 			   collided.hitbox.position.x + collided.hitbox.dimensions.w / 2.0f)
 			{
-				player->vel.x = 0.0f;
-				player->hitbox.position.x =
+				player->playerSpr.vel.x = 0.0f;
+				player->playerSpr.hitbox.position.x =
 					collided.hitbox.position.x +
 					collided.hitbox.dimensions.w / 2.0f +
-					player->hitbox.dimensions.w / 2.0f;	
+					player->playerSpr.hitbox.dimensions.w / 2.0f;	
 			}	
-			else if(player->hitbox.position.x <= 
+			else if(player->playerSpr.hitbox.position.x <= 
 					collided.hitbox.position.x - collided.hitbox.dimensions.x / 2.0f)
 			{
-				player->vel.x = 0.0f;
-				player->hitbox.position.x =
+				player->playerSpr.vel.x = 0.0f;
+				player->playerSpr.hitbox.position.x =
 					collided.hitbox.position.x -
 					collided.hitbox.dimensions.w / 2.0f -
-					player->hitbox.dimensions.w / 2.0f;	
+					player->playerSpr.hitbox.dimensions.w / 2.0f;	
 			}	
 		}
 	}
 
 	//Move player in y direction
-	updateSpriteY(player, secondsPerFrame);	
+	updateSpriteY(&player->playerSpr, secondsPerFrame);	
 	//Check for collision	
-	if(blockCollisionSearch(*player, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
+	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{		
 		//Uncollide the player
-		if(player->vel.y != 0.0f)
+		if(player->playerSpr.vel.y != 0.0f)
 		{
-			if(player->hitbox.position.y >=
+			if(player->playerSpr.hitbox.position.y >=
 			   collided.hitbox.position.y + collided.hitbox.dimensions.h / 2.0f)
 			{
-				player->vel.y = 0.0f;
-				player->hitbox.position.y =
+				player->playerSpr.vel.y = 0.0f;
+				player->playerSpr.hitbox.position.y =
 					collided.hitbox.position.y +
 					collided.hitbox.dimensions.h / 2.0f +
-					player->hitbox.dimensions.h / 2.0f;	
+					player->playerSpr.hitbox.dimensions.h / 2.0f;	
 				//The player is supported by a block	
-				player->falling = 0;	
+				player->playerSpr.falling = 0;	
 			}	
-			else if(player->hitbox.position.y <= 
+			else if(player->playerSpr.hitbox.position.y <= 
 					collided.hitbox.position.y - collided.hitbox.dimensions.h / 2.0f)
 			{
-				player->falling = 1;	
-				player->vel.y = -0.5f;
-				player->hitbox.position.y =
+				player->playerSpr.falling = 1;	
+				player->playerSpr.vel.y = -0.5f;
+				player->playerSpr.hitbox.position.y =
 					collided.hitbox.position.y -
 					collided.hitbox.dimensions.h / 2.0f -
-					player->hitbox.dimensions.h / 2.0f;	
+					player->playerSpr.hitbox.dimensions.h / 2.0f;	
 			}	
 		}	
 	}
 	else
 	{
 		//The player is not supported by a block
-		player->falling = 1;
-		player->animationState = FALLING;	
+		player->playerSpr.falling = 1;
+		player->playerSpr.animationState = FALLING;	
 	
 		struct Sprite temp = createSprite(
-							 createRect(player->hitbox.position.x, player->hitbox.position.y - 0.01f,
-										player->hitbox.dimensions.w, player->hitbox.dimensions.h));
+							 createRect(player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y - 0.01f,
+										player->playerSpr.hitbox.dimensions.w, player->playerSpr.hitbox.dimensions.h));
 		struct Sprite tempCollison;	
 		if(blockCollisionSearch(temp, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &tempCollison))
-			player->animationState = IDLE;
+			player->playerSpr.animationState = IDLE;
 	}
 
 	//Move character with arrow keys
 	if(isPressed(GLFW_KEY_A))
 	{
-		player->flipped = 1;
-		player->vel.x = -PLAYER_SPEED;
-		if(player->animationState == IDLE)
-			player->animationState = WALKING;	
+		player->playerSpr.flipped = 1;
+		player->playerSpr.vel.x = -PLAYER_SPEED;
+		if(player->playerSpr.animationState == IDLE)
+			player->playerSpr.animationState = WALKING;	
 	}
 	else if(isPressed(GLFW_KEY_D))
 	{
-		player->flipped = 0;	
-		player->vel.x = PLAYER_SPEED;
-		if(player->animationState == IDLE)
-			player->animationState = WALKING;
+		player->playerSpr.flipped = 0;	
+		player->playerSpr.vel.x = PLAYER_SPEED;
+		if(player->playerSpr.animationState == IDLE)
+			player->playerSpr.animationState = WALKING;
 	}
 	else
 	{
-		player->vel.x = 0.0f;
-		if(player->animationState == WALKING)
-			player->animationState = IDLE;
+		player->playerSpr.vel.x = 0.0f;
+		if(player->playerSpr.animationState == WALKING)
+			player->playerSpr.animationState = IDLE;
 	}
 	
 	//Check if player can jump
-	if(!player->falling || 
+	if(!player->playerSpr.falling || 
 	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER) || 
 	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES))
-		player->canJump = 1;
+		player->playerSpr.canJump = 1;
 	else
-		player->canJump = 0;
+		player->playerSpr.canJump = 0;
 
 	//Jump
-	if(player->canJump && isPressed(GLFW_KEY_SPACE))
-		player->vel.y = JUMP_SPEED;
+	if(player->playerSpr.canJump && isPressed(GLFW_KEY_SPACE))
+		player->playerSpr.vel.y = JUMP_SPEED;
 
 	//Update liquid blocks	
 	if(blockUpdateTimer > 0.03f)
@@ -170,23 +171,28 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	{
 		double cursorX, cursorY;
 		getCursorPos(&cursorX, &cursorY);	
-		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE);	
-		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE);	
+		cursorX = roundf((cursorX + player->playerSpr.hitbox.position.x) / BLOCK_SIZE);	
+		cursorY = roundf((cursorY + player->playerSpr.hitbox.position.y) / BLOCK_SIZE);	
 
 		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));
 		
 		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 		{
-			//TODO: Add inventory so that player can place blocks other than brick
 			if(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
-				setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, BRICK, world->worldBoundingRect);
-		}	
-		else if(!colliding(temp.hitbox, player->hitbox) &&
+			{
+				setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);
+				if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)	
+					decrementSlot(player->inventory.selected, &player->inventory);	
+			}	
+		}
+		else if(!colliding(temp.hitbox, player->playerSpr.hitbox) &&
 				(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA))
 		{
-			setBlockType(world->blocks, cursorX, cursorY, world->blockArea, BRICK, world->worldBoundingRect);	
+			setBlockType(world->blocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);			
+			if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)	
+				decrementSlot(player->inventory.selected, &player->inventory);	
 		}
 	}
 	//Destroy blocks
@@ -194,8 +200,8 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	{
 		double cursorX, cursorY;
 		getCursorPos(&cursorX, &cursorY);
-		cursorX = roundf((cursorX + player->hitbox.position.x) / BLOCK_SIZE);	
-		cursorY = roundf((cursorY + player->hitbox.position.y) / BLOCK_SIZE);
+		cursorX = roundf((cursorX + player->playerSpr.hitbox.position.x) / BLOCK_SIZE);	
+		cursorY = roundf((cursorY + player->playerSpr.hitbox.position.y) / BLOCK_SIZE);
 	
 		if((isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)) &&
 			(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
@@ -224,6 +230,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA	)		
 				{	
+					addItem(world, droppedItem(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, NOTHING), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
 				}	
 			}
@@ -252,6 +259,21 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 	else
 		breakBlockTimer = 0.0f;
 
+	//Inventory keys
+	static const int inventoryHotKeys[] = { GLFW_KEY_1,
+											GLFW_KEY_2,
+											GLFW_KEY_3,
+											GLFW_KEY_4,
+											GLFW_KEY_5,
+											GLFW_KEY_6,
+											GLFW_KEY_7,
+											GLFW_KEY_8,
+											GLFW_KEY_9 };
+	for(int i = 0; i < 9; i++)
+		if(isPressed(inventoryHotKeys[i]))
+			player->inventory.selected = i;
+
+
 	//Update time in the world
 	world->dayCycle += secondsPerFrame * 1.0f / 60.0f * 1.0f / 20.0f;
 	if(world->dayCycle > 1.0f)
@@ -270,7 +292,7 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 		}
 	}
 
-	updateItems(world, camPos, 32, secondsPerFrame, *player);
+	updateItems(world, camPos, 32, secondsPerFrame, player);
 }
 
 float getBlockBreakTimer()

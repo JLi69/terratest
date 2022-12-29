@@ -14,7 +14,7 @@
 void loop(void)
 {
 	struct World world;
-	struct Sprite player;
+	struct Player player;
 
 	initGL();
 	initGame(&world, &player);
@@ -29,7 +29,7 @@ void loop(void)
 		display(world, player);
 		if(!isPaused())
 		{
-			animateSprites(&world, &player, seconds);
+			animateSprites(&world, &player.playerSpr, seconds);
 			updateGameobjects(&world, &player, seconds);
 		}	
 		updateWindow();			

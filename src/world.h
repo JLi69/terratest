@@ -35,6 +35,12 @@
 #define ITEM_SIZE 16.0f
 #define TIME_TO_DESPAWN 300.0f
 
+struct Player
+{
+	struct Sprite playerSpr;
+	struct Inventory inventory;
+};
+
 enum Visibility
 {
 	REVEALED,
@@ -124,7 +130,7 @@ void addItem(struct World *world, enum Item item, float x, float y);
 void drawItems(struct World world, struct Vector2D camPos,
 				int viewDistX, int viewDistY);
 void updateItems(struct World *world, struct Vector2D camPos, int simDist,
-				 float timePassed, struct Sprite player);
+				 float timePassed, struct Player *player);
 
 #endif
 #define WORLD_H

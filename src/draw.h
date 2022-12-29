@@ -21,6 +21,8 @@ void setBrightness(float brightness);
 //For sun/moon shader
 void setRayCount(float rays);
 void setPhase(float phase);
+//Draws an integer onto the screen, assumes icons.png is loaded already
+void drawInteger(int value, float x, float y, float digitSz);
 
 #endif
 #define DRAW_H
