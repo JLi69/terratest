@@ -223,17 +223,23 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA	)		
-					setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+				{	
+					setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
+				}	
 			}
 			else
 			{
 				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
+				{	
+					addItem(world, droppedItem(getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, NOTHING), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+				}	
 				else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
-				{	
+				{
+					addItem(world, droppedItem(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, NOTHING), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);				
 					revealNeighbors(world, cursorX, cursorY);	
@@ -263,6 +269,8 @@ void updateGameobjects(struct World *world, struct Sprite *player, float seconds
 			world->clouds[i].hitbox.dimensions.w = world->clouds[i].hitbox.dimensions.h = sz;	
 		}
 	}
+
+	updateItems(world, camPos, 32, secondsPerFrame, *player);
 }
 
 float getBlockBreakTimer()

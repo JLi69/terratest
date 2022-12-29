@@ -28,6 +28,7 @@ void initGL(void)
 	textures[1] = loadTexture("res/textures/tiles.png");	
 	textures[2] = loadTexture("res/textures/icons.png");
 	textures[3] = loadTexture("res/textures/sky.png");
+	textures[4] = loadTexture("res/textures/items.png");
 
 	useShader(&shaders[0]);	
 	bindBuffers(buffers[0]);
@@ -153,11 +154,16 @@ void display(struct World world, struct Sprite player)
 	drawRect();	
 	turnOffFlip();
 
-	//Draw liquid blocks	
-	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+	//Draw dropped items
+	setRectSize(ITEM_SIZE, ITEM_SIZE);
+	bindTexture(textures[4], GL_TEXTURE0);
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
 	setTexOffset(0.0f, 0.0f);
+	drawItems(world, camPos, 32, 20);
+
+	//Draw liquid blocks	
+	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
 	bindTexture(textures[1], GL_TEXTURE0);
 	drawLiquids(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);
 

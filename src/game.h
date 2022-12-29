@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #include "world.h"
 #include "sprite.h"
+#include "inventory.h"
 
 #define MAX_SHADERS 8
 #define MAX_BUFFERS 4
@@ -16,6 +17,12 @@ enum AnimationStates
 	IDLE,
 	WALKING,
 	FALLING,
+};
+
+struct Player
+{
+	struct Sprite playerSpr;
+	struct Inventory inventory;
 };
 
 //Initializes shaders and buffers

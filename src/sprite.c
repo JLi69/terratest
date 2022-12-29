@@ -59,23 +59,14 @@ struct Sprite createSprite(struct Rectangle hitbox)
 	spr.type = 0;
 	spr.timeSinceLastUpdate = 0.0f;
 	spr.canJump = 0;
+	spr.timeExisted = 0.0f;
 	return spr;
 }
 
 struct Sprite createSpriteWithType(struct Rectangle hitbox, int type)
 {
-	struct Sprite spr;
-	spr.hitbox = hitbox;
-	spr.vel.x = 0.0f;
-	spr.vel.y = 0.0f;
-	spr.falling = 1;
-	spr.canMove = 0;
-	spr.flipped = 0;
-	spr.animating = 0;
-	spr.animationFrame = 0;
+	struct Sprite spr = createSprite(hitbox);
 	spr.type = type;
-	spr.timeSinceLastUpdate = 0.0f;
-	spr.canJump = 0;
 	return spr;
 }
 

@@ -37,6 +37,7 @@ struct Sprite
 	float timeSinceLastUpdate;
 
 	unsigned int type, animationState;
+	float timeExisted;
 };
 
 union Point midpoint(union Point pt1, union Point pt2);

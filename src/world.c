@@ -55,6 +55,8 @@ struct World generateWorld(int seed, float amp, int interval)
 
 	world.dayCycle = 0.4f;	
 
+	world.totalItems = 0;
+
 	world.blocks = (struct Block*)malloc(sizeof(struct Block) * world.blockArea);
 	world.backgroundBlocks = (struct Block*)malloc(sizeof(struct Block) * world.blockArea); 
 	world.transparentBlocks = (struct Block*)malloc(sizeof(struct Block) * world.blockArea);

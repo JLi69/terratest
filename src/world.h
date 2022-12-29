@@ -3,6 +3,7 @@
 
 #ifndef WORLD_H
 #include "sprite.h"
+#include "inventory.h"
 
 #define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
@@ -28,34 +29,11 @@
 
 #define WATER_LEVEL 230.0f
 
-#define SIM_DIST 3000.0f
-
 #define MAX_CLOUD 32
 
-enum BlockType 
-{
-	NONE = 0,
-	GRASS,
-	DIRT,
-	STONE,
-	INDESTRUCTABLE,
-	BRICK,
-	LEAF,
-	LOG,
-	STUMP,
-	FLOWER,
-	TALL_GRASS,
-	VINES,
-	COAL,
-	IRON,
-	DIAMOND,
-	GOLD,
-	RAINBOW_ORE,
-	MAGMA_STONE,
-	SAND,
-	WATER,
-	LAVA
-};
+#define MAX_ITEMS 8192
+#define ITEM_SIZE 16.0f
+#define TIME_TO_DESPAWN 300.0f
 
 enum Visibility
 {
@@ -87,6 +65,9 @@ struct World
 	float dayCycle; //Current time of day in the world
 	struct Sprite clouds[MAX_CLOUD];
 	struct BoundingRect worldBoundingRect;
+	
+	struct Sprite droppedItems[MAX_ITEMS];
+	int totalItems; 
 };
 
 struct World generateWorld(
@@ -138,6 +119,12 @@ int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *
 //returns 1 if the object is touching a block of certain type
 //returns 0 if not
 int touching(struct World world, int x, int y, enum BlockType type);
+
+void addItem(struct World *world, enum Item item, float x, float y);
+void drawItems(struct World world, struct Vector2D camPos,
+				int viewDistX, int viewDistY);
+void updateItems(struct World *world, struct Vector2D camPos, int simDist,
+				 float timePassed, struct Sprite player);
 
 #endif
 #define WORLD_H
