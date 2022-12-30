@@ -152,14 +152,33 @@ void display(struct World world, struct Player player)
 	setRectSize(player.playerSpr.hitbox.dimensions.w, player.playerSpr.hitbox.dimensions.h);	
 	setRectPos(0.0f, 0.0f);	
 	drawRect();	
-	turnOffFlip();
 
-	//Draw dropped items
+	//Draw items
 	setRectSize(ITEM_SIZE, ITEM_SIZE);
 	bindTexture(textures[4], GL_TEXTURE0);
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
 	setTexOffset(0.0f, 0.0f);
+
+	switch(player.playerSpr.animationState)
+	{
+	case IDLE:
+		setRectPos(player.playerSpr.flipped ? 8.0f : -8.0f, -16.0f);
+		break;
+	case FALLING:
+		setRectPos(0.0f, 24.0f);
+		break;
+	case WALKING:
+		setRectPos(player.playerSpr.flipped ? -8.0f : 8.0f, -16.0f);
+		break;
+	}
+	//Draw currently held item in player's hand
+	setTexOffset(1.0f / 16.0f * (float)((player.inventory.slots[player.inventory.selected].item - 1) % 16),
+				1.0f / 16.0f * (float)((player.inventory.slots[player.inventory.selected].item - 1) / 16));	
+	if(player.inventory.slots[player.inventory.selected].item != NOTHING)
+		drawRect();
+
+	turnOffFlip();
 	drawItems(world, camPos, 32, 20);
 
 	//Draw liquid blocks	

@@ -20,6 +20,7 @@ static GLFWwindow* win;
 //Store the keys that are pressed
 static int pressed[MAX_KEY_PRESSED];
 static int mouse[MOUSE_BUTTON_COUNT];
+static double mouseScroll = 0.0;
 
 //Handle resizing of the window
 void handleWindowResize(GLFWwindow *win, int newWidth, int newHeight)
@@ -106,6 +107,11 @@ void handleMouseInput(GLFWwindow *window, int button, int action, int mods)
 	}
 }
 
+void handleMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
+{
+	mouseScroll = yoffset;
+}
+
 int isPressed(int key)
 {
 	for(int i = 0; i < MAX_KEY_PRESSED; i++)
@@ -120,6 +126,13 @@ int mouseButtonHeld(int button)
 		if(button == mouse[i])
 			return 1;
 	return 0;
+}
+
+double getMouseScroll()
+{
+	double scrollVal = mouseScroll;
+	mouseScroll = 0.0;
+	return scrollVal;
 }
 
 void initWindow(void)
@@ -142,6 +155,7 @@ void initWindow(void)
 	glfwSetWindowSizeCallback(win, handleWindowResize);
 	glfwSetKeyCallback(win, handleKeyInput);
 	glfwSetMouseButtonCallback(win, handleMouseInput);
+	glfwSetScrollCallback(win, handleMouseScroll);
 	glfwSetWindowPosCallback(win, handleWindowMovement);
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 

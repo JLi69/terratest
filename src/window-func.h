@@ -16,6 +16,7 @@ void updateWindow(void);
 //pressed
 int isPressed(int key);
 int mouseButtonHeld(int button);
+double getMouseScroll(); //Gets how much the mouse is scrolling in the y direction
 
 //Quit the program and give an error
 void crash(const char *msg);

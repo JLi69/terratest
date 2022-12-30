@@ -10,6 +10,12 @@
 
 static float breakBlockTimer = 0.0f;
 
+static const enum BlockType transparent[] = { LOG,
+											  STUMP,
+											  FLOWER,
+											  TALL_GRASS,
+											  VINES };
+
 void initGame(struct World *world, struct Player *player)
 {
 	const float height = 128.0f;
@@ -19,7 +25,7 @@ void initGame(struct World *world, struct Player *player)
 	player->playerSpr = createSprite(createRect(0.0f, 32.0f * 4.0f * height, 32.0f, 64.0f));
 	player->playerSpr.animationState = IDLE;
 	player->playerSpr.animating = 1;
-	player->inventory = createInventory(9); //inventory of size 9
+	player->inventory = createInventory(16); //inventory of size 16
 
 	struct Sprite collision;
 	while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
@@ -190,8 +196,23 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA))
 		{
-			setBlockType(world->blocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);			
-			if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)	
+			//Check if block is transparent
+			int found = 0, ableToPlace = 0;
+			for(int i = 0; i < sizeof(transparent) / sizeof(enum BlockType) && !found; i++)
+			{	
+				if(transparent[i] == placeBlock(player->inventory.slots[player->inventory.selected].item))
+				{	
+					found = 1;
+					if(getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)
+					{
+						setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);			
+						ableToPlace = 1;	
+					}	
+				}
+			}
+			if(!found && placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)
+				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);			
+			if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE && (!found || (found && ableToPlace)))	
 				decrementSlot(player->inventory.selected, &player->inventory);	
 		}
 	}
@@ -245,7 +266,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
-				{
+				{	
 					addItem(world, droppedItem(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, NOTHING), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);				
@@ -272,7 +293,19 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	for(int i = 0; i < 9; i++)
 		if(isPressed(inventoryHotKeys[i]))
 			player->inventory.selected = i;
-
+	
+	double scroll = getMouseScroll();
+	if(scroll > 0.0)
+	{
+		player->inventory.selected++;
+		player->inventory.selected %= player->inventory.maxSize;	
+	}
+	else if(scroll < 0.0)
+	{
+		player->inventory.selected--;
+		player->inventory.selected += player->inventory.maxSize;
+		player->inventory.selected %= player->inventory.maxSize;	
+	}
 
 	//Update time in the world
 	world->dayCycle += secondsPerFrame * 1.0f / 60.0f * 1.0f / 20.0f;
