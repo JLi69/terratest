@@ -7,6 +7,11 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 	return 999999.0f;
 }
 
+int maxStack(enum Item item)
+{
+	return 99;
+}
+
 enum Item droppedItem(enum BlockType type, enum Item item)
 {
 	switch(type)
@@ -46,6 +51,8 @@ enum BlockType placeBlock(enum Item item)
 		return LOG;
 	case DIRT_ITEM:
 		return DIRT;
+	case FLOWER_ITEM:
+		return FLOWER;
 	default: break;
 	}
 	return NONE;
@@ -61,6 +68,8 @@ struct Inventory createInventory(int sz)
 	{
 		inventory.slots[i].amount = 0;
 		inventory.slots[i].item = NOTHING;
+		inventory.slots[i].maxUsesLeft = 0;
+		inventory.slots[i].usesLeft = 0;	
 	}
 	return inventory;
 }
@@ -69,10 +78,22 @@ int pickup(enum Item item, int amt, struct Inventory *inventory)
 {
 	for(int i = 0; i < inventory->maxSize; i++)
 	{
-		if(inventory->slots[i].item == item)
+		if(amt <= 0)
+			return 1;
+		if(inventory->slots[i].amount >= maxStack(inventory->slots[i].item))
+			continue;
+
+		if(inventory->slots[i].item == item &&
+			inventory->slots[i].amount + amt <= maxStack(inventory->slots[i].item))
 		{
 			inventory->slots[i].amount += amt;
-			return 1; //Found slot to put something in
+			return amt; //Found slot to put something in
+		}
+		else if(inventory->slots[i].item == item &&
+				inventory->slots[i].amount + amt > maxStack(inventory->slots[i].item))
+		{
+			amt -= (maxStack(inventory->slots[i].item) - inventory->slots[i].amount);
+			inventory->slots[i].amount = maxStack(inventory->slots[i].item);
 		}
 	}
 
@@ -82,11 +103,11 @@ int pickup(enum Item item, int amt, struct Inventory *inventory)
 		{
 			inventory->slots[i].item = item;
 			inventory->slots[i].amount = amt;
-			return 1; //Found slot
+			return amt; //Found slot
 		}
 	}
 
-	return 0;
+	return amt;
 }
 
 void removeSlot(int ind, struct Inventory *inventory)

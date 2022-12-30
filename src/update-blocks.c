@@ -83,8 +83,16 @@ void drawLiquids(struct Block *blocks,
 			if(getBlock(blocks, x, y, maxIndex, boundRect).type != WATER &&
 				getBlock(blocks, x, y, maxIndex, boundRect).type != LAVA)
 				continue;
+			
+			switch(getBlock(blocks, x, y, maxIndex, boundRect).visibility)
+			{
+			case REVEALED: setBrightness(brightness); break;
+			case DARK: setBrightness(brightness * 0.2f); break;
+			case HIDDEN: setBrightness(0.0f); break;
+			}
 
-			if(getBlock(blocks, x, y, maxIndex, boundRect).type != prev)
+			if(getBlock(blocks, x, y, maxIndex, boundRect).type != prev && 
+			   getBlock(blocks, x, y, maxIndex, boundRect).visibility != HIDDEN)
 			{	
 				setTexOffset(1.0f / 16.0f * (float)((getBlock(blocks, x, y, maxIndex, boundRect).type - 1) % 16),
 							 1.0f / 16.0f * (float)((getBlock(blocks, x, y, maxIndex, boundRect).type - 1) / 16));
@@ -93,14 +101,7 @@ void drawLiquids(struct Block *blocks,
 					setTransparency(0.7f);
 				else
 					setTransparency(1.0f);
-			}
-
-			switch(getBlock(blocks, x, y, maxIndex, boundRect).visibility)
-			{
-			case REVEALED: setBrightness(brightness); break;
-			case DARK: setBrightness(brightness * 0.2f); break;
-			case HIDDEN: setBrightness(0.0f); break;
-			}
+			}	
 
 			setLevel(getBlock(blocks, x, y, maxIndex, boundRect).mass);
 			setRectPos(x * BLOCK_SIZE - camPos.x,
@@ -160,8 +161,45 @@ void updateBlocks(struct Block *blocks,
 	{
 		for(int y = (int)(camPos.y / BLOCK_SIZE) + updateDist; y >= (int)(camPos.y / BLOCK_SIZE) - updateDist; y--)
 		{	
+			//Check if grass is under a block, if it is, try to die
+			if(getBlock(blocks, x, y, maxIndex, boundRect).type == GRASS)
+			{
+				if(getBlock(blocks, x, y + 1, maxIndex, boundRect).type != NONE && rand() % 16 == 0)
+					newBlocks[x - minX + (y - minY) * sz].type = DIRT;	
+				else
+					newBlocks[x - minX + (y - minY) * sz].type = GRASS;	
+				newBlocks[x - minX + (y - minY) * sz].mass = 1.0f;
+			}
+			//Dirt, try to spread grass
+			else if(getBlock(blocks, x, y, maxIndex, boundRect).type == DIRT)
+			{
+				if(getBlock(blocks, x, y + 1, maxIndex, boundRect).type != NONE)
+				{
+					newBlocks[x - minX + (y - minY) * sz].type = DIRT;		
+					newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
+					continue;
+				}
+				int xoff[] = { 1, -1, 1, -1, 1, -1 };
+				int yoff[] = { 0,  0, 1, 1, -1, -1 };
+				int found = 0;
+				for(int i = 0; i < 6 && !found; i++)
+				{
+					if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == GRASS && rand() % 4096 == 0)
+					{	
+						newBlocks[(x - minX) + (y - minY) * sz].type = GRASS;	
+						newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
+						found = 1;	
+					}
+				}
+
+				if(!found)
+				{
+					newBlocks[x - minX + (y - minY) * sz].type = DIRT;		
+					newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
+				}
+			}
 			//Solid
-			if(getBlock(blocks, x, y, maxIndex, boundRect).type != WATER &&
+			else if(getBlock(blocks, x, y, maxIndex, boundRect).type != WATER &&
 			   getBlock(blocks, x, y, maxIndex, boundRect).type != LAVA &&
 			   getBlock(blocks, x, y, maxIndex, boundRect).type != NONE)
 			{
@@ -172,8 +210,7 @@ void updateBlocks(struct Block *blocks,
 			else if(getBlock(blocks, x, y, maxIndex, boundRect).type == WATER ||
 					getBlock(blocks, x, y, maxIndex, boundRect).type == LAVA)
 			{
-				//If it's lava, check neighbors and find if it is neighboring water, if it is, then turn it solid
-				//and insert stone into the block quadtree
+				//If it's lava, check neighbors and find if it is neighboring water, if it is, then turn it stone
 				if(getBlock(blocks, x, y, maxIndex, boundRect).type == LAVA)
 				{
 					int xoff[] = { 1, -1, 0,  0 };
@@ -181,7 +218,8 @@ void updateBlocks(struct Block *blocks,
 					int found = 0;
 					for(int i = 0; i < 4 && !found; i++)
 					{
-						if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER)
+						if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER && 
+							getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).mass >= 0.1f)
 						{	
 							newBlocks[(x - minX) + (y - minY) * sz].type = STONE;	
 							newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;

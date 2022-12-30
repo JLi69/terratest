@@ -169,7 +169,7 @@ void display(struct World world, struct Player player)
 		setRectPos(0.0f, 24.0f);
 		break;
 	case WALKING:
-		setRectPos(player.playerSpr.flipped ? -8.0f : 8.0f, -16.0f);
+		setRectPos(player.playerSpr.flipped ? -4.0f : 4.0f, -16.0f);
 		break;
 	}
 	//Draw currently held item in player's hand

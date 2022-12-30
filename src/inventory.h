@@ -82,8 +82,9 @@ int pickup(enum Item item, int amt, struct Inventory *inventory);
 //Completely deletes an item from the inventory
 void removeSlot(int ind, struct Inventory *inventory);
 void decrementSlot(int ind, struct Inventory *inventory);
-//Returns 1 if it can remove the amount of items from inventory, 0 otherwise
+//Returns the amount given to the player
 int removeAmountItem(enum Item item, int amt, struct Inventory *inventory);
+int maxStack(enum Item item);
 
 //Display inventory to the screen
 void displayInventoryItemIcons(struct Inventory inventory, float x, float y, float iconSz,
