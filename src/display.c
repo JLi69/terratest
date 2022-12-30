@@ -68,7 +68,7 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 	if(dayCycleTime < 0.25f || dayCycleTime > 0.75f)
 	{
 		setRayCount(0.0f);
-		setPhase(0.91f);
+		setPhase(world.moonPhase);
 		updateActiveShaderWindowSize();	
 		turnOffTexture();
 		setRectColor(255.0f, 255.0f, 255.0f, 255.0f);	
@@ -217,6 +217,11 @@ void display(struct World world, struct Player player)
 	bindTexture(textures[2], GL_TEXTURE0);	
 	displayInventoryOutline(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f, 48.0f, 0.0f);
 	displayInventoryNumbers(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f - 8.0f, 16.0f, 48.0f);
+
+	//Coordinates
+	float firstNumberEnd = drawInteger((int)(player.playerSpr.hitbox.position.x / BLOCK_SIZE), winWidth / 2.0f - 320.0f, winHeight / 2.0f - 48.0f, 32.0f);
+	drawInteger((int)(player.playerSpr.hitbox.position.y / BLOCK_SIZE), firstNumberEnd + 32.0f, winHeight / 2.0f - 48.0f, 32.0f);
+	drawString(",", firstNumberEnd - 32.0f, winHeight / 2.0f - 48.0f, 32.0f);	
 }
 
 void cleanup(void)

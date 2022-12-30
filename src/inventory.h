@@ -23,7 +23,9 @@ enum BlockType
 	MAGMA_STONE,
 	SAND,
 	WATER,
-	LAVA
+	LAVA,
+	SAPLING,
+	PLANKS
 };
 
 //item types

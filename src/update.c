@@ -14,7 +14,8 @@ static const enum BlockType transparent[] = { LOG,
 											  STUMP,
 											  FLOWER,
 											  TALL_GRASS,
-											  VINES };
+											  VINES,
+											  SAPLING };
 
 void initGame(struct World *world, struct Player *player)
 {
@@ -26,6 +27,10 @@ void initGame(struct World *world, struct Player *player)
 	player->playerSpr.animationState = IDLE;
 	player->playerSpr.animating = 1;
 	player->inventory = createInventory(16); //inventory of size 16
+	
+	//Test, delete later
+	player->inventory.slots[0].item = BRICK_ITEM;
+	player->inventory.slots[0].amount = 99;
 
 	struct Sprite collision;
 	while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
@@ -156,7 +161,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//Check if player can jump
 	if(!player->playerSpr.falling || 
 	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER) || 
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES))
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES) || 
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA))
 		player->playerSpr.canJump = 1;
 	else
 		player->playerSpr.canJump = 0;
@@ -289,8 +295,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 											GLFW_KEY_6,
 											GLFW_KEY_7,
 											GLFW_KEY_8,
-											GLFW_KEY_9 };
-	for(int i = 0; i < 9; i++)
+											GLFW_KEY_9,
+											GLFW_KEY_0 };
+	for(int i = 0; i < 10; i++)
 		if(isPressed(inventoryHotKeys[i]))
 			player->inventory.selected = i;
 	
@@ -310,7 +317,13 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//Update time in the world
 	world->dayCycle += secondsPerFrame * 1.0f / 60.0f * 1.0f / 20.0f;
 	if(world->dayCycle > 1.0f)
+	{
+		//Update moon phases	
+		world->moonPhase += 1.0f / 28.0f;
+		if(world->moonPhase > 1.0f) world->moonPhase = 0.0f;
+
 		world->dayCycle = 0.0f;
+	}
 
 	//Update clouds
 	for(int i = 0; i < MAX_CLOUD; i++)

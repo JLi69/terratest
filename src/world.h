@@ -69,6 +69,7 @@ struct World
 				 *transparentBlocks, //Blocks that can be walked through
 				 *backgroundBlocks; 
 	float dayCycle; //Current time of day in the world
+	float moonPhase;
 	struct Sprite clouds[MAX_CLOUD];
 	struct BoundingRect worldBoundingRect;
 	

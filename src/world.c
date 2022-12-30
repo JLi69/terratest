@@ -54,6 +54,7 @@ struct World generateWorld(int seed, float amp, int interval)
 	world.blockArea = WORLD_WIDTH * 8 * (int)amp;
 
 	world.dayCycle = 0.4f;	
+	world.moonPhase = 0.2f;
 
 	world.totalItems = 0;
 

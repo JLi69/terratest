@@ -164,7 +164,8 @@ void updateBlocks(struct Block *blocks,
 			//Check if grass is under a block, if it is, try to die
 			if(getBlock(blocks, x, y, maxIndex, boundRect).type == GRASS)
 			{
-				if(getBlock(blocks, x, y + 1, maxIndex, boundRect).type != NONE && rand() % 16 == 0)
+				if(getBlock(blocks, x, y + 1, maxIndex, boundRect).type != NONE &&
+					rand() % 16 == 0)
 					newBlocks[x - minX + (y - minY) * sz].type = DIRT;	
 				else
 					newBlocks[x - minX + (y - minY) * sz].type = GRASS;	
@@ -197,7 +198,7 @@ void updateBlocks(struct Block *blocks,
 					newBlocks[x - minX + (y - minY) * sz].type = DIRT;		
 					newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
 				}
-			}
+			}	
 			//Solid
 			else if(getBlock(blocks, x, y, maxIndex, boundRect).type != WATER &&
 			   getBlock(blocks, x, y, maxIndex, boundRect).type != LAVA &&
@@ -225,6 +226,16 @@ void updateBlocks(struct Block *blocks,
 							newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
 							setBlockType(blocks, x, y, maxIndex, STONE, boundRect);
 							found = 1;	
+						}
+						else if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER && 
+								getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).mass < 0.1f)
+						{
+							if(x - minX + xoff[i] >= 0 && x - minX + xoff[i] < sz && y - minY + yoff[i] >= 0 && y - minY + yoff[i] < sz)
+							{
+								newBlocks[(x - minX + xoff[i]) + (y - minY + yoff[i]) * sz].type = NONE;	
+								newBlocks[(x - minX + xoff[i]) + (y - minY + yoff[i]) * sz].mass = 0.0f;
+							}
+							setBlockType(blocks, x + xoff[i], y + yoff[i], maxIndex, STONE, boundRect);
 						}
 					}
 

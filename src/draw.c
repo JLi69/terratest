@@ -2,6 +2,7 @@
 #include "draw.h"
 #include <glad/glad.h>
 #include <math.h>
+#include <string.h>
 
 void clear(void)
 {	
@@ -102,11 +103,29 @@ void setPhase(float phase)
 	glUniform1f(getUniformLocation("uPhase", getActiveShader()), phase);
 }
 
-void drawInteger(int value, float x, float y, float digitSz)
+float drawInteger(int value, float x, float y, float digitSz)
 {
 	setRectSize(digitSz, digitSz);
-	int digitCount = (int)log10((double)value) + 1;
-	int xOffset = 0.0f;
+	
+	if(value == 0)
+	{
+		setTexOffset(0.0f, 1.0f / 16.0f);
+		setRectPos(x, y);
+		drawRect();
+		return x + digitSz * 2.0f;
+	}
+
+	float xOffset = 0.0f;	
+	int digitCount = (int)log10((double)(value > 0 ? value : -value)) + 1;
+	if(value < 0)
+	{
+		value *= -1;
+		setTexOffset(1.0f / 16.0f * 10.0f, 1.0f / 16.0f);
+		setRectPos(xOffset + x - (digitCount - 1) / 2.0f * digitSz, y);	
+		drawRect();
+		xOffset += digitSz;
+	}	
+
 	for(int i = digitCount - 1; i >= 0; i--)
 	{
 		int digit = value / (pow(10, i));
@@ -116,4 +135,35 @@ void drawInteger(int value, float x, float y, float digitSz)
 		xOffset += digitSz;
 		drawRect();
 	}
+
+	return x + xOffset + digitSz - (digitCount - 1) / 2.0f * digitSz;
+}
+
+int convertChar(char ch)
+{
+	if(ch >= 'a' && ch <= 'z')
+		return ch - 'a' + 'A' - ' ';
+	if(ch > 'z')
+		return ch - 'z' + 'a' - ' ' - 1;
+	return ch - ' ';
+}
+
+float drawString(const char *str, float x, float y, float charSz)
+{	
+	setRectSize(charSz, charSz);
+	const char *ptr = str;
+
+	int strSz = strlen(str);
+
+	float xOffset = 0.0f;
+	for(int i = 0; i < strSz; i++)
+	{
+		setRectPos(x + xOffset - (strSz - 1) / 2.0f * charSz, y);
+		setTexOffset(1.0f / 16.0f * (convertChar(str[i]) % 16), 
+					 1.0f / 16.0f * (convertChar(str[i]) / 16) + 2.0f / 16.0f); 
+		drawRect();
+		xOffset += charSz;
+	}
+
+	return x + xOffset - (strSz - 1) / 2.0f * charSz + charSz;
 }

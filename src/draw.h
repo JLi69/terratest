@@ -22,7 +22,12 @@ void setBrightness(float brightness);
 void setRayCount(float rays);
 void setPhase(float phase);
 //Draws an integer onto the screen, assumes icons.png is loaded already
-void drawInteger(int value, float x, float y, float digitSz);
+//Returns the x coordinate of the final digit
+float drawInteger(int value, float x, float y, float digitSz);
+//Draws text, returns x coordinate of the end character,
+//assumes icons.png is loaded already
+//Draws all letters as Capitals
+float drawString(const char *str, float x, float y, float charSz);
 
 #endif
 #define DRAW_H

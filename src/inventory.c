@@ -17,27 +17,28 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 	switch(type)
 	{
 	case LOG: //Fall through
-	case STUMP:
-		return LOG_ITEM;
-	case DIRT:
-		return DIRT_ITEM;
-	case GRASS:
-		return DIRT_ITEM;
+	case STUMP: return LOG_ITEM;
+	case DIRT: return DIRT_ITEM;
+	case GRASS: return DIRT_ITEM;
 	case LEAF:
 		if(rand() % 5 == 0) return SAPLING_ITEM;
 		else if(rand() % 5 <= 3) return STICK;
 		break;	
-	case STONE:
-		return STONE_ITEM;
-	case BRICK:
-		return BRICK_ITEM;
-	case FLOWER:
-		return FLOWER_ITEM;
+	case STONE: return STONE_ITEM;
+	case BRICK: return BRICK_ITEM;
+	case FLOWER: return FLOWER_ITEM;
 	case TALL_GRASS:
 		if(rand() % 3 == 0) return SEED_ITEM;
 		break;
-	case VINES:
-		return VINES_ITEM;
+	case VINES: return VINES_ITEM;
+	case COAL: return COAL_ITEM;
+	case IRON: return IRON_ITEM;
+	case DIAMOND: return DIAMOND_ITEM;
+	case GOLD: return GOLD_ITEM;
+	case RAINBOW_ORE: return RAINBOW_ITEM;
+	case MAGMA_STONE: return MAGMA_ITEM;
+	case SAND: return SAND_ITEM;
+	case SAPLING: return SAPLING_ITEM;
 	default: break;
 	}
 	return NOTHING;
@@ -47,12 +48,17 @@ enum BlockType placeBlock(enum Item item)
 {
 	switch(item)
 	{
-	case LOG_ITEM:
-		return LOG;
-	case DIRT_ITEM:
-		return DIRT;
-	case FLOWER_ITEM:
-		return FLOWER;
+	case LOG_ITEM: return LOG;
+	case DIRT_ITEM: return DIRT;
+	case FLOWER_ITEM: return FLOWER;
+	case STONE_BLOCK: return STONE;
+	case BRICK_ITEM: return BRICK;
+	case VINES_ITEM: return VINES;
+	case GRASS_ITEM: return GRASS;
+	case MAGMA_ITEM: return MAGMA_STONE;
+	case SAND_ITEM: return SAND;
+	case INDESTRUCTABLE_ITEM: return INDESTRUCTABLE;
+	case SAPLING_ITEM: return SAPLING;
 	default: break;
 	}
 	return NONE;
