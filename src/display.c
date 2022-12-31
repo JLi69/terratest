@@ -137,7 +137,9 @@ void display(struct World world, struct Player player)
 
 		//Break block animation	
 		bindTexture(textures[2], GL_TEXTURE0);	
-		setTexOffset(roundf(getBlockBreakTimer() * 4.0f) / 16.0f + 1.0f / 16.0f, 0.0f);
+		setTexOffset(
+				roundf(getBlockBreakTimer() * 4.0f / timeToBreakBlock(getSelectedBlock(), player.inventory.slots[player.inventory.selected].item)) / 16.0f + 1.0f / 16.0f,
+				0.0f);
 		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 		setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
 		setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
@@ -225,9 +227,9 @@ void display(struct World world, struct Player player)
 	displayInventoryNumbers(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f - 8.0f, 16.0f, 48.0f);
 
 	//Coordinates
-	float firstNumberEnd = drawInteger((int)(player.playerSpr.hitbox.position.x / BLOCK_SIZE), winWidth / 2.0f - 256.0f, -winHeight / 2.0f + 48.0f, 32.0f);
-	drawInteger((int)(player.playerSpr.hitbox.position.y / BLOCK_SIZE), firstNumberEnd + 32.0f, -winHeight / 2.0f + 48.0f, 32.0f);
-	drawString(",", firstNumberEnd - 32.0f, -winHeight / 2.0f + 48.0f, 32.0f);	
+	float firstNumberEnd = drawInteger((int)(player.playerSpr.hitbox.position.x / BLOCK_SIZE), winWidth / 2.0f - 256.0f, winHeight / 2.0f - 48.0f, 32.0f);
+	drawInteger((int)(player.playerSpr.hitbox.position.y / BLOCK_SIZE), firstNumberEnd + 32.0f, winHeight / 2.0f - 48.0f, 32.0f);
+	drawString(",", firstNumberEnd - 32.0f, winHeight / 2.0f - 48.0f, 32.0f);	
 
 	if(!isPaused())
 	{

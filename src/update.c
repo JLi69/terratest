@@ -12,6 +12,7 @@
 static float breakBlockTimer = 0.0f;
 static int menuShown = 0;
 static int menuSelection = 0;
+static enum BlockType selectedBlock = NONE;
 
 static const enum BlockType transparent[] = { LOG,
 											  STUMP,
@@ -32,10 +33,6 @@ void initGame(struct World *world, struct Player *player)
 	player->playerSpr.animationState = IDLE;
 	player->playerSpr.animating = 1;
 	player->inventory = createInventory(16); //inventory of size 16
-	
-	//Test, delete later
-	player->inventory.slots[0].item = BRICK_ITEM;
-	player->inventory.slots[0].amount = 99;
 
 	struct Sprite collision;
 	while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
@@ -73,13 +70,29 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		if(isPressedOnce(GLFW_KEY_ESCAPE))
 			toggleCraftingMenu();
 		//Craft
-		if(isPressedOnce(GLFW_KEY_ENTER))
+		int enterPressed = isPressedOnce(GLFW_KEY_ENTER);
+		if(enterPressed && (isPressedOnce(GLFW_KEY_LEFT_SHIFT) || isPressedOnce(GLFW_KEY_RIGHT_SHIFT)))
 		{
-			struct InventorySlot crafted = craft(&player->inventory, menuSelection);  
-			if(crafted.item != NOTHING && !pickup(crafted.item, crafted.amount, &player->inventory))
-				for(int i = 0; i < crafted.amount; i++)
-					addItem(world, crafted.item, camPos.x, camPos.y); 
+			struct InventorySlot crafted = craft(&player->inventory, menuSelection);
+			crafted.maxUsesLeft = crafted.usesLeft = maxUses(crafted.item);
+			while(crafted.item != NOTHING)
+			{
+				int pickedup = pickup(crafted.item, crafted.amount, crafted.usesLeft, crafted.maxUsesLeft, &player->inventory);
+				addItem(world, itemAmtWithUses(crafted.item, crafted.amount - pickedup, crafted.usesLeft, crafted.maxUsesLeft), camPos.x, camPos.y); 
+				crafted = craft(&player->inventory, menuSelection);	
+			}	
 		}
+		if(enterPressed)
+		{
+			struct InventorySlot crafted = craft(&player->inventory, menuSelection);
+			crafted.maxUsesLeft = crafted.usesLeft = maxUses(crafted.item);
+			if(crafted.item != NOTHING)
+			{
+				int pickedup = pickup(crafted.item, crafted.amount, crafted.usesLeft, crafted.maxUsesLeft, &player->inventory);
+				addItem(world, itemAmtWithUses(crafted.item, crafted.amount - pickedup, crafted.usesLeft, crafted.maxUsesLeft), camPos.x, camPos.y); 
+			} 
+		}
+
 		//Wrap around
 		if(menuSelection < 0)
 			menuSelection = numberOfCraftingRecipes() - 1;
@@ -225,14 +238,35 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		blockUpdateTimer = 0.0f;	
 	}
 
+	//Get selected block
+	double cursorX, cursorY;
+	getCursorPos(&cursorX, &cursorY);
+	cursorX = roundf((cursorX + player->playerSpr.hitbox.position.x) / BLOCK_SIZE);	
+	cursorY = roundf((cursorY + player->playerSpr.hitbox.position.y) / BLOCK_SIZE);
+	if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
+	{
+		if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
+			getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
+			getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA)		
+		{	
+			selectedBlock = getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type;
+		}	
+	}
+	else
+	{
+		if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
+		{		
+			selectedBlock = getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type;
+		}	
+		else if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
+		{		
+			selectedBlock = getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type;
+		}	
+	}
+
 	//Place blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
-	{
-		double cursorX, cursorY;
-		getCursorPos(&cursorX, &cursorY);	
-		cursorX = roundf((cursorX + player->playerSpr.hitbox.position.x) / BLOCK_SIZE);	
-		cursorY = roundf((cursorY + player->playerSpr.hitbox.position.y) / BLOCK_SIZE);	
-
+	{		
 		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));
 		
 		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
@@ -272,11 +306,6 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//Destroy blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
 	{
-		double cursorX, cursorY;
-		getCursorPos(&cursorX, &cursorY);
-		cursorX = roundf((cursorX + player->playerSpr.hitbox.position.x) / BLOCK_SIZE);	
-		cursorY = roundf((cursorY + player->playerSpr.hitbox.position.y) / BLOCK_SIZE);
-	
 		if((isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)) &&
 			(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
 			 getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
@@ -296,7 +325,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		else
 			breakBlockTimer = 0.0f;
 
-		if(breakBlockTimer > 1.0f)
+		if(breakBlockTimer > timeToBreakBlock(getSelectedBlock(), player->inventory.slots[player->inventory.selected].item))
 		{
 			if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 			{
@@ -304,7 +333,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA	)		
 				{	
-					addItem(world, droppedItem(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, NOTHING), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
+					use(player->inventory.selected, &player->inventory);
+					addItem(world, itemAmt(droppedItem(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
+														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
 				}	
 			}
@@ -312,7 +343,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			{
 				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
 				{	
-					addItem(world, droppedItem(getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, NOTHING), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
+					addItem(world, itemAmt(droppedItem(getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
+												player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
 				}	
 				else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
@@ -320,7 +352,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
 				{	
-					addItem(world, droppedItem(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, NOTHING), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
+					use(player->inventory.selected, &player->inventory);
+					addItem(world, itemAmt(droppedItem(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
+														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);				
 					revealNeighbors(world, cursorX, cursorY);	
@@ -359,6 +393,29 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		player->inventory.selected--;
 		player->inventory.selected += player->inventory.maxSize;
 		player->inventory.selected %= player->inventory.maxSize;	
+	}
+
+	//Drop item
+	int qPressed = isPressedOnce(GLFW_KEY_Q);	
+	if(qPressed && (isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)) && player->inventory.slots[player->inventory.selected].item != NOTHING)
+	{
+		float offset = player->playerSpr.flipped ? -BLOCK_SIZE : BLOCK_SIZE;
+
+		addItem(world, itemAmtWithUses(player->inventory.slots[player->inventory.selected].item,
+							   player->inventory.slots[player->inventory.selected].amount, 
+							   player->inventory.slots[player->inventory.selected].usesLeft,
+							   player->inventory.slots[player->inventory.selected].maxUsesLeft), 
+							   camPos.x + offset, camPos.y);
+		removeSlot(player->inventory.selected, &player->inventory);	
+	}
+	else if(qPressed && player->inventory.slots[player->inventory.selected].item != NOTHING)
+	{
+		float offset = player->playerSpr.flipped ? -BLOCK_SIZE : BLOCK_SIZE;
+		addItem(world, itemAmtWithUses(player->inventory.slots[player->inventory.selected].item, 1,
+							   player->inventory.slots[player->inventory.selected].usesLeft,
+							   player->inventory.slots[player->inventory.selected].maxUsesLeft),
+							   camPos.x + offset, camPos.y);
+		decrementSlot(player->inventory.selected, &player->inventory);
 	}
 
 	//Update time in the world
@@ -411,4 +468,9 @@ int getMenuSelection()
 void setMenuSelection(int selection)
 {
 	menuSelection = selection;
+}
+
+enum BlockType getSelectedBlock()
+{
+	return selectedBlock;
 }

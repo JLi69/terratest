@@ -6,7 +6,8 @@
 #define RECIPE_COUNT 256
 
 
-struct InventorySlot itemAmt(enum Item item, int amt);
+//TODO: better crafting menu?
+
 void initRecipes();
 //Returns result of crafting recipe
 struct InventorySlot craft(struct Inventory *inventory, int recipeId);

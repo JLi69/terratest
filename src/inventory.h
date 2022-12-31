@@ -1,5 +1,7 @@
 #ifndef INVENTORY_H
 
+#define EMPTY_INVENTORY_SLOT itemAmtWithUses(NOTHING, 0, 0, 0);
+
 //Blocks types
 enum BlockType 
 {
@@ -53,10 +55,14 @@ enum Item
 	RAINBOW_ITEM, //Obtained from mining rainbow ore with a pickaxe
 	MAGMA_ITEM, //Obtained from mining a magma block with a pickaxe
 	SAND_ITEM, //Obtained from breaking sand
-	BUCKET, //Obtained from crafting
-	WATER_BUCKET, //Obtained from collecting water in a bucket
-	LAVA_BUCKET, //Obtained from collecting lava in a bucket
+	IRON_INGOT,
+	GOLD_INGOT,
 	WOOD_PICKAXE, //Obtained from crafting
+	STONE_PICKAXE,
+	IRON_PICKAXE,
+	GOLD_PICKAXE,
+	DIAMOND_PICKAXE,
+	RAINBOW_PICKAXE
 };
 
 struct InventorySlot
@@ -78,9 +84,10 @@ float timeToBreakBlock(enum BlockType type, enum Item item);
 //Item dropped by a block
 enum Item droppedItem(enum BlockType type, enum Item item);
 enum BlockType placeBlock(enum Item item);
+int maxUses(enum Item item);
 struct Inventory createInventory(int sz);
 //Returns 1 if found slot to put item in, 0 otherwise
-int pickup(enum Item item, int amt, struct Inventory *inventory);
+int pickup(enum Item item, int amt, int uses, int maxUses, struct Inventory *inventory);
 //Completely deletes an item from the inventory
 void removeSlot(int ind, struct Inventory *inventory);
 void decrementSlot(int ind, struct Inventory *inventory);
@@ -95,6 +102,10 @@ void displayInventoryOutline(struct Inventory inventory, float x, float y, float
 							 float spacing);
 void displayInventoryNumbers(struct Inventory inventory, float x, float y, float numSz,
 							 float spacing);
+
+struct InventorySlot itemAmt(enum Item item, int amt);
+struct InventorySlot itemAmtWithUses(enum Item item, int amt, int uses, int maxUses);
+void use(int ind, struct Inventory *inventory);
 
 #endif
 

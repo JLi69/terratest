@@ -18,14 +18,6 @@ static struct InventorySlot recipes[RECIPE_COUNT][MAX_ITEMS_IN_RECIPE + 2];
 	recipes[recipeCount][5] = d; \
 	recipeCount++;
 
-struct InventorySlot itemAmt(enum Item item, int amt)
-{
-	struct InventorySlot requirement;
-	requirement.item = item;
-	requirement.amount = amt;
-	return requirement;
-}
-
 //Probably shouldn't be hardcoded, maybe move to an external file later
 void initRecipes()
 {
@@ -41,6 +33,10 @@ void initRecipes()
 	CREATE_RECIPE(itemAmt(STONE_BLOCK, 1), //Result
 				  itemAmt(STONE_ITEM, 3), //Ingredients
 				  END_RECIPE, END_RECIPE, END_RECIPE);	
+	CREATE_RECIPE(itemAmt(STONE_PICKAXE, 1), //Result
+				  itemAmt(STONE_ITEM, 4), //Ingredients
+				  itemAmt(STONE_BLOCK, 1), 
+				  itemAmt(STICK, 4), END_RECIPE);
 }
 
 struct InventorySlot craft(struct Inventory *inventory, int recipeId)

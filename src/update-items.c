@@ -2,18 +2,18 @@
 #include "draw.h"
 #include <stdio.h>
 
-void addItem(struct World *world, enum Item item, float x, float y)
+void addItem(struct World *world, struct InventorySlot item, float x, float y)
 {
-	if(item == NOTHING)
+	if(item.item == NOTHING || item.amount <= 0)
 		return;
 	if(world->totalItems >= MAX_ITEMS)
 		return;
-	struct Sprite temp = createSpriteWithType(
-			createRect(x, y, ITEM_SIZE, ITEM_SIZE),
-			item
+	struct Sprite temp = createSprite(
+			createRect(x, y, ITEM_SIZE, ITEM_SIZE)
 		);
 	temp.canMove = 1;
-	world->droppedItems[world->totalItems++] = temp;	
+	world->droppedItems[world->totalItems].item = item;	
+	world->droppedItems[world->totalItems++].itemSpr = temp;	
 }
 
 void drawItems(struct World world, struct Vector2D camPos, int viewDistX, int viewDistY)
@@ -21,71 +21,72 @@ void drawItems(struct World world, struct Vector2D camPos, int viewDistX, int vi
 	enum Item prev = NOTHING;
 	for(int i = 0; i < world.totalItems; i++)
 	{
-		if(world.droppedItems[i].hitbox.position.x / BLOCK_SIZE < camPos.x / BLOCK_SIZE - viewDistX ||
-			world.droppedItems[i].hitbox.position.x / BLOCK_SIZE > camPos.x / BLOCK_SIZE + viewDistX ||
-			world.droppedItems[i].hitbox.position.y / BLOCK_SIZE < camPos.y / BLOCK_SIZE - viewDistY ||
-			world.droppedItems[i].hitbox.position.y / BLOCK_SIZE > camPos.y / BLOCK_SIZE + viewDistY)
+		if(world.droppedItems[i].itemSpr.hitbox.position.x / BLOCK_SIZE < camPos.x / BLOCK_SIZE - viewDistX ||
+			world.droppedItems[i].itemSpr.hitbox.position.x / BLOCK_SIZE > camPos.x / BLOCK_SIZE + viewDistX ||
+			world.droppedItems[i].itemSpr.hitbox.position.y / BLOCK_SIZE < camPos.y / BLOCK_SIZE - viewDistY ||
+			world.droppedItems[i].itemSpr.hitbox.position.y / BLOCK_SIZE > camPos.y / BLOCK_SIZE + viewDistY)
 			continue;
 
-		if(world.droppedItems[i].type != prev)
+		if(world.droppedItems[i].item.item != prev)
 		{	
-			setTexOffset(1.0f / 16.0f * (float)((world.droppedItems[i].type - 1) % 16),
-						 1.0f / 16.0f * (float)((world.droppedItems[i].type - 1) / 16));
-			prev = world.droppedItems[i].type;
+			setTexOffset(1.0f / 16.0f * (float)((world.droppedItems[i].item.item - 1) % 16),
+						 1.0f / 16.0f * (float)((world.droppedItems[i].item.item - 1) / 16));
+			prev = world.droppedItems[i].itemSpr.type;
 		}
 
-		setTransparency((TIME_TO_DESPAWN - world.droppedItems[i].timeExisted) / TIME_TO_DESPAWN);
-		setRectPos(world.droppedItems[i].hitbox.position.x - camPos.x,
-					world.droppedItems[i].hitbox.position.y - camPos.y);
+		setTransparency((TIME_TO_DESPAWN - world.droppedItems[i].itemSpr.timeExisted) / TIME_TO_DESPAWN);
+		setRectPos(world.droppedItems[i].itemSpr.hitbox.position.x - camPos.x,
+					world.droppedItems[i].itemSpr.hitbox.position.y - camPos.y);
 		drawRect();
 	}
 }
 
 void updateItems(struct World *world, struct Vector2D camPos, int simDist, float timePassed, struct Player *player)
 {
-	struct Sprite temp[MAX_ITEMS];
+	struct DroppedItem temp[MAX_ITEMS];
 
 	//Remove items
 	int ind = 0;
 	for(int i = 0; i < world->totalItems; i++)
 	{
-		if(colliding(player->playerSpr.hitbox, world->droppedItems[i].hitbox) &&
-			pickup(world->droppedItems[i].type, 1, &player->inventory))
+		if(colliding(player->playerSpr.hitbox, world->droppedItems[i].itemSpr.hitbox) &&
+			pickup(world->droppedItems[i].item.item, world->droppedItems[i].item.amount,
+				   world->droppedItems[i].item.usesLeft, world->droppedItems[i].item.maxUsesLeft, &player->inventory))
 			continue;
-		if(world->droppedItems[i].timeExisted > TIME_TO_DESPAWN) //Get deleted after 5 minutes
+		if(world->droppedItems[i].itemSpr.timeExisted > TIME_TO_DESPAWN) //Get deleted after 5 minutes
 			continue;
 		//Destroyed by lava
-		if(touching(*world, world->droppedItems[i].hitbox.position.x / BLOCK_SIZE, world->droppedItems[i].hitbox.position.y / BLOCK_SIZE, LAVA))
+		if(touching(*world, world->droppedItems[i].itemSpr.hitbox.position.x / BLOCK_SIZE, world->droppedItems[i].itemSpr.hitbox.position.y / BLOCK_SIZE, LAVA))
 			continue;
 		temp[ind++] = world->droppedItems[i];
 	}
 
 	for(int i = 0; i < ind; i++)
 	{
-		if(temp[i].hitbox.position.x / BLOCK_SIZE < camPos.x / BLOCK_SIZE - simDist ||
-			temp[i].hitbox.position.x / BLOCK_SIZE > camPos.x / BLOCK_SIZE + simDist ||
-			temp[i].hitbox.position.y / BLOCK_SIZE < camPos.y / BLOCK_SIZE - simDist ||
-			temp[i].hitbox.position.y / BLOCK_SIZE > camPos.y / BLOCK_SIZE + simDist)
+		if(temp[i].itemSpr.hitbox.position.x / BLOCK_SIZE < camPos.x / BLOCK_SIZE - simDist ||
+			temp[i].itemSpr.hitbox.position.x / BLOCK_SIZE > camPos.x / BLOCK_SIZE + simDist ||
+			temp[i].itemSpr.hitbox.position.y / BLOCK_SIZE < camPos.y / BLOCK_SIZE - simDist ||
+			temp[i].itemSpr.hitbox.position.y / BLOCK_SIZE > camPos.y / BLOCK_SIZE + simDist)
 		{
 			continue;
 		}
 
-		temp[i].timeExisted += timePassed;
+		temp[i].itemSpr.timeExisted += timePassed;
 
-		if(temp[i].falling)
-			updateSpriteY(&temp[i], timePassed);
+		if(temp[i].itemSpr.falling)
+			updateSpriteY(&temp[i].itemSpr, timePassed);
 
 		struct Sprite collided;
-		if(blockCollisionSearch(temp[i], 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided) && 
-				temp[i].falling)
+		if(blockCollisionSearch(temp[i].itemSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided) && 
+				temp[i].itemSpr.falling)
 		{	
-			temp[i].falling = 0;
-			temp[i].hitbox.position.y = collided.hitbox.position.y + collided.hitbox.dimensions.h / 2.0f + ITEM_SIZE / 2.0f;
-			temp[i].vel.y = 0.0f;	
+			temp[i].itemSpr.falling = 0;
+			temp[i].itemSpr.hitbox.position.y = collided.hitbox.position.y + collided.hitbox.dimensions.h / 2.0f + ITEM_SIZE / 2.0f;
+			temp[i].itemSpr.vel.y = 0.0f;	
 		}
 		else
 		{
-			temp[i].falling = 1;
+			temp[i].itemSpr.falling = 1;
 		}
 	}
 

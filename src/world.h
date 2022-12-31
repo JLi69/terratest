@@ -61,6 +61,12 @@ struct Block
 	enum Visibility visibility;
 };
 
+struct DroppedItem
+{
+	struct Sprite itemSpr;
+	struct InventorySlot item;
+};
+
 struct World
 {
 	int blockArea; //Maximum number of blocks that can fit into the world
@@ -73,7 +79,7 @@ struct World
 	struct Sprite clouds[MAX_CLOUD];
 	struct BoundingRect worldBoundingRect;
 	
-	struct Sprite droppedItems[MAX_ITEMS];
+	struct DroppedItem droppedItems[MAX_ITEMS];
 	int totalItems; 
 };
 
@@ -127,7 +133,7 @@ int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *
 //returns 0 if not
 int touching(struct World world, int x, int y, enum BlockType type);
 
-void addItem(struct World *world, enum Item item, float x, float y);
+void addItem(struct World *world, struct InventorySlot item, float x, float y);
 void drawItems(struct World world, struct Vector2D camPos,
 				int viewDistX, int viewDistY);
 void updateItems(struct World *world, struct Vector2D camPos, int simDist,
