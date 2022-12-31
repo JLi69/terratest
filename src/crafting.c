@@ -3,7 +3,7 @@
 #include "draw.h"
 
 static int recipeCount = 0; 
-static struct InventorySlot recipes[RECIPE_COUNT][MAX_ITEMS_IN_RECIPE + 1];
+static struct InventorySlot recipes[RECIPE_COUNT][MAX_ITEMS_IN_RECIPE + 2];
 
 //Just a temporary macro, will not hardcode recipes later
 //hopefully I get around to that
@@ -15,6 +15,7 @@ static struct InventorySlot recipes[RECIPE_COUNT][MAX_ITEMS_IN_RECIPE + 1];
 	recipes[recipeCount][2] = b; \
 	recipes[recipeCount][3] = c; \
 	recipes[recipeCount][4] = d; \
+	recipes[recipeCount][5] = d; \
 	recipeCount++;
 
 struct InventorySlot itemAmt(enum Item item, int amt)
@@ -39,24 +40,33 @@ void initRecipes()
 				  itemAmt(STICK, 4), END_RECIPE, END_RECIPE);
 	CREATE_RECIPE(itemAmt(STONE_BLOCK, 1), //Result
 				  itemAmt(STONE_ITEM, 3), //Ingredients
-				  END_RECIPE, END_RECIPE, END_RECIPE);
-	CREATE_RECIPE(itemAmt(STONE_BLOCK, 1), //Result
-				  itemAmt(STONE_ITEM, 3), //Ingredients
-				  END_RECIPE, END_RECIPE, END_RECIPE);
-	CREATE_RECIPE(itemAmt(STONE_BLOCK, 1), //Result
-				  itemAmt(STONE_ITEM, 3), //Ingredients
-				  END_RECIPE, END_RECIPE, END_RECIPE);
-	CREATE_RECIPE(itemAmt(STONE_BLOCK, 1), //Result
-				  itemAmt(STONE_ITEM, 3), //Ingredients
-				  END_RECIPE, END_RECIPE, END_RECIPE);
-	CREATE_RECIPE(itemAmt(STONE_BLOCK, 1), //Result
-				  itemAmt(STONE_ITEM, 3), //Ingredients
-				  END_RECIPE, END_RECIPE, END_RECIPE);
+				  END_RECIPE, END_RECIPE, END_RECIPE);	
 }
 
 struct InventorySlot craft(struct Inventory *inventory, int recipeId)
 {
-	return itemAmt(NOTHING, 0);	
+	int canCraft = 1;
+
+	for(int i = 1; i <= MAX_ITEMS_IN_RECIPE && recipes[recipeId][i].item != END_RECIPE.item && canCraft; i++)
+	{
+		//Check if there is enough stuff for that item
+		int total = 0;
+		for(int j = 0; j < inventory->maxSize; j++)	
+			if(inventory->slots[j].item == recipes[recipeId][i].item)
+				total += inventory->slots[j].amount;
+		if(total < recipes[recipeId][i].amount)
+			canCraft = 0;
+	}
+
+	if(!canCraft)
+		return itemAmt(NOTHING, 0);	
+	
+	for(int i = 1; i <= MAX_ITEMS_IN_RECIPE && recipes[recipeId][i].item != END_RECIPE.item; i++)
+	{
+		removeAmountItem(recipes[recipeId][i].item, recipes[recipeId][i].amount, inventory);
+	}
+
+	return recipes[recipeId][0];
 }
 
 void displayCraftingRecipesIcons(int start, int end,
@@ -70,10 +80,8 @@ void displayCraftingRecipesIcons(int start, int end,
 		if(i < 0 || i >= recipeCount)
 			continue;
 	
-		for(int j = 1; j <= MAX_ITEMS_IN_RECIPE; j++)
+		for(int j = 1; j <= MAX_ITEMS_IN_RECIPE && recipes[i][j].item != END_RECIPE.item; j++)
 		{
-			if(recipes[i][j].item == END_RECIPE.item)
-				break;
 			setRectPos(x + (j - 1) * (iconSz + spacingX) + offset, y + (end - start) / 2.0f * (iconSz + spacingY) - 
 						  (i - start + 0.5f) * (iconSz + spacingY));
 			setTexOffset(1.0f / 16.0f * (float)((recipes[i][j].item - 1) % 16),
@@ -98,10 +106,8 @@ void displayCraftingRecipesNumbers(int start, int end,
 		if(i < 0 || i >= recipeCount)
 			continue;
 	
-		for(int j = 1; j <= MAX_ITEMS_IN_RECIPE; j++)
+		for(int j = 1; j <= MAX_ITEMS_IN_RECIPE && recipes[i][j].item != END_RECIPE.item; j++)
 		{
-			if(recipes[i][j].item == END_RECIPE.item)
-				break;
 			drawInteger(recipes[i][j].amount, x + (j - 1) * (iconSz + spacingX) + offset, y + (end - start) / 2.0f * (iconSz + spacingY) - (i - start + 0.5f) * (iconSz + spacingY), digitSz);	
 		}
 

@@ -49,6 +49,8 @@ void initGame(struct World *world, struct Player *player)
 
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame)
 {
+	struct Vector2D camPos = createVector(player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y);
+	
 	//Pause/Unpause the game
 	if(!craftingMenuShown() && isPressedOnce(GLFW_KEY_ESCAPE))
 	{
@@ -70,6 +72,14 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			menuSelection++;
 		if(isPressedOnce(GLFW_KEY_ESCAPE))
 			toggleCraftingMenu();
+		//Craft
+		if(isPressedOnce(GLFW_KEY_ENTER))
+		{
+			struct InventorySlot crafted = craft(&player->inventory, menuSelection);  
+			if(crafted.item != NOTHING && !pickup(crafted.item, crafted.amount, &player->inventory))
+				for(int i = 0; i < crafted.amount; i++)
+					addItem(world, crafted.item, camPos.x, camPos.y); 
+		}
 		//Wrap around
 		if(menuSelection < 0)
 			menuSelection = numberOfCraftingRecipes() - 1;
@@ -79,7 +89,6 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		return; //Pause game when on crafting menu
 	}	
 
-	struct Vector2D camPos = createVector(player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y);
 	static float blockUpdateTimer = 0.0f;
 	blockUpdateTimer += secondsPerFrame;
 

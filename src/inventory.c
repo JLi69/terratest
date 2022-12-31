@@ -165,7 +165,6 @@ int removeAmountItem(enum Item item, int amt, struct Inventory *inventory)
 		else if(inventory->slots[i].item == item &&
 				inventory->slots[i].amount > amt - totalRemoved)
 		{
-			totalRemoved += amt - totalRemoved;
 			inventory->slots[i].amount -= (amt - totalRemoved);
 			return 1;
 		}
