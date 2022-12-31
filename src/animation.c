@@ -1,4 +1,5 @@
 #include "game.h"
+#include "window-func.h"
 
 const int idleAnimation[] = { 0, 1 };
 const int fallingAnimation[] = { 2, 3 };
@@ -6,6 +7,9 @@ const int walkingAnimation[] = { 4, 5, 4, 6 };
 
 void animateSprites(struct World *world, struct Sprite *player, float secondsPerFrame)
 {
+	if(isPaused())
+		return;
+
 	static float timePassed = 0.0f;
 
 	switch(player->animationState)

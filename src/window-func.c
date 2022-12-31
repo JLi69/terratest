@@ -16,8 +16,7 @@
 static int canExit = 0;
 static int paused = 0;
 //The window
-static GLFWwindow* win;
-//Store the keys that are pressed
+static GLFWwindow* win; //Store the keys that are pressed
 static int pressed[MAX_KEY_PRESSED];
 static int mouse[MOUSE_BUTTON_COUNT];
 static double mouseScroll = 0.0;
@@ -37,19 +36,7 @@ void handleWindowMovement(GLFWwindow *win, int x, int y)
 void handleKeyInput(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
 	if(action == GLFW_PRESS)
-	{
-		//Pause/Unpause the game
-		if(key == GLFW_KEY_ESCAPE)
-		{
-			setPaused(!isPaused());
-			double cursorX, cursorY;
-			glfwGetCursorPos(win, &cursorX, &cursorY);
-			glfwSetInputMode(win, GLFW_CURSOR, 
-							 isPaused() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);	
-			glfwSetCursorPos(win, cursorX, cursorY);
-			return;	
-		}
-
+	{	
 		//Check all the keys to see if the key is already pressed
 		for(int i = 0; i < MAX_KEY_PRESSED; i++)
 			if(pressed[i] == key)
@@ -117,6 +104,19 @@ int isPressed(int key)
 	for(int i = 0; i < MAX_KEY_PRESSED; i++)
 		if(key == pressed[i])
 			return 1;
+	return 0;
+}
+
+int isPressedOnce(int key)
+{
+	for(int i = 0; i < MAX_KEY_PRESSED; i++)
+	{	
+		if(key == pressed[i])
+		{
+			pressed[i] = UNPRESSED;
+			return 1;
+		}
+	}
 	return 0;
 }
 
@@ -219,4 +219,13 @@ void getCursorPos(double *x, double *y)
 	*y = (double)winHeight - *y;
 	*x -= winWidth / 2.0f;
 	*y -= winHeight / 2.0f;
+}
+
+void toggleCursor()
+{
+	double cursorX, cursorY;
+	glfwGetCursorPos(win, &cursorX, &cursorY);
+	glfwSetInputMode(win, GLFW_CURSOR, 
+					 isPaused() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);	
+	glfwSetCursorPos(win, cursorX, cursorY);
 }

@@ -12,12 +12,14 @@ int maxStack(enum Item item)
 	return 99;
 }
 
+//Probably shouldn't hardcode this, move this to an external file
 enum Item droppedItem(enum BlockType type, enum Item item)
 {
 	switch(type)
 	{
 	case LOG: //Fall through
 	case STUMP: return LOG_ITEM;
+	case PLANK_BLOCK: return PLANK;
 	case DIRT: return DIRT_ITEM;
 	case GRASS: return DIRT_ITEM;
 	case LEAF:
@@ -44,6 +46,7 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 	return NOTHING;
 }
 
+//Probably shouldn't hardcode this, move to an external file
 enum BlockType placeBlock(enum Item item)
 {
 	switch(item)
@@ -59,6 +62,7 @@ enum BlockType placeBlock(enum Item item)
 	case SAND_ITEM: return SAND;
 	case INDESTRUCTABLE_ITEM: return INDESTRUCTABLE;
 	case SAPLING_ITEM: return SAPLING;
+	case PLANK: return PLANK_BLOCK;
 	default: break;
 	}
 	return NONE;

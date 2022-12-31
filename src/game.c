@@ -28,11 +28,8 @@ void loop(void)
 	{
 		gettimeofday(&beginFrame, 0);
 		display(world, player);
-		if(!isPaused())
-		{
-			animateSprites(&world, &player.playerSpr, seconds);
-			updateGameobjects(&world, &player, seconds);
-		}	
+		animateSprites(&world, &player.playerSpr, seconds);
+		updateGameobjects(&world, &player, seconds);
 		
 		//FPS counter
 		frameUpdateTimer += seconds;
@@ -43,8 +40,8 @@ void loop(void)
 		}	
 		int winWidth, winHeight;
 		getWindowSize(&winWidth, &winHeight);
-		float end = drawString("FPS:", winWidth / 2.0f - 320.0f + 16.0f, winHeight / 2.0f - 80.0f, 16.0f);
-		drawInteger((int)fps, end, winHeight / 2.0f - 80.0f, 16.0f);
+		float end = drawString("FPS:", winWidth / 2.0f - 256.0f + 16.0f, -winHeight / 2.0f + 80.0f, 16.0f);
+		drawInteger((int)fps, end, -winHeight / 2.0f + 80.0f, 16.0f);
 
 		updateWindow();			
 

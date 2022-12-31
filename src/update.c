@@ -7,8 +7,11 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+#include "crafting.h"
 
 static float breakBlockTimer = 0.0f;
+static int menuShown = 0;
+static int menuSelection = 0;
 
 static const enum BlockType transparent[] = { LOG,
 											  STUMP,
@@ -20,6 +23,8 @@ static const enum BlockType transparent[] = { LOG,
 void initGame(struct World *world, struct Player *player)
 {
 	const float height = 128.0f;
+	//TODO: save system where we can load worlds from disk
+	//Perhaps also implement chunking to reduce memory usage?
 	*world = generateWorld(time(0), height, 256.0f);
 	revealVisible(world);
 
@@ -37,10 +42,43 @@ void initGame(struct World *world, struct Player *player)
 		player->playerSpr.hitbox.position.y -= 32.0f;
 	player->playerSpr.hitbox.position.y += 32.0f;
 	player->playerSpr.canMove = 1;
+
+	//Initialize crafting recipes
+	initRecipes();
 }
 
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame)
 {
+	//Pause/Unpause the game
+	if(!craftingMenuShown() && isPressedOnce(GLFW_KEY_ESCAPE))
+	{
+		setPaused(!isPaused());
+		toggleCursor();
+		return;	
+	}
+
+	if(isPaused())
+		return;
+
+	if(isPressedOnce(GLFW_KEY_TAB))
+		toggleCraftingMenu();
+	if(craftingMenuShown())
+	{
+		if(isPressedOnce(GLFW_KEY_UP))
+			menuSelection--;
+		if(isPressedOnce(GLFW_KEY_DOWN))
+			menuSelection++;
+		if(isPressedOnce(GLFW_KEY_ESCAPE))
+			toggleCraftingMenu();
+		//Wrap around
+		if(menuSelection < 0)
+			menuSelection = numberOfCraftingRecipes() - 1;
+		else if(menuSelection >= numberOfCraftingRecipes())
+			menuSelection = 0;
+
+		return; //Pause game when on crafting menu
+	}	
+
 	struct Vector2D camPos = createVector(player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y);
 	static float blockUpdateTimer = 0.0f;
 	blockUpdateTimer += secondsPerFrame;
@@ -284,7 +322,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		}
 	}
 	else
-		breakBlockTimer = 0.0f;
+		breakBlockTimer = 0.0f;	
 
 	//Inventory keys
 	static const int inventoryHotKeys[] = { GLFW_KEY_1,
@@ -344,4 +382,24 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 float getBlockBreakTimer()
 {
 	return breakBlockTimer;
+}
+
+void toggleCraftingMenu()
+{
+	menuShown = !menuShown;
+}
+
+int craftingMenuShown()
+{
+	return menuShown;
+}
+
+int getMenuSelection()
+{
+	return menuSelection;
+}
+
+void setMenuSelection(int selection)
+{
+	menuSelection = selection;
 }

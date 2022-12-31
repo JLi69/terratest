@@ -1,6 +1,6 @@
 #ifndef WINDOW_UTIL_H
-#define DEFAULT_WIDTH 960
-#define DEFAULT_HEIGHT 600
+#define DEFAULT_WIDTH 1280
+#define DEFAULT_HEIGHT 800
 
 //Initialize window
 void initWindow(void);
@@ -15,6 +15,7 @@ void updateWindow(void);
 //Returns 1 if the key is pressed, 0 if the key is not 
 //pressed
 int isPressed(int key);
+int isPressedOnce(int key); //"Unpresses" a key after queried
 int mouseButtonHeld(int button);
 double getMouseScroll(); //Gets how much the mouse is scrolling in the y direction
 
@@ -30,6 +31,8 @@ void getWindowSize(int *w, int *h);
 //translated so that the origin is in the
 //center of the window
 void getCursorPos(double *x, double *y);
+
+void toggleCursor();
 
 #endif
 #define WINDOW_UTIL_H

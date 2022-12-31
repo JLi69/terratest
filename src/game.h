@@ -25,6 +25,10 @@ void initGL(void);
 void initGame(struct World *world, struct Player *player);
 
 float getBlockBreakTimer();
+void toggleCraftingMenu();
+int craftingMenuShown();
+int getMenuSelection();
+void setMenuSelection(int selection);
 
 void display(struct World world, struct Player player);
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame);

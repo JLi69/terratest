@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <math.h>
 #include <stdio.h>
+#include "crafting.h"
 
 static struct ShaderProgram shaders[MAX_SHADERS];
 static struct Buffers buffers[MAX_BUFFERS];
@@ -197,21 +198,26 @@ void display(struct World world, struct Player player)
 		setRectColor(255.0f, 255.0f, 255.0f, 255.0f);
 		setRectPos(roundf((cursorX + camPos.x) / BLOCK_SIZE) * BLOCK_SIZE - camPos.x, roundf((cursorY + camPos.y) / BLOCK_SIZE) * BLOCK_SIZE - camPos.y);	
 		setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
-		drawRect();
-
-		//Draw cursor	
-		bindTexture(textures[2], GL_TEXTURE0);	
+		drawRect();		
 		useShader(&shaders[0]);
-		setRectPos(cursorX, cursorY);		
-		setTexOffset(0.0f, 0.0f);
-		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
-		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
-		drawRect();
 	}
 
-	setTexSize(256.0f, 256.0f);
 	int winWidth, winHeight;
-	getWindowSize(&winWidth, &winHeight);		
+	getWindowSize(&winWidth, &winHeight);
+
+	//Crafting recipes
+	if(craftingMenuShown())
+	{
+		bindTexture(textures[2], GL_TEXTURE0);
+		displayCraftingRecipesDecorations(0, 8, getMenuSelection(), -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
+		bindTexture(textures[4], GL_TEXTURE0);	
+		displayCraftingRecipesIcons(0, 8, -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
+		bindTexture(textures[2], GL_TEXTURE0);
+		displayCraftingRecipesNumbers(0, 8, -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f) + 24.0f, -24.0f, 48.0f, 24.0f, 16.0f, 16.0f);
+	}
+	
+	//Inventory
+	setTexSize(256.0f, 256.0f);		
 	bindTexture(textures[4], GL_TEXTURE0);	
 	displayInventoryItemIcons(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f, 28.0f, 20.0f);		
 	bindTexture(textures[2], GL_TEXTURE0);	
@@ -219,9 +225,23 @@ void display(struct World world, struct Player player)
 	displayInventoryNumbers(player.inventory, -(float)winWidth / 2.0f + 32.0f, (float)winHeight / 2.0f - 32.0f - 8.0f, 16.0f, 48.0f);
 
 	//Coordinates
-	float firstNumberEnd = drawInteger((int)(player.playerSpr.hitbox.position.x / BLOCK_SIZE), winWidth / 2.0f - 320.0f, winHeight / 2.0f - 48.0f, 32.0f);
-	drawInteger((int)(player.playerSpr.hitbox.position.y / BLOCK_SIZE), firstNumberEnd + 32.0f, winHeight / 2.0f - 48.0f, 32.0f);
-	drawString(",", firstNumberEnd - 32.0f, winHeight / 2.0f - 48.0f, 32.0f);	
+	float firstNumberEnd = drawInteger((int)(player.playerSpr.hitbox.position.x / BLOCK_SIZE), winWidth / 2.0f - 256.0f, -winHeight / 2.0f + 48.0f, 32.0f);
+	drawInteger((int)(player.playerSpr.hitbox.position.y / BLOCK_SIZE), firstNumberEnd + 32.0f, -winHeight / 2.0f + 48.0f, 32.0f);
+	drawString(",", firstNumberEnd - 32.0f, -winHeight / 2.0f + 48.0f, 32.0f);	
+
+	if(!isPaused())
+	{
+		double cursorX, cursorY;
+		getCursorPos(&cursorX, &cursorY);
+
+		//Draw cursor	
+		bindTexture(textures[2], GL_TEXTURE0);	
+		setRectPos(cursorX, cursorY);		
+		setTexOffset(0.0f, 0.0f);
+		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
+		drawRect();
+	}
 }
 
 void cleanup(void)

@@ -25,7 +25,7 @@ enum BlockType
 	WATER,
 	LAVA,
 	SAPLING,
-	PLANKS
+	PLANK_BLOCK
 };
 
 //item types
