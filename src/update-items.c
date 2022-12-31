@@ -49,10 +49,14 @@ void updateItems(struct World *world, struct Vector2D camPos, int simDist, float
 	int ind = 0;
 	for(int i = 0; i < world->totalItems; i++)
 	{
+		int pickedup = 0;
 		if(colliding(player->playerSpr.hitbox, world->droppedItems[i].itemSpr.hitbox) &&
-			pickup(world->droppedItems[i].item.item, world->droppedItems[i].item.amount,
-				   world->droppedItems[i].item.usesLeft, world->droppedItems[i].item.maxUsesLeft, &player->inventory))
+			(pickedup = pickup(world->droppedItems[i].item.item, world->droppedItems[i].item.amount,
+				   world->droppedItems[i].item.usesLeft, world->droppedItems[i].item.maxUsesLeft, &player->inventory)) >= world->droppedItems[i].item.amount)
 			continue;
+		else if(colliding(player->playerSpr.hitbox, world->droppedItems[i].itemSpr.hitbox) &&
+			pickedup < world->droppedItems[i].item.amount)
+			world->droppedItems[i].item.amount -= pickedup;
 		if(world->droppedItems[i].itemSpr.timeExisted > TIME_TO_DESPAWN) //Get deleted after 5 minutes
 			continue;
 		//Destroyed by lava

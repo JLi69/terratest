@@ -211,11 +211,11 @@ void display(struct World world, struct Player player)
 	if(craftingMenuShown())
 	{
 		bindTexture(textures[2], GL_TEXTURE0);
-		displayCraftingRecipesDecorations(0, 8, getMenuSelection(), -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
+		displayCraftingRecipesDecorations(getMenuBegin(), getMenuEnd(), getMenuSelection(), -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
 		bindTexture(textures[4], GL_TEXTURE0);	
-		displayCraftingRecipesIcons(0, 8, -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
+		displayCraftingRecipesIcons(getMenuBegin(), getMenuEnd(), -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
 		bindTexture(textures[2], GL_TEXTURE0);
-		displayCraftingRecipesNumbers(0, 8, -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f) + 24.0f, -24.0f, 48.0f, 24.0f, 16.0f, 16.0f);
+		displayCraftingRecipesNumbers(getMenuBegin(), getMenuEnd(), -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f) + 24.0f, -24.0f, 48.0f, 24.0f, 16.0f, 16.0f);
 	}
 	
 	//Inventory

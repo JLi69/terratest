@@ -37,6 +37,30 @@ void initRecipes()
 				  itemAmt(STONE_ITEM, 4), //Ingredients
 				  itemAmt(STONE_BLOCK, 1), 
 				  itemAmt(STICK, 4), END_RECIPE);
+	CREATE_RECIPE(itemAmt(IRON_INGOT, 2), //Result
+				  itemAmt(IRON_ITEM, 1), //Ingredients
+				  itemAmt(COAL_ITEM, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(IRON_PICKAXE, 1), //Result
+				  itemAmt(IRON_INGOT, 4), //Ingredients
+				  itemAmt(STICK, 3), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GOLD_INGOT, 1), //Result
+				  itemAmt(GOLD_ITEM, 1), //Ingredients
+				  itemAmt(COAL_ITEM, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GOLD_PICKAXE, 1), //Result
+				  itemAmt(GOLD_INGOT, 6), //Ingredients
+				  itemAmt(STICK, 3), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(DIAMOND_PICKAXE, 1), //Result
+				  itemAmt(DIAMOND_ITEM, 6), //Ingredients
+				  itemAmt(STICK, 3), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(RAINBOW_PICKAXE, 1), //Result
+				  itemAmt(RAINBOW_ITEM, 5), //Ingredients
+				  itemAmt(STICK, 3), 
+				  END_RECIPE, END_RECIPE);
 }
 
 struct InventorySlot craft(struct Inventory *inventory, int recipeId)

@@ -30,6 +30,8 @@ int craftingMenuShown();
 int getMenuSelection();
 void setMenuSelection(int selection);
 enum BlockType getSelectedBlock();
+int getMenuBegin();
+int getMenuEnd();
 
 void display(struct World world, struct Player player);
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame);

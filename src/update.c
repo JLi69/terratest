@@ -13,6 +13,7 @@ static float breakBlockTimer = 0.0f;
 static int menuShown = 0;
 static int menuSelection = 0;
 static enum BlockType selectedBlock = NONE;
+static int menuBegin = 0, menuEnd = 8;
 
 static const enum BlockType transparent[] = { LOG,
 											  STUMP,
@@ -33,6 +34,9 @@ void initGame(struct World *world, struct Player *player)
 	player->playerSpr.animationState = IDLE;
 	player->playerSpr.animating = 1;
 	player->inventory = createInventory(16); //inventory of size 16
+	player->inventory.slots[0] = itemAmtWithUses(RAINBOW_PICKAXE, 1, 9999, 9999);
+	for(int i = 1; i < 16; i++)
+		player->inventory.slots[i] = itemAmt(STONE_ITEM, 99);
 
 	struct Sprite collision;
 	while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
@@ -67,6 +71,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			menuSelection--;
 		if(isPressedOnce(GLFW_KEY_DOWN))
 			menuSelection++;
+		menuBegin = (menuSelection / 8) * 8;
+		menuEnd = (menuSelection / 8 + 1) * 8;
 		if(isPressedOnce(GLFW_KEY_ESCAPE))
 			toggleCraftingMenu();
 		//Craft
@@ -78,7 +84,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			while(crafted.item != NOTHING)
 			{
 				int pickedup = pickup(crafted.item, crafted.amount, crafted.usesLeft, crafted.maxUsesLeft, &player->inventory);
-				addItem(world, itemAmtWithUses(crafted.item, crafted.amount - pickedup, crafted.usesLeft, crafted.maxUsesLeft), camPos.x, camPos.y); 
+				addItem(world, itemAmtWithUses(crafted.item, crafted.amount - pickedup, crafted.usesLeft, crafted.maxUsesLeft), camPos.x, camPos.y + BLOCK_SIZE); 
 				crafted = craft(&player->inventory, menuSelection);	
 			}	
 		}
@@ -89,7 +95,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			if(crafted.item != NOTHING)
 			{
 				int pickedup = pickup(crafted.item, crafted.amount, crafted.usesLeft, crafted.maxUsesLeft, &player->inventory);
-				addItem(world, itemAmtWithUses(crafted.item, crafted.amount - pickedup, crafted.usesLeft, crafted.maxUsesLeft), camPos.x, camPos.y); 
+				addItem(world, itemAmtWithUses(crafted.item, crafted.amount - pickedup, crafted.usesLeft, crafted.maxUsesLeft), camPos.x, camPos.y + BLOCK_SIZE); 
 			} 
 		}
 
@@ -333,10 +339,10 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA	)		
 				{	
-					use(player->inventory.selected, &player->inventory);
 					addItem(world, itemAmt(droppedItem(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
-					setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
+					setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+					use(player->inventory.selected, &player->inventory);
 				}	
 			}
 			else
@@ -352,12 +358,12 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
 				{	
-					use(player->inventory.selected, &player->inventory);
 					addItem(world, itemAmt(droppedItem(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);				
-					revealNeighbors(world, cursorX, cursorY);	
+					revealNeighbors(world, cursorX, cursorY);
+					use(player->inventory.selected, &player->inventory);
 				}	
 			}
 			
@@ -473,4 +479,14 @@ void setMenuSelection(int selection)
 enum BlockType getSelectedBlock()
 {
 	return selectedBlock;
+}
+
+int getMenuBegin()
+{
+	return menuBegin;
+}
+
+int getMenuEnd()
+{
+	return menuEnd;
 }

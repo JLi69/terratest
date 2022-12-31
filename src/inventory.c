@@ -45,7 +45,8 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 
 	switch(type)
 	{
-	case STONE: //Fall through
+	case STONE: //Fall through	
+	case MAGMA_STONE: //Fall through
 	case COAL: //Fall through
 		if(item >= WOOD_PICKAXE)
 			breakTime *= 0.4f;
@@ -54,8 +55,15 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 			breakTime *= 0.5f;
 	case DIAMOND: //Fall through
 	case GOLD: //Fall through
-	case RAINBOW_ORE: //Fall through
-	case MAGMA_STONE:	
+		if(item >= IRON_PICKAXE)
+			breakTime *= 0.5f;
+	case RAINBOW_ORE:
+		if(item >= GOLD_PICKAXE)
+			breakTime *= 0.5f;
+		if(item >= DIAMOND_PICKAXE)
+			breakTime *= 0.5f;
+		if(item >= RAINBOW_PICKAXE)
+			breakTime *= 0.1f;
 	default: break;	
 	}
 
@@ -103,10 +111,19 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 	case IRON: 
 		if(item >= STONE_PICKAXE)
 			return IRON_ITEM;
+		break;
 	case DIAMOND: 
-		return DIAMOND_ITEM;
-	case GOLD: return GOLD_ITEM;
-	case RAINBOW_ORE: return RAINBOW_ITEM;
+		if(item >= IRON_PICKAXE)	
+			return DIAMOND_ITEM;
+		break;
+	case GOLD: 
+		if(item >= IRON_PICKAXE)
+			return GOLD_ITEM;
+		break;
+	case RAINBOW_ORE: 
+		if(item >= GOLD_PICKAXE)	
+			return RAINBOW_ITEM;
+		break;
 	case MAGMA_STONE: 
 		if(item >= WOOD_PICKAXE)
 			return MAGMA_ITEM;
@@ -144,10 +161,12 @@ int maxUses(enum Item item)
 {
 	switch(item)
 	{
-	case WOOD_PICKAXE:
-		return 16;
-	case STONE_PICKAXE:
-		return 64;
+	case WOOD_PICKAXE: return 16;
+	case STONE_PICKAXE: return 64;
+	case IRON_PICKAXE: return 128;
+	case GOLD_PICKAXE: return 256;
+	case DIAMOND_PICKAXE: return 2048;
+	case RAINBOW_PICKAXE: return 16384;
 	default: break;
 	}
 	return 0;
@@ -171,24 +190,27 @@ struct Inventory createInventory(int sz)
 
 int pickup(enum Item item, int amt, int uses, int maxUses, struct Inventory *inventory)
 {
+	int total = 0;
 	for(int i = 0; i < inventory->maxSize; i++)
 	{
 		if(amt <= 0)
-			return 1;
+			return total;
 		if(inventory->slots[i].amount >= maxStack(inventory->slots[i].item))
 			continue;
 
 		if(inventory->slots[i].item == item &&
 			inventory->slots[i].amount + amt <= maxStack(inventory->slots[i].item))
 		{
+			total += amt;
 			inventory->slots[i].amount += amt;
 			inventory->slots[i].maxUsesLeft = maxUses;
 			inventory->slots[i].usesLeft = uses;
-			return amt; //Found slot to put something in
+			return total; //Found slot to put something in
 		}
 		else if(inventory->slots[i].item == item &&
 				inventory->slots[i].amount + amt > maxStack(inventory->slots[i].item))
 		{
+			total += (maxStack(inventory->slots[i].item) - inventory->slots[i].amount);
 			amt -= (maxStack(inventory->slots[i].item) - inventory->slots[i].amount);
 			inventory->slots[i].amount = maxStack(inventory->slots[i].item);
 			inventory->slots[i].maxUsesLeft = maxUses;
@@ -200,15 +222,16 @@ int pickup(enum Item item, int amt, int uses, int maxUses, struct Inventory *inv
 	{
 		if(inventory->slots[i].item == NOTHING)
 		{
+			total += amt;
 			inventory->slots[i].item = item;
 			inventory->slots[i].amount = amt;
 			inventory->slots[i].maxUsesLeft = maxUses;
 			inventory->slots[i].usesLeft = uses;
-			return amt; //Found slot
+			return total; //Found slot
 		}
 	}
 
-	return amt;
+	return total;
 }
 
 void removeSlot(int ind, struct Inventory *inventory)
