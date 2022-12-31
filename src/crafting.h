@@ -5,18 +5,6 @@
 #define END_RECIPE itemAmt(NOTHING, 0)
 #define RECIPE_COUNT 256
 
-//Just a temporary macro, will not hardcode recipes later
-//hopefully I get around to that
-//
-//Or maybe I won't
-#define CREATE_RECIPE(ind, res, a, b, c, d) \
-	recipes[ind][0] = res; \
-	recipes[ind][1] = a; \
-	recipes[ind][2] = b; \
-	recipes[ind][3] = c; \
-	recipes[ind][4] = d; \
-	recipeCount++;
-
 
 struct InventorySlot itemAmt(enum Item item, int amt);
 void initRecipes();
