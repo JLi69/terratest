@@ -245,7 +245,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//Update liquid blocks	
 	if(blockUpdateTimer > 0.03f)
 	{
-		updateBlocks(world->blocks, camPos, blockUpdateTimer, 64, world->blockArea, world->worldBoundingRect);
+		updatePlants(world, camPos, 64);
+		updateBlocks(world->blocks, camPos, blockUpdateTimer, 48, world->blockArea, world->worldBoundingRect);
 		blockUpdateTimer = 0.0f;	
 	}
 
@@ -385,6 +386,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				{	
 					addItem(world, itemAmt(droppedItem(getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 												player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
+					if(getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WHEAT4)
+						addItem(world, itemAmt(SEED_ITEM, 2), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);
 					setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);		
 					use(player->inventory.selected, &player->inventory);
 				}	
@@ -474,7 +477,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	int qPressed = isPressedOnce(GLFW_KEY_Q);	
 	if(qPressed && (isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)) && player->inventory.slots[player->inventory.selected].item != NOTHING)
 	{
-		float offset = player->playerSpr.flipped ? -BLOCK_SIZE : BLOCK_SIZE;
+		float offset = (player->playerSpr.flipped ? -BLOCK_SIZE : BLOCK_SIZE) * 2.0f;
 
 		addItem(world, itemAmtWithUses(player->inventory.slots[player->inventory.selected].item,
 							   player->inventory.slots[player->inventory.selected].amount, 
@@ -485,7 +488,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 	else if(qPressed && player->inventory.slots[player->inventory.selected].item != NOTHING)
 	{
-		float offset = player->playerSpr.flipped ? -BLOCK_SIZE : BLOCK_SIZE;
+		float offset = (player->playerSpr.flipped ? -BLOCK_SIZE : BLOCK_SIZE) * 2.0f;
 		addItem(world, itemAmtWithUses(player->inventory.slots[player->inventory.selected].item, 1,
 							   player->inventory.slots[player->inventory.selected].usesLeft,
 							   player->inventory.slots[player->inventory.selected].maxUsesLeft),

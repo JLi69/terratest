@@ -9,6 +9,9 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 	//Break time by hand
 	switch(type)
 	{
+	case STONE_BRICK: //Fall through
+	case SMOOTH_STONE: //Fall through
+	case GLASS: //Fall through
 	case FARMLAND: //Fall through
 	case BRICK: //Fall through
 	case PLANK_BLOCK: //Fall through
@@ -87,7 +90,7 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 
 int maxStack(enum Item item)
 {
-	if(item >= WOOD_PICKAXE)
+	if(item >= WOOD_PICKAXE && item <= CAKE)
 		return 1;
 	return 99;
 }
@@ -97,6 +100,8 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 {
 	switch(type)
 	{
+	case SMOOTH_STONE: return SMOOTH_STONE_ITEM;
+	case STONE_BRICK: return STONE_BRICK_ITEM;
 	case LOG: //Fall through
 	case STUMP: return LOG_ITEM;
 	case PLANK_BLOCK: return PLANK;
@@ -150,6 +155,8 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 	case WHEAT2: //Fall through
 	case WHEAT3: //Fall through
 		return SEED_ITEM;
+	case WHEAT4:
+		return WHEAT;
 	default: break;
 	}
 	return NOTHING;
@@ -175,6 +182,9 @@ enum BlockType placeBlock(enum Item item)
 	case SEED_ITEM: return WHEAT1;
 	case WATER_BUCKET: return WATER;
 	case LAVA_BUCKET: return LAVA;
+	case STONE_BRICK_ITEM: return STONE_BRICK;
+	case SMOOTH_STONE_ITEM: return SMOOTH_STONE;
+	case GLASS_ITEM: return GLASS;
 	default: break;
 	}
 	return NONE;

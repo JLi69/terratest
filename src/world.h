@@ -139,5 +139,7 @@ void drawItems(struct World world, struct Vector2D camPos,
 void updateItems(struct World *world, struct Vector2D camPos, int simDist,
 				 float timePassed, struct Player *player);
 
+void updatePlants(struct World *world, struct Vector2D camPos, int simDist);
+
 #endif
 #define WORLD_H

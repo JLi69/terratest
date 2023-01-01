@@ -148,6 +148,29 @@ void initRecipes()
 				  itemAmt(IRON_INGOT, 2), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
+
+	CREATE_RECIPE(itemAmt(BREAD, 1), //Result
+				  itemAmt(WHEAT, 4), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+
+	CREATE_RECIPE(itemAmt(CAKE, 1), //Result
+				  itemAmt(WHEAT, 64), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	
+	CREATE_RECIPE(itemAmt(STONE_BRICK_ITEM, 8), //Result
+				  itemAmt(STONE_ITEM, 3), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(SMOOTH_STONE_ITEM, 1), //Result
+				  itemAmt(STONE_BRICK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GLASS_ITEM, 16), //Result
+				  itemAmt(SAND_ITEM, 1), //Ingredients
+				  itemAmt(COAL_ITEM, 1), 
+				  END_RECIPE, END_RECIPE);
 }
 
 struct InventorySlot craft(struct Inventory *inventory, int recipeId)

@@ -283,15 +283,15 @@ struct World generateWorld(int seed, float amp, int interval)
 
 			if(type == STONE)
 			{
-				if(rand() % COAL_PROB == 0)
+				if(rand() % COAL_PROB <= (world.worldBoundingRect.maxY - y) / 256)
 					type = COAL;
-				else if(rand() % IRON_PROB == 0 && y <= 200.0f)
+				else if(rand() % IRON_PROB <= (world.worldBoundingRect.maxY - y) / 64 && y <= 200.0f)
 					type = IRON;	
-				else if(rand() % GOLD_PROB == 0 && y <= 128.0f)
+				else if(rand() % GOLD_PROB <= (world.worldBoundingRect.maxY - y) / 80 && y <= 128.0f)
 					type = GOLD;		
-				else if(rand() % DIAMOND_PROB == 0 && y <= 48.0f)
+				else if(rand() % DIAMOND_PROB <= (world.worldBoundingRect.maxY - y) / 80 && y <= 48.0f)
 					type = DIAMOND;
-				else if(rand() % RAINBOW_PROB == 0 && y <= 32.0f)
+				else if(rand() % RAINBOW_PROB <= (world.worldBoundingRect.maxY - y) / 80 && y <= 32.0f)
 					type = RAINBOW_ORE;
 				else if(y <= 32.0f && rand() % (int)(y * y * 0.05f + 1.0f) <= sqrtf(y))
 					type = MAGMA_STONE;

@@ -96,7 +96,15 @@ enum Item
 	
 	BUCKET,
 	WATER_BUCKET,
-	LAVA_BUCKET
+	LAVA_BUCKET,
+
+	BREAD,
+	CAKE,
+	WHEAT,
+
+	STONE_BRICK_ITEM,
+	SMOOTH_STONE_ITEM,
+	GLASS_ITEM
 };
 
 struct InventorySlot
