@@ -9,6 +9,21 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 	//Break time by hand
 	switch(type)
 	{
+	case DOOR_BOTTOM_CLOSED: //Fall through
+	case DOOR_TOP_CLOSED: //Fall through
+	case DOOR_BOTTOM_OPEN: //Fall through
+	case DOOR_TOP_OPEN: //Fall through
+	case MAGMA_BRICK: //Fall through
+	case MAGMA_TILE: //Fall through
+	case SAND_BRICK: //Fall through
+	case SAND_TILE: //Fall through
+	case PILLAR: //Fall through
+	case LADDER: //Fall through
+	case COAL_BLOCK: //Fall through
+	case IRON_BLOCK: //Fall through
+	case DIAMOND_BLOCK: //Fall through
+	case GOLD_BLOCK: //Fall through 
+	case RAINBOW_BLOCK: //Fall through
 	case STONE_BRICK: //Fall through
 	case SMOOTH_STONE: //Fall through
 	case GLASS: //Fall through
@@ -99,7 +114,12 @@ int maxStack(enum Item item)
 enum Item droppedItem(enum BlockType type, enum Item item)
 {
 	switch(type)
-	{
+	{	
+	case COAL_BLOCK: return COAL_BLOCK_ITEM;
+	case IRON_BLOCK: return IRON_PICKAXE;
+	case DIAMOND_BLOCK: return DIAMOND_BLOCK_ITEM;
+	case GOLD_BLOCK: return GOLD_BLOCK_ITEM;
+	case RAINBOW_BLOCK: return RAINBOW_BLOCK_ITEM;
 	case SMOOTH_STONE: return SMOOTH_STONE_ITEM;
 	case STONE_BRICK: return STONE_BRICK_ITEM;
 	case LOG: //Fall through
@@ -157,6 +177,20 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 		return SEED_ITEM;
 	case WHEAT4:
 		return WHEAT;
+	case LADDER:
+		return LADDER_ITEM;
+	case MAGMA_BRICK: return MAGMA_BRICK_ITEM;
+	case MAGMA_TILE: return MAGMA_TILE_ITEM;
+	case SAND_BRICK: return SAND_BRICK_ITEM;
+	case SAND_TILE: return SAND_TILE_ITEM;
+	case PILLAR: return PILLAR_ITEM;
+	
+	case DOOR_BOTTOM_CLOSED: //Fall through
+	case DOOR_TOP_CLOSED: //Fall through
+	case DOOR_BOTTOM_OPEN: //Fall through
+	case DOOR_TOP_OPEN: //Fall through
+		return DOOR_ITEM;
+	
 	default: break;
 	}
 	return NOTHING;
@@ -167,6 +201,17 @@ enum BlockType placeBlock(enum Item item)
 {
 	switch(item)
 	{
+	case DOOR_ITEM: return DOOR_BOTTOM_CLOSED;
+	case MAGMA_BRICK_ITEM: return MAGMA_BRICK;
+	case MAGMA_TILE_ITEM: return MAGMA_TILE;
+	case SAND_BRICK_ITEM: return SAND_BRICK;
+	case SAND_TILE_ITEM: return SAND_TILE;
+	case PILLAR_ITEM: return PILLAR;
+	case COAL_BLOCK_ITEM: return COAL_BLOCK;
+	case IRON_BLOCK_ITEM: return IRON_BLOCK;
+	case DIAMOND_BLOCK_ITEM: return DIAMOND_BLOCK;
+	case GOLD_BLOCK_ITEM: return GOLD_BLOCK;
+	case RAINBOW_BLOCK_ITEM: return RAINBOW_BLOCK;
 	case LOG_ITEM: return LOG;
 	case DIRT_ITEM: return DIRT;
 	case FLOWER_ITEM: return FLOWER;
@@ -185,6 +230,8 @@ enum BlockType placeBlock(enum Item item)
 	case STONE_BRICK_ITEM: return STONE_BRICK;
 	case SMOOTH_STONE_ITEM: return SMOOTH_STONE;
 	case GLASS_ITEM: return GLASS;
+	case LADDER_ITEM: return LADDER;
+
 	default: break;
 	}
 	return NONE;
@@ -440,4 +487,19 @@ void use(int ind, struct Inventory *inventory)
 	//Used up
 	if(inventory->slots[ind].usesLeft < 0)
 		inventory->slots[ind] = itemAmtWithUses(NOTHING, 0, 0, 0);
+}
+
+int isPartOfDoor(enum BlockType type)
+{
+	return type == DOOR_TOP_OPEN ||
+		   type == DOOR_TOP_CLOSED ||
+		   type == DOOR_BOTTOM_CLOSED ||
+		   type == DOOR_BOTTOM_OPEN;
+}
+
+int canReplace(enum BlockType type)
+{
+	return type == WATER ||
+		   type == LAVA ||
+		   type == NONE;
 }

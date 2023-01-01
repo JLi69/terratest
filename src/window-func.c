@@ -128,6 +128,13 @@ int mouseButtonHeld(int button)
 	return 0;
 }
 
+void releaseMouseButton(int button)
+{
+	for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+		if(button == mouse[i])
+			mouse[i] = UNPRESSED;
+}
+
 double getMouseScroll()
 {
 	double scrollVal = mouseScroll;

@@ -186,7 +186,7 @@ void updateBlocks(struct Block *blocks,
 						}
 					}
 				}
-			}
+			}	
 		}
 	}
 
@@ -198,7 +198,9 @@ void updateBlocks(struct Block *blocks,
 			if(getBlock(blocks, x, y, maxIndex, boundRect).type == GRASS)
 			{
 				if(getBlock(blocks, x, y + 1, maxIndex, boundRect).type != NONE &&
-					getBlock(blocks, x, y + 1, maxIndex, boundRect).type != WATER && 
+					getBlock(blocks, x, y + 1, maxIndex, boundRect).type != WATER &&
+					getBlock(blocks, x, y + 1, maxIndex, boundRect).type != DOOR_BOTTOM_OPEN && 
+					getBlock(blocks, x, y + 1, maxIndex, boundRect).type != DOOR_BOTTOM_CLOSED && 
 					rand() % 16 == 0)
 					newBlocks[x - minX + (y - minY) * sz].type = DIRT;	
 				else
@@ -432,9 +434,12 @@ int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *
 		{
 			if(getBlock(blocks, x, y, maxIndex, boundRect).type != NONE &&
 				getBlock(blocks, x, y, maxIndex, boundRect).type != WATER &&
-				getBlock(blocks, x, y, maxIndex, boundRect).type != LAVA)
+				getBlock(blocks, x, y, maxIndex, boundRect).type != LAVA &&
+				getBlock(blocks, x, y, maxIndex, boundRect).type != DOOR_TOP_OPEN &&
+				getBlock(blocks, x, y, maxIndex, boundRect).type != DOOR_BOTTOM_OPEN)
 			{
-				struct Sprite block = createSprite(createRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));
+				struct Sprite block = createSpriteWithType(createRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 
+															getBlock(blocks, x, y, maxIndex, boundRect).type);
 				if(colliding(block.hitbox, spr.hitbox))
 				{
 					*collided = block;

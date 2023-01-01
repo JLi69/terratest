@@ -17,6 +17,7 @@ void updateWindow(void);
 int isPressed(int key);
 int isPressedOnce(int key); //"Unpresses" a key after queried
 int mouseButtonHeld(int button);
+void releaseMouseButton(int button);
 double getMouseScroll(); //Gets how much the mouse is scrolling in the y direction
 
 //Quit the program and give an error

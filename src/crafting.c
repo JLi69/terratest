@@ -159,6 +159,11 @@ void initRecipes()
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 	
+	CREATE_RECIPE(itemAmt(DOOR_ITEM, 1), //Result
+				  itemAmt(PLANK, 2), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE,
+				  END_RECIPE);
 	CREATE_RECIPE(itemAmt(STONE_BRICK_ITEM, 8), //Result
 				  itemAmt(STONE_ITEM, 3), //Ingredients
 				  END_RECIPE, 
@@ -170,6 +175,73 @@ void initRecipes()
 	CREATE_RECIPE(itemAmt(GLASS_ITEM, 16), //Result
 				  itemAmt(SAND_ITEM, 1), //Ingredients
 				  itemAmt(COAL_ITEM, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(LADDER_ITEM, 16), //Result
+				  itemAmt(STICK, 8), //Ingredients
+				  END_RECIPE,	
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(SAND_BRICK_ITEM, 8), //Result
+				  itemAmt(SAND_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(SAND_TILE_ITEM, 1), //Result
+				  itemAmt(SAND_BRICK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(MAGMA_BRICK_ITEM, 8), //Result
+				  itemAmt(MAGMA_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(MAGMA_TILE_ITEM, 1), //Result
+				  itemAmt(MAGMA_BRICK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(PILLAR_ITEM, 1), //Result
+				  itemAmt(STONE_BRICK_ITEM, 1), //Ingredients
+				  itemAmt(SMOOTH_STONE_ITEM, 1), 
+				  itemAmt(STONE_BLOCK, 1),
+				  itemAmt(STONE_ITEM, 4));
+
+	//Ore blocks to flex your wealth
+	CREATE_RECIPE(itemAmt(COAL_BLOCK_ITEM, 1), //Result
+				  itemAmt(COAL_ITEM, 10), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(IRON_BLOCK_ITEM, 1), //Result
+				  itemAmt(IRON_INGOT, 10), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(DIAMOND_BLOCK_ITEM, 1), //Result
+				  itemAmt(DIAMOND_ITEM, 10), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GOLD_BLOCK_ITEM, 1), //Result
+				  itemAmt(GOLD_INGOT, 10), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(RAINBOW_BLOCK_ITEM, 1), //Result
+				  itemAmt(RAINBOW_ITEM, 10), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(COAL_ITEM, 10), //Result
+				  itemAmt(COAL_BLOCK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(IRON_INGOT, 10), //Result
+				  itemAmt(IRON_BLOCK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(DIAMOND_ITEM, 10), //Result
+				  itemAmt(DIAMOND_BLOCK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GOLD_INGOT, 10), //Result
+				  itemAmt(GOLD_INGOT, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(RAINBOW_ITEM, 10), //Result
+				  itemAmt(RAINBOW_BLOCK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 }
 

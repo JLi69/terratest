@@ -36,6 +36,21 @@ enum BlockType
 	WHEAT2,
 	WHEAT3,
 	WHEAT4,
+	COAL_BLOCK,
+	IRON_BLOCK,
+	DIAMOND_BLOCK,
+	GOLD_BLOCK,
+	RAINBOW_BLOCK,
+	LADDER,
+	MAGMA_BRICK,
+	MAGMA_TILE,
+	SAND_BRICK,
+	SAND_TILE,
+	PILLAR,
+	DOOR_BOTTOM_CLOSED,
+	DOOR_TOP_CLOSED,
+	DOOR_BOTTOM_OPEN,
+	DOOR_TOP_OPEN,
 };
 
 //item types
@@ -104,7 +119,20 @@ enum Item
 
 	STONE_BRICK_ITEM,
 	SMOOTH_STONE_ITEM,
-	GLASS_ITEM
+	GLASS_ITEM,
+	COAL_BLOCK_ITEM,
+	IRON_BLOCK_ITEM,
+	DIAMOND_BLOCK_ITEM,
+	GOLD_BLOCK_ITEM,
+	RAINBOW_BLOCK_ITEM,
+	LADDER_ITEM,
+	MAGMA_BRICK_ITEM,
+	MAGMA_TILE_ITEM,
+	SAND_BRICK_ITEM,
+	SAND_TILE_ITEM,
+	PILLAR_ITEM,
+
+	DOOR_ITEM,
 };
 
 struct InventorySlot
@@ -148,6 +176,9 @@ void displayInventoryNumbers(struct Inventory inventory, float x, float y, float
 struct InventorySlot itemAmt(enum Item item, int amt);
 struct InventorySlot itemAmtWithUses(enum Item item, int amt, int uses, int maxUses);
 void use(int ind, struct Inventory *inventory);
+
+int isPartOfDoor(enum BlockType type);
+int canReplace(enum BlockType type);
 
 #endif
 

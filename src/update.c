@@ -27,7 +27,9 @@ static const enum BlockType transparent[] = { LOG,
 											  WHEAT1,
 											  WHEAT2,
 											  WHEAT3,
-											  WHEAT4, };
+											  WHEAT4,
+											  LADDER,
+											  PILLAR };
 
 void initGame(struct World *world, struct Player *player)
 {
@@ -130,7 +132,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	{	
 		player->playerSpr.vel.x *= 0.2f;
 		if(player->playerSpr.vel.y > 0.0f)
-			player->playerSpr.vel.y *= 0.4f;	
+			player->playerSpr.vel.y *= 0.1f;	
 	}
 
 	//Move player in the x direction
@@ -233,7 +235,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	if(!player->playerSpr.falling || 
 	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER) || 
 	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES) || 
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA))
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA) ||
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LADDER))
 		player->playerSpr.canJump = 1;
 	else
 		player->playerSpr.canJump = 0;
@@ -279,6 +282,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 
 	//Place blocks
+	int placed = 0;
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
 	{		
 		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));	
@@ -288,14 +292,15 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			if(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
 			{
 				setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);
-				if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)	
-					decrementSlot(player->inventory.selected, &player->inventory);	
+				if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)
+				{
+					placed = 1;
+					decrementSlot(player->inventory.selected, &player->inventory);
+				}
 			}	
 		}
 		else if(!colliding(temp.hitbox, player->playerSpr.hitbox) &&
-				(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
-				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
-				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA))
+				canReplace(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type))
 		{	
 			//Check if block is transparent
 			int found = 0, ableToPlace = 0;
@@ -322,11 +327,15 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				{
 					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);				
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 1.0f, world->worldBoundingRect);			
+				
+					if(placeBlock(player->inventory.slots[player->inventory.selected].item) == DOOR_BOTTOM_CLOSED)
+						updateDoor(world, cursorX, cursorY);
 				}	
 			}	
 
 			if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE && (!found || (found && ableToPlace)))	
 			{	
+				placed = 1;
 				if((player->inventory.slots[player->inventory.selected].item == LAVA_BUCKET ||
 					player->inventory.slots[player->inventory.selected].item == WATER_BUCKET) &&
 					bucketDelay >= BUCKET_DELAY_TIME)
@@ -340,18 +349,16 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			}	
 		}	
 	}
+
 	//Destroy blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
 	{
 		if((isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)) &&
-			(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
-			 getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
-			 getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA) &&
+			(canReplace(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type) ||
+			 isPartOfDoor(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type)) &&
 			getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE)
 			breakBlockTimer += secondsPerFrame;
-		else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
-				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
-				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA) &&
+		else if(canReplace(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type) &&
 				getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE)
 			breakBlockTimer += secondsPerFrame;
 		else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
@@ -368,9 +375,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		{
 			if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 			{
-				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
-					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
-					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA)		
+				if(canReplace(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type) ||
+					isPartOfDoor(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type))		
 				{	
 					addItem(world, itemAmt(droppedItem(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
@@ -396,12 +402,20 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE) &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
 				{	
+					//Door
+					if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == DOOR_BOTTOM_CLOSED ||
+						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == DOOR_BOTTOM_OPEN)
+						setBlockType(world->blocks, cursorX, cursorY + 1, world->blockArea, NONE, world->worldBoundingRect);
+					else if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == DOOR_TOP_CLOSED ||
+							getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == DOOR_TOP_OPEN)
+						setBlockType(world->blocks, cursorX, cursorY - 1, world->blockArea, NONE, world->worldBoundingRect);
+
 					addItem(world, itemAmt(droppedItem(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
 					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);				
 					revealNeighbors(world, cursorX, cursorY);
-					use(player->inventory.selected, &player->inventory);
+					use(player->inventory.selected, &player->inventory); 
 				}	
 			}
 			
@@ -443,6 +457,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			}
 			bucketDelay = 0.0f;
 		}
+
+		if((!placed && toggleDoor(world, cursorX, cursorY, player->playerSpr)) || (placed && isPartOfDoor(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type)))
+			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
 	}
 
 	//Inventory keys

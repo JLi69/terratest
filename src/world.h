@@ -140,6 +140,10 @@ void updateItems(struct World *world, struct Vector2D camPos, int simDist,
 				 float timePassed, struct Player *player);
 
 void updatePlants(struct World *world, struct Vector2D camPos, int simDist);
+//Pass in coordinates of the bottom of the door
+void updateDoor(struct World *world, int x, int y);
+//Returns 1 if it detected a door
+int toggleDoor(struct World *world, int x, int y, struct Sprite playerSpr);
 
 #endif
 #define WORLD_H
