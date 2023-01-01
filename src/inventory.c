@@ -9,24 +9,39 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 	//Break time by hand
 	switch(type)
 	{
+	case FARMLAND: //Fall through
+	case BRICK: //Fall through
 	case PLANK_BLOCK: //Fall through
 	case GRASS: //Fall through
 	case SAND: //Fall through
-	case DIRT: 
-		if(item >= WOOD_PICKAXE)
+	case DIRT: 	
+		breakTime = 0.5f; 
+		if(item >= WOOD_PICKAXE && item <= RAINBOW_PICKAXE)
 		{
-			breakTime *= 0.5f;
 			breakTime *= powf(0.5f, (item - WOOD_PICKAXE + 1));
 		}
-		breakTime = 0.5f; break;
+		break;
 	
 	case LOG: //Fall through
-	case STUMP:  breakTime = 1.0f; break;
+	case STUMP:  
+		breakTime = 2.0f;
+		if(item >= WOOD_AXE && item <= RAINBOW_AXE)
+		{
+			breakTime *= 0.7f;
+			breakTime *= powf(0.7f, (item - WOOD_AXE + 1));
+		}
+		if(item == RAINBOW_AXE)
+			breakTime *= 0.1f;
+		break;
 
 	case LEAF: //Fall through
 	case TALL_GRASS: //Fall through
 	case VINES: breakTime = 0.1f; break;
 
+	case WHEAT1: //Fall through
+	case WHEAT2: //Fall through
+	case WHEAT3: //Fall through
+	case WHEAT4: //Fall through
 	case SAPLING: //Fall through
 	case FLOWER: breakTime = 0.01f; break;
 
@@ -48,21 +63,21 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 	case STONE: //Fall through	
 	case MAGMA_STONE: //Fall through
 	case COAL: //Fall through
-		if(item >= WOOD_PICKAXE)
+		if(item >= WOOD_PICKAXE && item <= RAINBOW_PICKAXE)
 			breakTime *= 0.4f;
 	case IRON: //Fall through	
-		if(item >= STONE_PICKAXE)
+		if(item >= STONE_PICKAXE && item <= RAINBOW_PICKAXE)
 			breakTime *= 0.5f;
 	case DIAMOND: //Fall through
 	case GOLD: //Fall through
-		if(item >= IRON_PICKAXE)
+		if(item >= IRON_PICKAXE && item <= RAINBOW_PICKAXE)
 			breakTime *= 0.5f;
 	case RAINBOW_ORE:
-		if(item >= GOLD_PICKAXE)
+		if(item >= GOLD_PICKAXE && item <= RAINBOW_PICKAXE)
 			breakTime *= 0.5f;
-		if(item >= DIAMOND_PICKAXE)
+		if(item >= DIAMOND_PICKAXE && item <= RAINBOW_PICKAXE)
 			breakTime *= 0.5f;
-		if(item >= RAINBOW_PICKAXE)
+		if(item == RAINBOW_PICKAXE)
 			breakTime *= 0.1f;
 	default: break;	
 	}
@@ -85,9 +100,10 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 	case LOG: //Fall through
 	case STUMP: return LOG_ITEM;
 	case PLANK_BLOCK: return PLANK;
+	case FARMLAND: //Fall through
 	case DIRT: return DIRT_ITEM;
 	case GRASS: 
-		if(item >= WOOD_PICKAXE)
+		if(item >= WOOD_PICKAXE && item <= RAINBOW_PICKAXE)
 			return GRASS_ITEM;
 		return DIRT_ITEM;
 	case LEAF:
@@ -95,7 +111,7 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 		else if(rand() % 32 <= 4) return SAPLING_ITEM;
 		break;	
 	case STONE: 
-		if(item >= WOOD_PICKAXE)	
+		if(item >= WOOD_PICKAXE && item <= RAINBOW_PICKAXE)	
 			return STONE_ITEM;
 		break;
 	case BRICK: return BRICK_ITEM;
@@ -109,27 +125,31 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 			return COAL_ITEM;
 		break;
 	case IRON: 
-		if(item >= STONE_PICKAXE)
+		if(item >= STONE_PICKAXE && item <= RAINBOW_PICKAXE)
 			return IRON_ITEM;
 		break;
 	case DIAMOND: 
-		if(item >= IRON_PICKAXE)	
+		if(item >= IRON_PICKAXE && item <= RAINBOW_PICKAXE)	
 			return DIAMOND_ITEM;
 		break;
 	case GOLD: 
-		if(item >= IRON_PICKAXE)
+		if(item >= IRON_PICKAXE && item <= RAINBOW_PICKAXE)
 			return GOLD_ITEM;
 		break;
 	case RAINBOW_ORE: 
-		if(item >= GOLD_PICKAXE)	
+		if(item >= GOLD_PICKAXE && item <= RAINBOW_PICKAXE)	
 			return RAINBOW_ITEM;
 		break;
 	case MAGMA_STONE: 
-		if(item >= WOOD_PICKAXE)
+		if(item >= WOOD_PICKAXE && item <= RAINBOW_PICKAXE)
 			return MAGMA_ITEM;
 		break;
 	case SAND: return SAND_ITEM;
 	case SAPLING: return SAPLING_ITEM;
+	case WHEAT1: //Fall through
+	case WHEAT2: //Fall through
+	case WHEAT3: //Fall through
+		return SEED_ITEM;
 	default: break;
 	}
 	return NOTHING;
@@ -152,6 +172,9 @@ enum BlockType placeBlock(enum Item item)
 	case INDESTRUCTABLE_ITEM: return INDESTRUCTABLE;
 	case SAPLING_ITEM: return SAPLING;
 	case PLANK: return PLANK_BLOCK;
+	case SEED_ITEM: return WHEAT1;
+	case WATER_BUCKET: return WATER;
+	case LAVA_BUCKET: return LAVA;
 	default: break;
 	}
 	return NONE;
@@ -161,12 +184,35 @@ int maxUses(enum Item item)
 {
 	switch(item)
 	{
+	case WOOD_SWORD: //Fall through
+	case WOOD_AXE: //Fall through
+	case WOOD_HOE: //Fall through
 	case WOOD_PICKAXE: return 16;
+	
+	case STONE_SWORD: //Fall through
+	case STONE_AXE: //Fall through
+	case STONE_HOE: //Fall through
 	case STONE_PICKAXE: return 64;
+	
+	case IRON_SWORD: //Fall through
+	case IRON_AXE: //Fall through
+	case IRON_HOE: //Fall through
 	case IRON_PICKAXE: return 128;
+	
+	case GOLD_SWORD: //Fall through
+	case GOLD_AXE: //Fall through
+	case GOLD_HOE: //Fall through
 	case GOLD_PICKAXE: return 256;
+
+	case DIAMOND_SWORD: //Fall through
+	case DIAMOND_AXE: //Fall through
+	case DIAMOND_HOE: //Fall through
 	case DIAMOND_PICKAXE: return 2048;
-	case RAINBOW_PICKAXE: return 16384;
+
+	case RAINBOW_SWORD: //Fall through
+	case RAINBOW_AXE: //Fall through
+	case RAINBOW_HOE: //Fall through
+	case RAINBOW_PICKAXE: return 16384;	
 	default: break;
 	}
 	return 0;

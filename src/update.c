@@ -15,12 +15,19 @@ static int menuSelection = 0;
 static enum BlockType selectedBlock = NONE;
 static int menuBegin = 0, menuEnd = 8;
 
+#define BUCKET_DELAY_TIME 0.5f
+static float bucketDelay = BUCKET_DELAY_TIME + 1.0f;
+
 static const enum BlockType transparent[] = { LOG,
 											  STUMP,
 											  FLOWER,
 											  TALL_GRASS,
 											  VINES,
-											  SAPLING };
+											  SAPLING,
+											  WHEAT1,
+											  WHEAT2,
+											  WHEAT3,
+											  WHEAT4, };
 
 void initGame(struct World *world, struct Player *player)
 {
@@ -33,10 +40,7 @@ void initGame(struct World *world, struct Player *player)
 	player->playerSpr = createSprite(createRect(0.0f, 32.0f * 4.0f * height, 32.0f, 64.0f));
 	player->playerSpr.animationState = IDLE;
 	player->playerSpr.animating = 1;
-	player->inventory = createInventory(16); //inventory of size 16
-	player->inventory.slots[0] = itemAmtWithUses(RAINBOW_PICKAXE, 1, 9999, 9999);
-	for(int i = 1; i < 16; i++)
-		player->inventory.slots[i] = itemAmt(STONE_ITEM, 99);
+	player->inventory = createInventory(20); //inventory of size 20	
 
 	struct Sprite collision;
 	while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
@@ -70,9 +74,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		if(isPressedOnce(GLFW_KEY_UP))
 			menuSelection--;
 		if(isPressedOnce(GLFW_KEY_DOWN))
-			menuSelection++;
-		menuBegin = (menuSelection / 8) * 8;
-		menuEnd = (menuSelection / 8 + 1) * 8;
+			menuSelection++;	
 		if(isPressedOnce(GLFW_KEY_ESCAPE))
 			toggleCraftingMenu();
 		//Craft
@@ -104,12 +106,15 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			menuSelection = numberOfCraftingRecipes() - 1;
 		else if(menuSelection >= numberOfCraftingRecipes())
 			menuSelection = 0;
+		menuBegin = (menuSelection / 8) * 8;
+		menuEnd = (menuSelection / 8 + 1) * 8;
 
 		return; //Pause game when on crafting menu
 	}	
 
 	static float blockUpdateTimer = 0.0f;
 	blockUpdateTimer += secondsPerFrame;
+	bucketDelay += secondsPerFrame;
 
 	struct Sprite collided;	
 
@@ -260,7 +265,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 	else
 	{
-		if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
+		if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
+		   getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
+		   getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA)	
 		{		
 			selectedBlock = getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type;
 		}	
@@ -273,8 +280,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//Place blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
 	{		
-		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));
-		
+		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));	
+
 		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 		{
 			if(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
@@ -288,7 +295,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA))
-		{
+		{	
 			//Check if block is transparent
 			int found = 0, ableToPlace = 0;
 			for(int i = 0; i < sizeof(transparent) / sizeof(enum BlockType) && !found; i++)
@@ -303,11 +310,34 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 					}	
 				}
 			}
+			
 			if(!found && placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)
-				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);			
+			{
+				if(((player->inventory.slots[player->inventory.selected].item == LAVA_BUCKET ||
+					player->inventory.slots[player->inventory.selected].item == WATER_BUCKET) &&
+					bucketDelay >= BUCKET_DELAY_TIME) ||
+					(player->inventory.slots[player->inventory.selected].item != LAVA_BUCKET &&
+					player->inventory.slots[player->inventory.selected].item != WATER_BUCKET))
+				{
+					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);				
+					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 1.0f, world->worldBoundingRect);			
+				}	
+			}	
+
 			if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE && (!found || (found && ableToPlace)))	
-				decrementSlot(player->inventory.selected, &player->inventory);	
-		}
+			{	
+				if((player->inventory.slots[player->inventory.selected].item == LAVA_BUCKET ||
+					player->inventory.slots[player->inventory.selected].item == WATER_BUCKET) &&
+					bucketDelay >= BUCKET_DELAY_TIME)
+				{
+					player->inventory.slots[player->inventory.selected].item = BUCKET;		
+					bucketDelay = 0.0f;	
+				}
+				else if(player->inventory.slots[player->inventory.selected].item != LAVA_BUCKET &&
+						 player->inventory.slots[player->inventory.selected].item != WATER_BUCKET)
+					decrementSlot(player->inventory.selected, &player->inventory);	
+			}	
+		}	
 	}
 	//Destroy blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
@@ -318,16 +348,18 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			 getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA) &&
 			getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE)
 			breakBlockTimer += secondsPerFrame;
+		else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA) &&
+				getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE)
+			breakBlockTimer += secondsPerFrame;
 		else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != INDESTRUCTABLE &&
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE) &&
 				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED &&
 				!(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)))
-			breakBlockTimer += secondsPerFrame;
-		else if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE &&
-				getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != NONE)
-			breakBlockTimer += secondsPerFrame;
+			breakBlockTimer += secondsPerFrame;	
 		else
 			breakBlockTimer = 0.0f;
 
@@ -337,7 +369,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			{
 				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
 					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
-					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA	)		
+					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA)		
 				{	
 					addItem(world, itemAmt(droppedItem(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
@@ -347,11 +379,14 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			}
 			else
 			{
-				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)	
+				if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE ||
+					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER ||
+					getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA)	
 				{	
 					addItem(world, itemAmt(droppedItem(getBlock(world->transparentBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 												player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
-					setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
+					setBlockType(world->transparentBlocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);		
+					use(player->inventory.selected, &player->inventory);
 				}	
 				else if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != WATER &&
 						getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type != LAVA &&
@@ -360,7 +395,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				{	
 					addItem(world, itemAmt(droppedItem(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type, 
 														player->inventory.slots[player->inventory.selected].item), 1), cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE);	
-					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
+					setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);	
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);				
 					revealNeighbors(world, cursorX, cursorY);
 					use(player->inventory.selected, &player->inventory);
@@ -372,6 +407,40 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 	else
 		breakBlockTimer = 0.0f;	
+
+	//Interact with blocks
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		if(player->inventory.slots[player->inventory.selected].item >= WOOD_HOE &&
+			player->inventory.slots[player->inventory.selected].item <= RAINBOW_HOE)
+		{
+			if((getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == GRASS ||
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == DIRT) &&
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).visibility == REVEALED)
+			{
+				use(player->inventory.selected, &player->inventory);
+				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, FARMLAND, world->worldBoundingRect);	
+			}
+		}
+		else if(player->inventory.slots[player->inventory.selected].item == BUCKET && bucketDelay >= BUCKET_DELAY_TIME)
+		{
+			if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == WATER && 
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).mass > 0.2f)
+			{
+				player->inventory.slots[player->inventory.selected].item = WATER_BUCKET; 
+				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);
+				setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);	
+			}
+			else if(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == LAVA && 
+				getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).mass > 0.2f)
+			{
+				player->inventory.slots[player->inventory.selected].item = LAVA_BUCKET; 
+				setBlockType(world->blocks, cursorX, cursorY, world->blockArea, NONE, world->worldBoundingRect);		
+				setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 0.0f, world->worldBoundingRect);	
+			}
+			bucketDelay = 0.0f;
+		}
+	}
 
 	//Inventory keys
 	static const int inventoryHotKeys[] = { GLFW_KEY_1,

@@ -27,7 +27,15 @@ enum BlockType
 	WATER,
 	LAVA,
 	SAPLING,
-	PLANK_BLOCK
+	PLANK_BLOCK,
+	STONE_BRICK,
+	SMOOTH_STONE,
+	GLASS,
+	FARMLAND,
+	WHEAT1,
+	WHEAT2,
+	WHEAT3,
+	WHEAT4,
 };
 
 //item types
@@ -57,12 +65,38 @@ enum Item
 	SAND_ITEM, //Obtained from breaking sand
 	IRON_INGOT,
 	GOLD_INGOT,
+	
 	WOOD_PICKAXE, //Obtained from crafting
 	STONE_PICKAXE,
 	IRON_PICKAXE,
 	GOLD_PICKAXE,
 	DIAMOND_PICKAXE,
-	RAINBOW_PICKAXE
+	RAINBOW_PICKAXE,
+	
+	WOOD_AXE, //Obtained from crafting
+	STONE_AXE,
+	IRON_AXE,
+	GOLD_AXE,
+	DIAMOND_AXE,
+	RAINBOW_AXE,
+
+	WOOD_HOE, //Obtained from crafting
+	STONE_HOE,
+	IRON_HOE,
+	GOLD_HOE,
+	DIAMOND_HOE,
+	RAINBOW_HOE,
+
+	WOOD_SWORD, //Obtained from crafting
+	STONE_SWORD,
+	IRON_SWORD,
+	GOLD_SWORD,
+	DIAMOND_SWORD,
+	RAINBOW_SWORD,
+	
+	BUCKET,
+	WATER_BUCKET,
+	LAVA_BUCKET
 };
 
 struct InventorySlot

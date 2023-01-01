@@ -161,10 +161,44 @@ void updateBlocks(struct Block *blocks,
 	{
 		for(int y = (int)(camPos.y / BLOCK_SIZE) + updateDist; y >= (int)(camPos.y / BLOCK_SIZE) - updateDist; y--)
 		{	
+			//If it's lava, check neighbors and find if it is neighboring water, if it is, then turn it stone
+			if(getBlock(blocks, x, y, maxIndex, boundRect).type == LAVA)
+			{
+				int xoff[] = { 1, -1, 0,  0 };
+				int yoff[] = { 0,  0, 1, -1 };
+				for(int i = 0; i < 4; i++)
+				{
+					if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER &&
+						getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).mass >= 0.2f)
+					{	
+						newBlocks[(x - minX) + (y - minY) * sz].type = STONE;	
+						newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
+						setBlockType(blocks, x, y, maxIndex, STONE, boundRect);
+					}
+					else if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER && 
+							getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).mass < 0.2f)
+					{
+						if(x - minX + xoff[i] >= 0 && x - minX + xoff[i] < sz && y - minY + yoff[i] >= 0 && y - minY + yoff[i] < sz)
+						{
+							newBlocks[(x - minX + xoff[i]) + (y - minY + yoff[i]) * sz].type = NONE;	
+							newBlocks[(x - minX + xoff[i]) + (y - minY + yoff[i]) * sz].mass = 0.0f;		
+							setBlockType(blocks, x + xoff[i], y + yoff[i], maxIndex, NONE, boundRect);	
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for(int x = (int)(camPos.x / BLOCK_SIZE) - updateDist; x <= (int)(camPos.x / BLOCK_SIZE) + updateDist; x++)
+	{
+		for(int y = (int)(camPos.y / BLOCK_SIZE) + updateDist; y >= (int)(camPos.y / BLOCK_SIZE) - updateDist; y--)
+		{	
 			//Check if grass is under a block, if it is, try to die
 			if(getBlock(blocks, x, y, maxIndex, boundRect).type == GRASS)
 			{
 				if(getBlock(blocks, x, y + 1, maxIndex, boundRect).type != NONE &&
+					getBlock(blocks, x, y + 1, maxIndex, boundRect).type != WATER && 
 					rand() % 16 == 0)
 					newBlocks[x - minX + (y - minY) * sz].type = DIRT;	
 				else
@@ -210,38 +244,7 @@ void updateBlocks(struct Block *blocks,
 			//Liquid
 			else if(getBlock(blocks, x, y, maxIndex, boundRect).type == WATER ||
 					getBlock(blocks, x, y, maxIndex, boundRect).type == LAVA)
-			{
-				//If it's lava, check neighbors and find if it is neighboring water, if it is, then turn it stone
-				if(getBlock(blocks, x, y, maxIndex, boundRect).type == LAVA)
-				{
-					int xoff[] = { 1, -1, 0,  0 };
-					int yoff[] = { 0,  0, 1, -1 };
-					int found = 0;
-					for(int i = 0; i < 4 && !found; i++)
-					{
-						if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER && 
-							getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).mass >= 0.1f)
-						{	
-							newBlocks[(x - minX) + (y - minY) * sz].type = STONE;	
-							newBlocks[(x - minX) + (y - minY) * sz].mass = 1.0f;
-							setBlockType(blocks, x, y, maxIndex, STONE, boundRect);
-							found = 1;	
-						}
-						else if(getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).type == WATER && 
-								getBlock(blocks, x + xoff[i], y + yoff[i], maxIndex, boundRect).mass < 0.1f)
-						{
-							if(x - minX + xoff[i] >= 0 && x - minX + xoff[i] < sz && y - minY + yoff[i] >= 0 && y - minY + yoff[i] < sz)
-							{
-								newBlocks[(x - minX + xoff[i]) + (y - minY + yoff[i]) * sz].type = NONE;	
-								newBlocks[(x - minX + xoff[i]) + (y - minY + yoff[i]) * sz].mass = 0.0f;
-							}
-							setBlockType(blocks, x + xoff[i], y + yoff[i], maxIndex, STONE, boundRect);
-						}
-					}
-
-					if(found) continue;
-				}
-
+			{	
 				flow = 0.0f;
 
 				remainingMass = getBlock(blocks, x, y, maxIndex, boundRect).mass;

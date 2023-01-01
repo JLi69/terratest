@@ -7,8 +7,7 @@
 #include "window-func.h"
 
 float interpolate(float a, float b, float weight)
-{
-	return (b - a) * weight + a;
+{ return (b - a) * weight + a;
 }
 
 void floodFill(int x, int y, int maxY, enum BlockType type,
@@ -197,7 +196,7 @@ struct World generateWorld(int seed, float amp, int interval)
 		{
 			enum BlockType type = STONE;
 			//Insert background blocks	
-			if(y + 1.0f > worldHeight[i] && y <= WATER_LEVEL)
+			if(y + 8.0f > worldHeight[i] && y <= WATER_LEVEL)
 				type = SAND;	
 			else if(y + 7.0f > worldHeight[i])
 				type = DIRT;
@@ -219,13 +218,9 @@ struct World generateWorld(int seed, float amp, int interval)
 			}
 
 			if(y + 1.0f > worldHeight[i])
-			{	
-				type = GRASS;
-				if(y <= WATER_LEVEL)
-				{
-					type = SAND;	
-				}
-			}
+				type = GRASS;	
+			if(y <= WATER_LEVEL && y + 7.0f > worldHeight[i])
+				type = SAND;	
 			
 			//Bottom of world
 			if((y < 0.0f) || (y <= 4.0f && (float)rand() / (float)RAND_MAX <= 1.0f / sqrtf(y + 1.0f)))

@@ -30,8 +30,13 @@ void initRecipes()
 	CREATE_RECIPE(itemAmt(WOOD_PICKAXE, 1), //Result
 				  itemAmt(PLANK, 4), //Ingredients
 				  itemAmt(STICK, 4), END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(BRICK_ITEM, 8), //Result
+				  itemAmt(DIRT_ITEM, 1),
+				  itemAmt(STONE_ITEM, 1),
+				  itemAmt(COAL_ITEM, 1),
+				  END_RECIPE);
 	CREATE_RECIPE(itemAmt(STONE_BLOCK, 1), //Result
-				  itemAmt(STONE_ITEM, 3), //Ingredients
+				  itemAmt(STONE_ITEM, 2), //Ingredients
 				  END_RECIPE, END_RECIPE, END_RECIPE);	
 	CREATE_RECIPE(itemAmt(STONE_PICKAXE, 1), //Result
 				  itemAmt(STONE_ITEM, 4), //Ingredients
@@ -60,6 +65,88 @@ void initRecipes()
 	CREATE_RECIPE(itemAmt(RAINBOW_PICKAXE, 1), //Result
 				  itemAmt(RAINBOW_ITEM, 5), //Ingredients
 				  itemAmt(STICK, 3), 
+				  END_RECIPE, END_RECIPE);
+	//Axe recipes
+	CREATE_RECIPE(itemAmt(WOOD_AXE, 1), //Result
+				  itemAmt(PLANK, 3), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(STONE_AXE, 1), //Result
+				  itemAmt(STONE_ITEM, 3), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(IRON_AXE, 1), //Result
+				  itemAmt(IRON_INGOT, 3), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GOLD_AXE, 1), //Result
+				  itemAmt(GOLD_INGOT, 3), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(DIAMOND_AXE, 1), //Result
+				  itemAmt(DIAMOND_ITEM, 3), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(RAINBOW_AXE, 1), //Result
+				  itemAmt(RAINBOW_ITEM, 3), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+
+	//Hoe recipes
+	CREATE_RECIPE(itemAmt(WOOD_HOE, 1), //Result
+				  itemAmt(PLANK, 2), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(STONE_HOE, 1), //Result
+				  itemAmt(STONE_ITEM, 2), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(IRON_HOE, 1), //Result
+				  itemAmt(IRON_INGOT, 2), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GOLD_HOE, 1), //Result
+				  itemAmt(GOLD_INGOT, 2), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(DIAMOND_HOE, 1), //Result
+				  itemAmt(DIAMOND_ITEM, 2), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(RAINBOW_HOE, 1), //Result
+				  itemAmt(RAINBOW_ITEM, 2), //Ingredients
+				  itemAmt(STICK, 2), 
+				  END_RECIPE, END_RECIPE);
+
+	//Sword recipes
+	CREATE_RECIPE(itemAmt(WOOD_SWORD, 1), //Result
+				  itemAmt(PLANK, 4), //Ingredients
+				  itemAmt(STICK, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(STONE_SWORD, 1), //Result
+				  itemAmt(STONE_BLOCK, 4), //Ingredients
+				  itemAmt(STICK, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(IRON_SWORD, 1), //Result
+				  itemAmt(IRON_INGOT, 4), //Ingredients
+				  itemAmt(STICK, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(GOLD_SWORD, 1), //Result
+				  itemAmt(GOLD_INGOT, 4), //Ingredients
+				  itemAmt(STICK, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(DIAMOND_SWORD, 1), //Result
+				  itemAmt(DIAMOND_ITEM, 4), //Ingredients
+				  itemAmt(STICK, 1), 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(RAINBOW_SWORD, 1), //Result
+				  itemAmt(RAINBOW_ITEM, 4), //Ingredients
+				  itemAmt(STICK, 1), 
+				  END_RECIPE, END_RECIPE);
+
+	CREATE_RECIPE(itemAmt(BUCKET, 1), //Result
+				  itemAmt(IRON_INGOT, 2), //Ingredients
+				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 }
 

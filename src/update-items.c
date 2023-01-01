@@ -1,6 +1,7 @@
 #include "world.h"
 #include "draw.h"
 #include <stdio.h>
+#include <math.h>
 
 void addItem(struct World *world, struct InventorySlot item, float x, float y)
 {
@@ -50,7 +51,8 @@ void updateItems(struct World *world, struct Vector2D camPos, int simDist, float
 	for(int i = 0; i < world->totalItems; i++)
 	{
 		int pickedup = 0;
-		if(colliding(player->playerSpr.hitbox, world->droppedItems[i].itemSpr.hitbox) &&
+		if(powf(player->playerSpr.hitbox.position.x - world->droppedItems[i].itemSpr.hitbox.position.x, 2.0f) +
+		   powf(player->playerSpr.hitbox.position.y - world->droppedItems[i].itemSpr.hitbox.position.y, 2.0f) < 1.5f * 1.5f * BLOCK_SIZE * BLOCK_SIZE &&
 			(pickedup = pickup(world->droppedItems[i].item.item, world->droppedItems[i].item.amount,
 				   world->droppedItems[i].item.usesLeft, world->droppedItems[i].item.maxUsesLeft, &player->inventory)) >= world->droppedItems[i].item.amount)
 			continue;
