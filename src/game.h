@@ -12,6 +12,14 @@
 
 #define CURSOR_SIZE 16.0f
 
+#define START_HEALTH 8
+#define BREATH 16.0f
+//Number of bubbles to draw to represent breath
+#define BUBBLE_COUNT 8.0f
+#define ICON_SIZE 20.0f
+
+#define DAMAGE_COOLDOWN 1.0f
+
 enum AnimationStates
 {
 	IDLE,
@@ -25,6 +33,7 @@ void initGL(void);
 void initGame(struct World *world, struct Player *player);
 
 float getBlockBreakTimer();
+float getDamageCooldown();
 void toggleCraftingMenu();
 int craftingMenuShown();
 int getMenuSelection();

@@ -180,6 +180,8 @@ void use(int ind, struct Inventory *inventory);
 int isPartOfDoor(enum BlockType type);
 int canReplace(enum BlockType type);
 
+int healAmount(enum Item item);
+
 #endif
 
 #define INVENTORY_H

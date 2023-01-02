@@ -62,7 +62,7 @@ void updateItems(struct World *world, struct Vector2D camPos, int simDist, float
 		if(world->droppedItems[i].itemSpr.timeExisted > TIME_TO_DESPAWN) //Get deleted after 5 minutes
 			continue;
 		//Destroyed by lava
-		if(touching(*world, world->droppedItems[i].itemSpr.hitbox.position.x / BLOCK_SIZE, world->droppedItems[i].itemSpr.hitbox.position.y / BLOCK_SIZE, LAVA))
+		if(touching(*world, world->droppedItems[i].itemSpr.hitbox.position.x / BLOCK_SIZE, world->droppedItems[i].itemSpr.hitbox.position.y / BLOCK_SIZE, LAVA, 0.2f))
 			continue;
 		temp[ind++] = world->droppedItems[i];
 	}

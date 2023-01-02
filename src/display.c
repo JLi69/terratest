@@ -146,15 +146,18 @@ void display(struct World world, struct Player player)
 		drawRect();
 	}	
 
-	bindTexture(textures[0], GL_TEXTURE0);
-	//Draw player	
-	flip(player.playerSpr.flipped);
-	setTexFrac(1.0f / 16.0f, 1.0f);
-	setTexSize(256.0f, 32.0f);
-	setTexOffset((float)player.playerSpr.animationFrame * 1.0f / 16.0f, 0.0f);
-	setRectSize(player.playerSpr.hitbox.dimensions.w, player.playerSpr.hitbox.dimensions.h);	
-	setRectPos(0.0f, 0.0f);	
-	drawRect();	
+	if(player.health > 0)
+	{
+		bindTexture(textures[0], GL_TEXTURE0);
+		//Draw player	
+		flip(player.playerSpr.flipped);
+		setTexFrac(1.0f / 16.0f, 1.0f);
+		setTexSize(256.0f, 32.0f);
+		setTexOffset((float)player.playerSpr.animationFrame * 1.0f / 16.0f, 0.0f);
+		setRectSize(player.playerSpr.hitbox.dimensions.w, player.playerSpr.hitbox.dimensions.h);	
+		setRectPos(0.0f, 0.0f);	
+		drawRect();	
+	}
 
 	//Draw items
 	setRectSize(ITEM_SIZE, ITEM_SIZE);
@@ -207,10 +210,36 @@ void display(struct World world, struct Player player)
 	int winWidth, winHeight;
 	getWindowSize(&winWidth, &winHeight);
 
+	bindTexture(textures[2], GL_TEXTURE0);
+	//Display health and breath bars
+	if(player.health > 0)
+	{
+		setRectSize(ICON_SIZE, ICON_SIZE);
+		setTexOffset(9.0f / 16.0f, 0.0f);
+		if(player.health <= 0)
+			setTexOffset(10.0f / 16.0f, 0.0f);
+		for(int i = 0; i < player.maxHealth; i++)
+		{
+			if(i == player.health)
+				setTexOffset(10.0f / 16.0f, 0.0f);
+			setRectPos(i * ICON_SIZE - ICON_SIZE * 0.5f * (player.maxHealth), player.playerSpr.hitbox.dimensions.h / 2.0f + ICON_SIZE * 0.5f);
+			drawRect();
+		}
+		if(player.breath < player.maxBreath)
+		{
+			setTexOffset(11.0f / 16.0f, 0.0f);
+			for(int i = 0; i < (int)roundf(player.breath * BUBBLE_COUNT / BREATH); i++)
+			{
+				setRectPos(i * ICON_SIZE - ICON_SIZE * 0.5f * (int)roundf(player.breath * BUBBLE_COUNT / BREATH), player.playerSpr.hitbox.dimensions.h / 2.0f + ICON_SIZE * 2.0f);
+				drawRect();
+			}
+		}
+	}
+	
+
 	//Crafting recipes
 	if(craftingMenuShown())
 	{
-		bindTexture(textures[2], GL_TEXTURE0);
 		displayCraftingRecipesDecorations(getMenuBegin(), getMenuEnd(), getMenuSelection(), -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
 		bindTexture(textures[4], GL_TEXTURE0);	
 		displayCraftingRecipesIcons(getMenuBegin(), getMenuEnd(), -winWidth / 2.0f + (4.0f + MAX_ITEMS_IN_RECIPE) / 2.0f * (24.0f + 48.0f), 0.0f, 48.0f, 24.0f, 16.0f);
@@ -243,6 +272,22 @@ void display(struct World world, struct Player player)
 		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
 		drawRect();
+	}
+
+	if(getDamageCooldown() > 0.0f)
+	{
+		turnOffTexture();
+		setRectPos(0.0f, 0.0f);
+		setRectSize(1920.0f, 1080.0f);
+		setRectColor(255.0f, 0.0f, 0.0f, getDamageCooldown() / DAMAGE_COOLDOWN * 255.0f * (1.0f - (float)player.health / (float)player.maxHealth));
+		drawRect();
+		turnOnTexture();
+	}
+
+	if(player.health <= 0)
+	{
+		drawString("u suck lol", 0.0f, 0.0f, 64.0f);	
+		drawString("press R to respawn", 0.0f, -96.0f, 24.0f);
 	}
 }
 

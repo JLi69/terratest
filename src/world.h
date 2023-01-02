@@ -39,6 +39,8 @@ struct Player
 {
 	struct Sprite playerSpr;
 	struct Inventory inventory;
+	int health, maxHealth;
+	float breath, maxBreath;
 };
 
 enum Visibility
@@ -131,7 +133,7 @@ int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *
 
 //returns 1 if the object is touching a block of certain type
 //returns 0 if not
-int touching(struct World world, int x, int y, enum BlockType type);
+int touching(struct World world, float x, float y, enum BlockType type, float massThreshold);
 
 void addItem(struct World *world, struct InventorySlot item, float x, float y);
 void drawItems(struct World world, struct Vector2D camPos,

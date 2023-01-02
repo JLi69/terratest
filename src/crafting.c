@@ -155,7 +155,7 @@ void initRecipes()
 				  END_RECIPE, END_RECIPE);
 
 	CREATE_RECIPE(itemAmt(CAKE, 1), //Result
-				  itemAmt(WHEAT, 64), //Ingredients
+				  itemAmt(WHEAT, 16), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 	

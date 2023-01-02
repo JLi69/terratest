@@ -17,6 +17,7 @@ static int menuBegin = 0, menuEnd = 8;
 
 #define BUCKET_DELAY_TIME 0.5f
 static float bucketDelay = BUCKET_DELAY_TIME + 1.0f;
+static float damageDelay = 0.0f;
 
 static const enum BlockType transparent[] = { LOG,
 											  STUMP,
@@ -49,6 +50,19 @@ void initGame(struct World *world, struct Player *player)
 		player->playerSpr.hitbox.position.y -= 32.0f;
 	player->playerSpr.hitbox.position.y += 32.0f;
 	player->playerSpr.canMove = 1;
+	player->health = START_HEALTH;
+	player->maxHealth = START_HEALTH;
+	player->breath = BREATH;
+	player->maxBreath = BREATH;
+
+#ifdef DEV_VERSION 
+	player->health = 1;
+	player->inventory.slots[0] = itemAmt(BREAD, 99);
+	player->inventory.slots[1] = itemAmt(CAKE, 99);
+	player->inventory.slots[2] = itemAmt(BRICK_ITEM, 99);
+	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
+	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
+#endif
 
 	//Initialize crafting recipes
 	initRecipes();
@@ -68,6 +82,32 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	if(isPaused())
 		return;
+
+	//Dead, don't update the world
+	if(player->health <= 0)
+	{
+		damageDelay -= secondsPerFrame;
+		
+		//Respawn
+		if(isPressed(GLFW_KEY_R))
+		{
+			player->playerSpr = createSprite(createRect(0.0f, BLOCK_SIZE * world->worldBoundingRect.maxY, 32.0f, 64.0f));
+			player->playerSpr.animationState = IDLE;
+			player->playerSpr.animating = 1;
+
+			struct Sprite collision;
+			while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
+				player->playerSpr.hitbox.position.y -= 32.0f;
+			player->playerSpr.hitbox.position.y += 32.0f;
+			player->playerSpr.canMove = 1;
+			player->health = START_HEALTH;
+			player->maxHealth = START_HEALTH;
+			player->breath = BREATH;
+			player->maxBreath = BREATH;
+		}
+
+		return;
+	}
 
 	if(isPressedOnce(GLFW_KEY_TAB))
 		toggleCraftingMenu();
@@ -117,18 +157,50 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	static float blockUpdateTimer = 0.0f;
 	blockUpdateTimer += secondsPerFrame;
 	bucketDelay += secondsPerFrame;
+	damageDelay -= secondsPerFrame;
+
+	//Take Damage
+	//Drown if the player is under water
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE + 1, WATER, 0.5f))
+	{	
+		player->breath -= secondsPerFrame;
+		if(player->breath <= 0.0f && damageDelay <= 0.0f)
+		{
+			player->health--;
+			damageDelay = DAMAGE_COOLDOWN;
+		}
+	}
+	else player->breath = player->maxBreath;
+	
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1.0f, MAGMA_STONE, 0.0f))
+	{
+		if(damageDelay <= 0.0f)
+		{
+			player->health--;
+			damageDelay = DAMAGE_COOLDOWN;
+		}	
+	}
+
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA, 0.1f))
+	{
+		if(damageDelay <= 0.0f)
+		{
+			player->health -= 3;
+			damageDelay = DAMAGE_COOLDOWN;
+		}	
+	}
 
 	struct Sprite collided;	
 
 	//printf("%f %f\n", player->hitbox.position.x / BLOCK_SIZE, player->hitbox.position.y / BLOCK_SIZE);
 
-	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER))
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.2f))
 	{
 		player->playerSpr.vel.x *= 0.4f;
 		if(player->playerSpr.vel.y > 0.0f)
 			player->playerSpr.vel.y *= 0.6f;
 	}
-	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA))
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA, 0.2f))
 	{	
 		player->playerSpr.vel.x *= 0.2f;
 		if(player->playerSpr.vel.y > 0.0f)
@@ -165,10 +237,17 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 
 	//Move player in y direction
-	updateSpriteY(&player->playerSpr, secondsPerFrame);	
+	updateSpriteY(&player->playerSpr, secondsPerFrame);
 	//Check for collision	
 	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{		
+		//Apply fall damage
+		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && damageDelay < 0.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f))
+		{
+			damageDelay = DAMAGE_COOLDOWN;
+			player->health -= (int)sqrtf(-player->playerSpr.vel.y / BLOCK_SIZE - 20.0f);
+		}
+
 		//Uncollide the player
 		if(player->playerSpr.vel.y != 0.0f)
 		{
@@ -233,10 +312,10 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	
 	//Check if player can jump
 	if(!player->playerSpr.falling || 
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER) || 
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES) || 
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA) ||
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LADDER))
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.0f) || 
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES, 0.0f) || 
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA, 0.0f) ||
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LADDER, 0.0f))
 		player->playerSpr.canJump = 1;
 	else
 		player->playerSpr.canJump = 0;
@@ -457,9 +536,18 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			}
 			bucketDelay = 0.0f;
 		}
+		//Heal
+		else if(healAmount(player->inventory.slots[player->inventory.selected].item) > 0 && player->health < player->maxHealth)
+		{
+			player->health += healAmount(player->inventory.slots[player->inventory.selected].item);
+			if(player->health > player->maxHealth)
+				player->health = player->maxHealth;
+			decrementSlot(player->inventory.selected, &player->inventory);
+			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);	
+		}
 
 		if((!placed && toggleDoor(world, cursorX, cursorY, player->playerSpr)) || (placed && isPartOfDoor(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type)))
-			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
+			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);	
 	}
 
 	//Inventory keys
@@ -535,9 +623,19 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			world->clouds[i].hitbox.position.y = (float)rand() / (float)RAND_MAX * 960.0f;
 			world->clouds[i].hitbox.dimensions.w = world->clouds[i].hitbox.dimensions.h = sz;	
 		}
-	}
+	}	
 
 	updateItems(world, camPos, 32, secondsPerFrame, player);
+
+	//If player dies, they drop all their stuff
+	if(player->health <= 0)
+	{
+		for(int i = 0; i < player->inventory.maxSize; i++)
+		{
+			addItem(world, player->inventory.slots[i], camPos.x, camPos.y);
+			player->inventory.slots[i] = itemAmt(NOTHING, 0);
+		}
+	}
 }
 
 float getBlockBreakTimer()
@@ -578,4 +676,9 @@ int getMenuBegin()
 int getMenuEnd()
 {
 	return menuEnd;
+}
+
+float getDamageCooldown()
+{
+	return damageDelay;
 }

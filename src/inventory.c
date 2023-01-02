@@ -503,3 +503,14 @@ int canReplace(enum BlockType type)
 		   type == LAVA ||
 		   type == NONE;
 }
+
+int healAmount(enum Item item)
+{
+	switch(item)
+	{
+	case BREAD: return 1;
+	case CAKE: return 3;
+	default: break;
+	}
+	return 0;
+}

@@ -461,12 +461,17 @@ struct Block createBlock(enum BlockType type, float mass)
 	return block;
 }
 
-int touching(struct World world, int x, int y, enum BlockType type)
+int touching(struct World world, float x, float y, enum BlockType type, float massThreshold)
 {
-	return getBlock(world.blocks, x, y + 1, world.blockArea, world.worldBoundingRect).type == type ||
-		   getBlock(world.blocks, (int)roundf(x + 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type ||
-		   getBlock(world.blocks, (int)roundf(x - 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type ||
-		   getBlock(world.transparentBlocks, x, y + 1, world.blockArea, world.worldBoundingRect).type == type ||
-		   getBlock(world.transparentBlocks, (int)roundf(x + 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type ||
-		   getBlock(world.transparentBlocks, (int)roundf(x - 0.5), y + 1, world.blockArea, world.worldBoundingRect).type == type;
+	int xVals[] = { floorf(x), ceilf(x), floorf(x), ceilf(x) };
+	int yVals[] = { floorf(y), floorf(y), ceilf(y), ceilf(y) };
+	for(int i = 0; i < 4; i++)
+	{
+		if(getBlock(world.blocks, xVals[i], yVals[i], world.blockArea, world.worldBoundingRect).type == type &&
+			getBlock(world.blocks, xVals[i], yVals[i], world.blockArea, world.worldBoundingRect).mass >= massThreshold ||
+			getBlock(world.transparentBlocks, xVals[i], yVals[i], world.blockArea, world.worldBoundingRect).type == type &&
+			getBlock(world.transparentBlocks, xVals[i], yVals[i], world.blockArea, world.worldBoundingRect).mass >= massThreshold)
+			return 1;
+	}
+	return 0;
 }
