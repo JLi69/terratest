@@ -4,6 +4,7 @@
 #include "draw.h"
 #include "gl-func.h"
 #include <stdio.h>
+#include "menu.h"
 
 #if defined(__linux__) || defined(__MINGW64__) || defined(__GNUC__) 
 #include <sys/time.h>
@@ -18,6 +19,7 @@ void loop(void)
 
 	initGL();
 	initGame(&world, &player);
+	initMenus();
 
 #if defined(__linux__) || defined(__MINGW64__) || defined(__GNUC__) 
 	struct timeval beginFrame, endFrame;

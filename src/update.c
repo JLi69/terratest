@@ -8,6 +8,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include "crafting.h"
+#include "menu.h"
 
 static float breakBlockTimer = 0.0f;
 static int menuShown = 0;
@@ -85,16 +86,15 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	//Dead, don't update the world
 	if(player->health <= 0)
-	{
-		damageDelay -= secondsPerFrame;
-		
+	{	
 		//Respawn
-		if(isPressed(GLFW_KEY_R))
+		if(isPressed(GLFW_KEY_R) || buttonClicked(RESPAWN, 0, GLFW_MOUSE_BUTTON_LEFT))
 		{
 			player->playerSpr = createSprite(createRect(0.0f, BLOCK_SIZE * world->worldBoundingRect.maxY, 32.0f, 64.0f));
 			player->playerSpr.animationState = IDLE;
 			player->playerSpr.animating = 1;
 
+			damageDelay = 0.0f;
 			struct Sprite collision;
 			while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
 				player->playerSpr.hitbox.position.y -= 32.0f;

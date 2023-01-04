@@ -5,10 +5,11 @@
 #include "world.h"
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#include <glad/glad.h>
+#include <glad/glad.h> 
 #include <math.h>
 #include <stdio.h>
 #include "crafting.h"
+#include "menu.h"
 
 static struct ShaderProgram shaders[MAX_SHADERS];
 static struct Buffers buffers[MAX_BUFFERS];
@@ -185,14 +186,15 @@ void display(struct World world, struct Player player)
 		drawRect();
 
 	turnOffFlip();
-	drawItems(world, camPos, 32, 20);
+	if(player.health > 0)
+		drawItems(world, camPos, 32, 20);
 
 	//Draw liquid blocks	
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
 	bindTexture(textures[1], GL_TEXTURE0);
 	drawLiquids(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);
 
-	if(!isPaused())
+	if(!isPaused() && player.health > 0)
 	{
 		double cursorX, cursorY;
 		getCursorPos(&cursorX, &cursorY);
@@ -260,34 +262,46 @@ void display(struct World world, struct Player player)
 	drawInteger((int)(player.playerSpr.hitbox.position.y / BLOCK_SIZE), firstNumberEnd + 32.0f, winHeight / 2.0f - 48.0f, 32.0f);
 	drawString(",", firstNumberEnd - 32.0f, winHeight / 2.0f - 48.0f, 32.0f);	
 
-	if(!isPaused())
-	{
-		double cursorX, cursorY;
-		getCursorPos(&cursorX, &cursorY);
 
-		//Draw cursor	
-		bindTexture(textures[2], GL_TEXTURE0);	
-		setRectPos(cursorX, cursorY);		
-		setTexOffset(0.0f, 0.0f);
-		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
-		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
-		drawRect();
-	}
+	bindTexture(textures[2], GL_TEXTURE0);		
 
 	if(getDamageCooldown() > 0.0f)
 	{
 		turnOffTexture();
 		setRectPos(0.0f, 0.0f);
 		setRectSize(1920.0f, 1080.0f);
-		setRectColor(255.0f, 0.0f, 0.0f, getDamageCooldown() / DAMAGE_COOLDOWN * 255.0f * (1.0f - (float)player.health / (float)player.maxHealth));
+		setRectColor(255.0f, 0.0f, 0.0f, getDamageCooldown() / DAMAGE_COOLDOWN * 128.0f * (1.0f - (float)player.health / (float)player.maxHealth));
 		drawRect();
 		turnOnTexture();
 	}
 
+	//Menus
 	if(player.health <= 0)
+		drawMenu(RESPAWN);
+	//Pause menu	
+	if(isPaused())
 	{
-		drawString("u suck lol", 0.0f, 0.0f, 64.0f);	
-		drawString("press R to respawn", 0.0f, -96.0f, 24.0f);
+		turnOffTexture();
+		setRectPos(0.0f, 0.0f);
+		setRectSize(1920.0f, 1080.0f);
+		setRectColor(64.0f, 64.0f, 64.0f, 192.0f);
+		drawRect();
+		turnOnTexture();
+
+		drawMenu(PAUSED);
+	}
+
+	if(!isPaused())
+	{
+		double cursorX, cursorY;
+		getCursorPos(&cursorX, &cursorY);
+
+		//Draw cursor	
+		setRectPos(cursorX, cursorY);		
+		setTexOffset(0.0f, 0.0f);
+		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+		setRectSize(CURSOR_SIZE, CURSOR_SIZE);	
+		drawRect();
 	}
 }
 
