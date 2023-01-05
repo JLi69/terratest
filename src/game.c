@@ -8,6 +8,8 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
+#include "savefile.h"
+#include "crafting.h"
 
 #if defined(__linux__) || defined(__MINGW64__) || defined(__GNUC__) 
 #include <sys/time.h>
@@ -23,6 +25,7 @@ void loop(void)
 
 	initGL();
 	initMenus();
+	initRecipes();
 
 #if defined(__linux__) || defined(__MINGW64__) || defined(__GNUC__) 
 	struct timeval beginFrame, endFrame;
@@ -31,6 +34,7 @@ void loop(void)
 	//Main loop
 	while(!canQuit())
 	{
+		int quitFromMenu = 0;
 		while(gameState == ON_MAIN_MENU && !canQuit())
 		{
 			displayMainMenu();
@@ -41,14 +45,26 @@ void loop(void)
 				gameState = PLAYING;
 			//Quit game
 			if(buttonClicked(MAIN, 1, GLFW_MOUSE_BUTTON_LEFT))
-				quit();	
+			{
+				quitFromMenu = 1;
+				quit();
+			}
 		}
+
+		while(gameState == ON_SAVE_FILE_LIST && !canQuit())
+		{
+			updateWindow();
+		}
+
+		if(canQuit())
+			quitFromMenu = 1;
 
 		if(!canQuit())
 		{
 			toggleCursor();
 			updateWindow();
-			initGame(&world, &player);
+			if(readSave(&world, &player, "world1") == 0)
+				initGame(&world, &player);
 		}
 
 		while(gameState == PLAYING && !canQuit())
@@ -70,10 +86,17 @@ void loop(void)
 			float end = drawString("FPS:", winWidth / 2.0f - 256.0f + 16.0f, winHeight / 2.0f - 80.0f, 16.0f);
 			drawInteger((int)fps, end, winHeight / 2.0f - 80.0f, 16.0f);
 
-			if(isPaused() && buttonClicked(PAUSED, 2, GLFW_MOUSE_BUTTON_LEFT))
+			if(isPaused())
 			{
-				gameState = ON_MAIN_MENU;
-				setPaused(0);
+				if(buttonClicked(PAUSED, 1, GLFW_MOUSE_BUTTON_LEFT))
+				{
+					saveWorld(&world, &player, "world1");
+				}
+				else if(buttonClicked(PAUSED, 2, GLFW_MOUSE_BUTTON_LEFT))
+				{
+					gameState = ON_MAIN_MENU;
+					setPaused(0);
+				}
 			}
 			else if(player.health <= 0 && buttonClicked(RESPAWN, 1, GLFW_MOUSE_BUTTON_LEFT))
 			{
@@ -89,13 +112,19 @@ void loop(void)
 			seconds = endFrame.tv_sec - beginFrame.tv_sec +
 					  1e-6 * (endFrame.tv_usec - beginFrame.tv_usec);	
 		}
-		
+
+		if(!quitFromMenu)
+		{	
+			saveWorld(&world, &player, "world1"); 
+		}
+	
 		if(!canQuit())
 		{
 			enableCursor();
 			free(world.blocks);
 			free(world.backgroundBlocks);	
 			free(world.transparentBlocks);
+			free(player.inventory.slots);
 		}	
 	}
 #endif	

@@ -81,8 +81,8 @@ struct World
 	struct Sprite clouds[MAX_CLOUD];
 	struct BoundingRect worldBoundingRect;
 	
-	struct DroppedItem droppedItems[MAX_ITEMS];
 	int totalItems; 
+	struct DroppedItem droppedItems[MAX_ITEMS];
 };
 
 struct World generateWorld(

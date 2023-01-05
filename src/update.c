@@ -65,7 +65,6 @@ void initGame(struct World *world, struct Player *player)
 #endif
 	damageDelay = DAMAGE_COOLDOWN + 1.0f;
 	//Initialize crafting recipes
-	initRecipes();
 }
 
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame)
