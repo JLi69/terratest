@@ -18,7 +18,7 @@ static int menuBegin = 0, menuEnd = 8;
 
 #define BUCKET_DELAY_TIME 0.5f
 static float bucketDelay = BUCKET_DELAY_TIME + 1.0f;
-static float damageDelay = 0.0f;
+static float damageDelay = DAMAGE_COOLDOWN + 1.0f;
 
 static const enum BlockType transparent[] = { LOG,
 											  STUMP,
@@ -57,14 +57,13 @@ void initGame(struct World *world, struct Player *player)
 	player->maxBreath = BREATH;
 
 #ifdef DEV_VERSION 
-	player->health = 1;
 	player->inventory.slots[0] = itemAmt(BREAD, 99);
 	player->inventory.slots[1] = itemAmt(CAKE, 99);
 	player->inventory.slots[2] = itemAmt(BRICK_ITEM, 99);
 	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
 	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
 #endif
-
+	damageDelay = DAMAGE_COOLDOWN + 1.0f;
 	//Initialize crafting recipes
 	initRecipes();
 }
@@ -72,7 +71,17 @@ void initGame(struct World *world, struct Player *player)
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame)
 {
 	struct Vector2D camPos = createVector(player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y);
-	
+
+	if(isPaused())
+	{
+		//Unpause the game
+		if(buttonClicked(PAUSED, 0, GLFW_MOUSE_BUTTON_LEFT))
+		{
+			setPaused(0);		
+			toggleCursor();
+		}
+	}
+
 	//Pause/Unpause the game
 	if(!craftingMenuShown() && isPressedOnce(GLFW_KEY_ESCAPE))
 	{
@@ -81,6 +90,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		return;	
 	}
 
+	//Don't update the game if paused
 	if(isPaused())
 		return;
 

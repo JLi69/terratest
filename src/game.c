@@ -5,6 +5,9 @@
 #include "gl-func.h"
 #include <stdio.h>
 #include "menu.h"
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <stdlib.h>
 
 #if defined(__linux__) || defined(__MINGW64__) || defined(__GNUC__) 
 #include <sys/time.h>
@@ -16,9 +19,9 @@ void loop(void)
 {
 	struct World world;
 	struct Player player;
+	enum GameState gameState = ON_MAIN_MENU;
 
 	initGL();
-	initGame(&world, &player);
 	initMenus();
 
 #if defined(__linux__) || defined(__MINGW64__) || defined(__GNUC__) 
@@ -28,38 +31,72 @@ void loop(void)
 	//Main loop
 	while(!canQuit())
 	{
-		gettimeofday(&beginFrame, 0);
-		display(world, player);
-		animateSprites(&world, &player.playerSpr, seconds);
-		updateGameobjects(&world, &player, seconds);
-		
-		//FPS counter
-		frameUpdateTimer += seconds;
-		if(frameUpdateTimer > 1.0f)
+		while(gameState == ON_MAIN_MENU && !canQuit())
 		{
-			frameUpdateTimer = 0.0f;
-			fps = 1.0f / seconds;
-		}	
-		int winWidth, winHeight;
-		getWindowSize(&winWidth, &winHeight);
-		float end = drawString("FPS:", winWidth / 2.0f - 256.0f + 16.0f, winHeight / 2.0f - 80.0f, 16.0f);
-		drawInteger((int)fps, end, winHeight / 2.0f - 80.0f, 16.0f);
+			displayMainMenu();
+			updateWindow();
 
-		updateWindow();			
+			//Go to saves
+			if(buttonClicked(MAIN, 0, GLFW_MOUSE_BUTTON_LEFT))
+				gameState = PLAYING;
+			//Quit game
+			if(buttonClicked(MAIN, 1, GLFW_MOUSE_BUTTON_LEFT))
+				quit();	
+		}
 
-		gettimeofday(&endFrame, 0);
+		if(!canQuit())
+		{
+			toggleCursor();
+			updateWindow();
+			initGame(&world, &player);
+		}
 
-		//Calculate the number of seconds a frame took
-		seconds = endFrame.tv_sec - beginFrame.tv_sec +
-				  1e-6 * (endFrame.tv_usec - beginFrame.tv_usec);
+		while(gameState == PLAYING && !canQuit())
+		{
+			gettimeofday(&beginFrame, 0);
+			display(world, player);
+			animateSprites(&world, &player.playerSpr, seconds);
+			updateGameobjects(&world, &player, seconds);
 			
+			//FPS counter
+			frameUpdateTimer += seconds;
+			if(frameUpdateTimer > 1.0f)
+			{
+				frameUpdateTimer = 0.0f;
+				fps = 1.0f / seconds;
+			}	
+			int winWidth, winHeight;
+			getWindowSize(&winWidth, &winHeight);
+			float end = drawString("FPS:", winWidth / 2.0f - 256.0f + 16.0f, winHeight / 2.0f - 80.0f, 16.0f);
+			drawInteger((int)fps, end, winHeight / 2.0f - 80.0f, 16.0f);
 
-		//If on dev version, output frames per second
-#ifdef DEV_VERSION
-		//Mark any times when the frames per second is below 50
-		if(1.0f / seconds < 50.0f) fprintf(stderr, "Below 50 FPS >>>>>> ");
-		fprintf(stderr, "FPS: %f\n", 1.0f / seconds);
-#endif
+			if(isPaused() && buttonClicked(PAUSED, 2, GLFW_MOUSE_BUTTON_LEFT))
+			{
+				gameState = ON_MAIN_MENU;
+				setPaused(0);
+			}
+			else if(player.health <= 0 && buttonClicked(RESPAWN, 1, GLFW_MOUSE_BUTTON_LEFT))
+			{
+				gameState = ON_MAIN_MENU;
+				setPaused(0);
+			}
+
+			updateWindow();			
+
+			gettimeofday(&endFrame, 0);
+
+			//Calculate the number of seconds a frame took
+			seconds = endFrame.tv_sec - beginFrame.tv_sec +
+					  1e-6 * (endFrame.tv_usec - beginFrame.tv_usec);	
+		}
+		
+		if(!canQuit())
+		{
+			enableCursor();
+			free(world.blocks);
+			free(world.backgroundBlocks);	
+			free(world.transparentBlocks);
+		}	
 	}
 #endif	
 

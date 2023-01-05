@@ -107,14 +107,25 @@ struct Menu respawnMenu()
 struct Menu pauseMenu()
 {
 	struct Menu pause = emptyMenu();
-	addTextToMenu(&pause, "PAUSED", 0.0f, 192.0f, 64.0f); //Pause button
+	addTextToMenu(&pause, "PAUSED", 0.0f, 192.0f, 64.0f); 
 	addButtonToMenu(&pause, "Resume Game", 0.0f, 64.0f, 32.0f); //Resume game
-	addButtonToMenu(&pause, "Save & Quit", 0.0f, 0.0f, 32.0f); //Main menu
+	addButtonToMenu(&pause, "Save", 0.0f, 0.0f, 32.0f); //Main menu
+	addButtonToMenu(&pause, "Save & Quit", 0.0f, -64.0f, 32.0f); //Main menu
 	return pause;
+}
+
+struct Menu mainMenu()
+{	
+	struct Menu mainMenu = emptyMenu();
+	addTextToMenu(&mainMenu, "TERRATEST", 0.0f, 192.0f, 64.0f);
+	addButtonToMenu(&mainMenu, "Play", 0.0f, 32.0f, 48.0f); //Load saves or create new world
+	addButtonToMenu(&mainMenu, "Quit", 0.0f, -128.0f, 48.0f); //Quit game
+	return mainMenu;
 }
 
 void initMenus()
 {
 	menus[RESPAWN] = respawnMenu();
 	menus[PAUSED] = pauseMenu();
+	menus[MAIN] = mainMenu();
 }

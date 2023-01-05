@@ -8,6 +8,7 @@
 #include <glad/glad.h> 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "crafting.h"
 #include "menu.h"
 
@@ -312,4 +313,63 @@ void cleanup(void)
 	for(int i = 0; i < MAX_BUFFERS; i++)
 		cleanupBuffer(buffers[i]);	
 	glfwTerminate();
+}
+
+void displayMainMenu()
+{
+	//Fun falling block animation
+	static struct Sprite fallingblocks[256];
+	static int fallingblocksInit = 0;
+	if(!fallingblocksInit)
+	{
+		for(int i = 0; i < 256; i++)
+		{
+			fallingblocks[i] = createSpriteWithType(
+									createRect(
+										(float)rand() / (float)RAND_MAX * 1920.0f - 960.0f,
+										(float)rand() / (float)RAND_MAX * 1080.0f - 540.0f,
+										BLOCK_SIZE, BLOCK_SIZE),
+									rand() % (PILLAR) + 1); 
+		}
+		fallingblocksInit = 1;
+	}
+
+	clear();
+
+	useShader(&shaders[0]);
+	setTexSize(256.0f, 256.0f);
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+	updateActiveShaderWindowSize();	
+
+	turnOffTexture();
+	setRectPos(0.0f, 0.0f);
+	setRectSize(1920.0f, 1080.0f);	
+	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
+	drawRect();
+	turnOnTexture();
+
+	//Falling block animation	
+	bindTexture(textures[1], GL_TEXTURE0);
+	for(int i = 0; i < 256; i++)
+	{
+		setRectPos(fallingblocks[i].hitbox.position.x, fallingblocks[i].hitbox.position.y);
+		setRectSize(fallingblocks[i].hitbox.dimensions.w, fallingblocks[i].hitbox.dimensions.h);
+		setTexOffset(1.0f / 16.0f * (float)((fallingblocks[i].type - 1) % 16),
+					 1.0f / 16.0f * (float)((fallingblocks[i].type - 1) / 16));
+		drawRect();
+		fallingblocks[i].hitbox.position.y -= 1.0f;
+	
+		if(fallingblocks[i].hitbox.position.y < -540.0f - BLOCK_SIZE / 2.0f)
+		{
+			fallingblocks[i] = createSpriteWithType(
+									createRect(
+										(float)rand() / (float)RAND_MAX * 1920.0f - 960.0f,
+										(float)rand() / (float)RAND_MAX * 128.0f + 540.0f + BLOCK_SIZE,
+										BLOCK_SIZE, BLOCK_SIZE),
+									rand() % (PILLAR) + 1);
+		}
+	}
+	bindTexture(textures[2], GL_TEXTURE0);
+		
+	drawMenu(MAIN);
 }

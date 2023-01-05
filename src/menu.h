@@ -22,6 +22,7 @@ enum MenuIds
 	NO_MENU = -1,
 	RESPAWN,
 	PAUSED,
+	MAIN
 };
 
 //Button darkens when you hover over it

@@ -27,6 +27,13 @@ enum AnimationStates
 	FALLING,
 };
 
+enum GameState
+{
+	ON_MAIN_MENU,
+	ON_SAVE_FILE_LIST,
+	PLAYING,
+};
+
 //Initializes shaders and buffers
 void initGL(void);
 //Initializes game objects
@@ -43,6 +50,7 @@ int getMenuBegin();
 int getMenuEnd();
 
 void display(struct World world, struct Player player);
+void displayMainMenu();
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame);
 void loop(void);
 void animateSprites(struct World *world, struct Sprite *player, float secondsPerFrame);

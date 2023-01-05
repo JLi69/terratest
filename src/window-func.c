@@ -164,7 +164,7 @@ void initWindow(void)
 	glfwSetMouseButtonCallback(win, handleMouseInput);
 	glfwSetScrollCallback(win, handleMouseScroll);
 	glfwSetWindowPosCallback(win, handleWindowMovement);
-	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	//Initialize glad
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -234,5 +234,13 @@ void toggleCursor()
 	glfwGetCursorPos(win, &cursorX, &cursorY);
 	glfwSetInputMode(win, GLFW_CURSOR, 
 					 isPaused() ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);	
+	glfwSetCursorPos(win, cursorX, cursorY);
+}
+
+void enableCursor()
+{
+	double cursorX, cursorY;
+	glfwGetCursorPos(win, &cursorX, &cursorY);
+	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);	
 	glfwSetCursorPos(win, cursorX, cursorY);
 }

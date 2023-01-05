@@ -34,6 +34,7 @@ void getWindowSize(int *w, int *h);
 void getCursorPos(double *x, double *y);
 
 void toggleCursor();
+void enableCursor();
 
 #endif
 #define WINDOW_UTIL_H
