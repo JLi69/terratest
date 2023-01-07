@@ -50,7 +50,7 @@ int getMenuBegin();
 int getMenuEnd();
 
 void display(struct World world, struct Player player);
-void displayMainMenu();
+void displayMainMenu(float secondsPerFrame);
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame);
 void loop(void);
 void animateSprites(struct World *world, struct Sprite *player, float secondsPerFrame);

@@ -315,7 +315,7 @@ void cleanup(void)
 	glfwTerminate();
 }
 
-void displayMainMenu()
+void displayMainMenu(float secondsPerFrame)
 {
 	//Fun falling block animation
 	static struct Sprite fallingblocks[256];
@@ -327,7 +327,7 @@ void displayMainMenu()
 			fallingblocks[i] = createSpriteWithType(
 									createRect(
 										(float)rand() / (float)RAND_MAX * 1920.0f - 960.0f,
-										(float)rand() / (float)RAND_MAX * 1080.0f - 540.0f,
+										(float)rand() / (float)RAND_MAX * (1080.0f) + 540.0f,
 										BLOCK_SIZE, BLOCK_SIZE),
 									rand() % (PILLAR) + 1); 
 		}
@@ -357,7 +357,7 @@ void displayMainMenu()
 		setTexOffset(1.0f / 16.0f * (float)((fallingblocks[i].type - 1) % 16),
 					 1.0f / 16.0f * (float)((fallingblocks[i].type - 1) / 16));
 		drawRect();
-		fallingblocks[i].hitbox.position.y -= 1.0f;
+		fallingblocks[i].hitbox.position.y -= 4.0f * BLOCK_SIZE * secondsPerFrame;
 	
 		if(fallingblocks[i].hitbox.position.y < -540.0f - BLOCK_SIZE / 2.0f)
 		{

@@ -37,7 +37,8 @@ void loop(void)
 		int quitFromMenu = 0;
 		while(gameState == ON_MAIN_MENU && !canQuit())
 		{
-			displayMainMenu();
+			gettimeofday(&beginFrame, 0);
+			displayMainMenu(seconds);
 			updateWindow();
 
 			//Go to saves
@@ -49,6 +50,12 @@ void loop(void)
 				quitFromMenu = 1;
 				quit();
 			}
+
+			gettimeofday(&endFrame, 0);
+
+			//Calculate the number of seconds a frame took
+			seconds = endFrame.tv_sec - beginFrame.tv_sec +
+					  1e-6 * (endFrame.tv_usec - beginFrame.tv_usec);
 		}
 
 		while(gameState == ON_SAVE_FILE_LIST && !canQuit())
@@ -91,6 +98,7 @@ void loop(void)
 				if(buttonClicked(PAUSED, 1, GLFW_MOUSE_BUTTON_LEFT))
 				{
 					saveWorld(&world, &player, "world1");
+					setPaused(0);
 				}
 				else if(buttonClicked(PAUSED, 2, GLFW_MOUSE_BUTTON_LEFT))
 				{
