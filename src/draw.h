@@ -24,6 +24,7 @@ void setPhase(float phase);
 //Draws an integer onto the screen, assumes icons.png is loaded already
 //Returns the x coordinate of the final digit
 float drawInteger(int value, float x, float y, float digitSz);
+float drawUnsignedInteger(unsigned int value, float x, float y, float digitSz);
 //Draws text, returns x coordinate of the end character,
 //assumes icons.png is loaded already
 //Draws all letters as Capitals

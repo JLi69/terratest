@@ -12,6 +12,15 @@
 #include "crafting.h"
 #include "menu.h"
 
+#if defined(__linux__)
+#include <unistd.h>
+#elif defined(WIN32) || defined(__MINGW64__)
+#include <io.h>
+#define F_OK 0
+#define access _access
+#endif
+
+//Todo: move these to a struct (GLVars or something like that)
 static struct ShaderProgram shaders[MAX_SHADERS];
 static struct Buffers buffers[MAX_BUFFERS];
 static unsigned int textures[MAX_TEXTURES];
@@ -266,12 +275,16 @@ void display(struct World world, struct Player player)
 
 	bindTexture(textures[2], GL_TEXTURE0);		
 
-	if(getDamageCooldown() > 0.0f)
+	if((player.damageCooldown > 0.0f && player.damageTaken > 0) ||
+		player.health <= 0)
 	{
 		turnOffTexture();
 		setRectPos(0.0f, 0.0f);
 		setRectSize(1920.0f, 1080.0f);
-		setRectColor(255.0f, 0.0f, 0.0f, getDamageCooldown() / DAMAGE_COOLDOWN * 128.0f * (1.0f - (float)player.health / (float)player.maxHealth));
+		float alpha = (player.damageCooldown / DAMAGE_COOLDOWN * 128.0f * (1.0f - (float)player.health / (float)player.maxHealth));
+		if(alpha > 128.0f)
+			alpha = 128.0f;
+		setRectColor(255.0f, 0.0f, 0.0f, alpha);
 		drawRect();
 		turnOnTexture();
 	}
@@ -357,7 +370,7 @@ void displayMainMenu(float secondsPerFrame)
 		setTexOffset(1.0f / 16.0f * (float)((fallingblocks[i].type - 1) % 16),
 					 1.0f / 16.0f * (float)((fallingblocks[i].type - 1) / 16));
 		drawRect();
-		fallingblocks[i].hitbox.position.y -= 4.0f * BLOCK_SIZE * secondsPerFrame;
+		fallingblocks[i].hitbox.position.y -= 8.0f * BLOCK_SIZE * secondsPerFrame;
 	
 		if(fallingblocks[i].hitbox.position.y < -540.0f - BLOCK_SIZE / 2.0f)
 		{
@@ -372,4 +385,131 @@ void displayMainMenu(float secondsPerFrame)
 	bindTexture(textures[2], GL_TEXTURE0);
 		
 	drawMenu(MAIN);
+}
+
+void displaySaveMenu(const char **savepaths, int savecount, int perColumn, int selected)
+{
+	int columns = (int)ceilf((float)savecount / (float)perColumn);
+
+	clear();
+	useShader(&shaders[0]);
+	updateActiveShaderWindowSize();
+
+	turnOffTexture();
+	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
+	setRectPos(0.0f, 0.0f);	
+	setRectSize(1920.0f, 1080.0f);	
+	drawRect();
+	turnOnTexture();
+
+	bindTexture(textures[2], GL_TEXTURE0);
+
+	for(int i = 0; i < columns; i++)
+	{
+		for(int j = 0; j < perColumn; j++)
+		{
+			int ind = i * perColumn + j;
+			if(ind >= savecount)
+				continue;
+
+			int saveExists = access(savepaths[ind], F_OK) == 0;
+
+			struct MenuObj tempbutton;
+
+			if(saveExists)
+			{
+				tempbutton = createMenuObj(savepaths[ind],
+										   -(float)columns / 2.0f * 480.0f + i * 480.0f + 240.0f,
+											(float)perColumn / 2.0f * 96.0f - j * 96.0f - 48.0f,
+											48.0f);
+			}
+			else
+			{
+				tempbutton = createMenuObj("[EMPTY]",
+										   -(float)columns / 2.0f * 480.0f + i * 480.0f + 240.0f,
+											(float)perColumn / 2.0f * 96.0f - j * 96.0f - 48.0f,
+											48.0f);
+			}
+
+			if(buttonHover(tempbutton) || ind == selected)
+				setBrightness(0.5f);
+			else
+				setBrightness(1.0f);
+		
+			if(saveExists)
+				drawString(savepaths[ind], -(float)columns / 2.0f * 480.0f + i * 480.0f + 240.0f, (float)perColumn / 2.0f * 96.0f - j * 96.0f - 48.0f, 48.0f);  
+			else
+				drawString("[EMPTY]", -(float)columns / 2.0f * 480.0f + i * 480.0f + 240.0f, (float)perColumn / 2.0f * 96.0f - j * 96.0f - 48.0f, 48.0f);  	
+		}
+	}
+
+	//Cancel button
+	struct MenuObj cancel = createMenuObj("Cancel",
+							   256.0f,
+							   (float)perColumn / 2.0f * 96.0f - perColumn * 96.0f - 48.0f - 96.0f,
+							   32.0f);
+	drawTextButton(cancel); 	
+
+	//Play button
+	struct MenuObj play = createMenuObj("Play",
+							   0.0f,
+							   (float)perColumn / 2.0f * 96.0f - perColumn * 96.0f - 48.0f - 96.0f,
+							   32.0f);
+	drawTextButton(play);
+
+	struct MenuObj deleteButton = createMenuObj("Delete",
+							   -256.0f,
+							   (float)perColumn / 2.0f * 96.0f - perColumn * 96.0f - 48.0f - 96.0f,
+							   32.0f);
+	drawTextButton(deleteButton);
+
+	setBrightness(1.0f);
+}
+
+void displayDeletePrompt()
+{
+	clear();
+	updateActiveShaderWindowSize();
+	
+	turnOffTexture();
+	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
+	setRectPos(0.0f, 0.0f);	
+	setRectSize(1920.0f, 1080.0f);	
+	drawRect();
+	turnOnTexture();
+
+	drawMenu(DELETE_WORLD_PROMPT);
+}
+
+void displayCreatePrompt(unsigned int seed)
+{
+	clear();
+	updateActiveShaderWindowSize();
+	
+	turnOffTexture();
+	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
+	setRectPos(0.0f, 0.0f);	
+	setRectSize(1920.0f, 1080.0f);	
+	drawRect();
+
+	//Text box for world seed
+	setRectColor(255.0f, 255.0f, 255.0f, 255.0f);	
+	setRectPos(0.0f, 128.0f);	
+	setRectSize(650.0f, 74.0f);
+	drawRect();
+	setRectColor(0.0f, 0.0f, 0.0f, 255.0f);	
+	setRectSize(640.0f, 64.0f);
+	drawRect();	
+
+	turnOnTexture();
+
+	//Blank seed
+	if(seed == 0)
+		drawString("seed (leave blank for random)", 0.0f, 128.0f, 16.0f);
+	else
+	{
+		drawUnsignedInteger(seed, 0.0f, 128.0f, 32.0f);
+	}
+
+	drawMenu(CREATE_WORLD_PROMPT);
 }

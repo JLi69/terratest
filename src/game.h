@@ -18,8 +18,6 @@
 #define BUBBLE_COUNT 8.0f
 #define ICON_SIZE 20.0f
 
-#define DAMAGE_COOLDOWN 1.0f
-
 enum AnimationStates
 {
 	IDLE,
@@ -30,17 +28,18 @@ enum AnimationStates
 enum GameState
 {
 	ON_MAIN_MENU,
-	ON_SAVE_FILE_LIST,
+	ON_SAVE_FILE_LIST,	
+	ON_DELETE_WORLD_PROMPT,
+	ON_CREATE_WORLD_PROMPT,
 	PLAYING,
 };
 
 //Initializes shaders and buffers
 void initGL(void);
 //Initializes game objects
-void initGame(struct World *world, struct Player *player);
+void initGame(struct World *world, struct Player *player, int seed);
 
 float getBlockBreakTimer();
-float getDamageCooldown();
 void toggleCraftingMenu();
 int craftingMenuShown();
 int getMenuSelection();
@@ -50,10 +49,20 @@ int getMenuBegin();
 int getMenuEnd();
 
 void display(struct World world, struct Player player);
-void displayMainMenu(float secondsPerFrame);
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame);
 void loop(void);
 void animateSprites(struct World *world, struct Sprite *player, float secondsPerFrame);
+
+void displayMainMenu(float secondsPerFrame);
+void displaySaveMenu(const char **savepaths, int savecount, int perColumn, int selected);
+void displayDeletePrompt();
+void displayCreatePrompt(unsigned int seed);
+void typeSeed(unsigned int *seed);
+//returns id of button clicked
+//returns -1 if no button clicked
+//returns -2 if cancelled is clicked
+//returns -3 if delete is clicked
+int interactWithSaveMenu(const char **savepaths, int savecount, int perColumn, int selected);
 
 void cleanup(void);
 #endif

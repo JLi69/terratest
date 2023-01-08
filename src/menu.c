@@ -3,7 +3,18 @@
 #include "draw.h"
 #include "window-func.h"
 
+#include <stdio.h>
+
 struct Menu menus[MAX_MENU];
+
+void drawTextButton(struct MenuObj obj)
+{
+	if(buttonHover(obj))
+		setBrightness(0.5f);
+	else
+		setBrightness(1.0f);
+	drawString(obj.text, obj.x, obj.y, obj.charSz);
+}
 
 int buttonHover(struct MenuObj button)
 {
@@ -53,7 +64,7 @@ void drawMenu(enum MenuIds menu)
 	}
 	setBrightness(1.0f);
 
-	for(int i = 0; i < menus[i].textCount; i++)
+	for(int i = 0; i < menus[menu].textCount; i++)
 	{
 		drawString(menus[menu].menuText[i].text,
 				   menus[menu].menuText[i].x,
@@ -94,7 +105,7 @@ void addTextToMenu(struct Menu *menu, const char *text, float x, float y, float 
 	menu->menuText[menu->textCount++] = createMenuObj(text, x, y, sz);
 }
 
-struct Menu respawnMenu()
+struct Menu createRespawnMenu()
 {
 	struct Menu respawn = emptyMenu();
 	addTextToMenu(&respawn, "YOU DIED!", 0.0f, 0.0f, 64.0f);
@@ -104,7 +115,7 @@ struct Menu respawnMenu()
 	return respawn;
 }
 
-struct Menu pauseMenu()
+struct Menu createPauseMenu()
 {
 	struct Menu pause = emptyMenu();
 	addTextToMenu(&pause, "PAUSED", 0.0f, 192.0f, 64.0f); 
@@ -114,18 +125,44 @@ struct Menu pauseMenu()
 	return pause;
 }
 
-struct Menu mainMenu()
+struct Menu createMainMenu()
 {	
 	struct Menu mainMenu = emptyMenu();
 	addTextToMenu(&mainMenu, "TERRATEST", 0.0f, 192.0f, 64.0f);
-	addButtonToMenu(&mainMenu, "Play", 0.0f, 32.0f, 48.0f); //Load saves or create new world
+	addButtonToMenu(&mainMenu, "Load Saves", 0.0f, 32.0f, 48.0f); //Load saves or create new world
 	addButtonToMenu(&mainMenu, "Quit", 0.0f, -128.0f, 48.0f); //Quit game
 	return mainMenu;
 }
 
+struct Menu createDeleteWorldPrompt()
+{	
+	struct Menu deleteWorld = emptyMenu();
+	addTextToMenu(&deleteWorld, 
+			"Are you sure you want to", 0.0f, 192.0f, 32.0f);
+	addTextToMenu(&deleteWorld, 
+			"delete your world?", 0.0f, 150.0f, 32.0f);
+	addTextToMenu(&deleteWorld, 
+			"(this is permanent!)", 0.0f, 80.0f, 16.0f);
+	addButtonToMenu(&deleteWorld, "Delete", 256.0f, 0.0f, 32.0f); 
+	addButtonToMenu(&deleteWorld, "Cancel", -256.0f, 0.0f, 32.0f); 
+	return deleteWorld;
+}
+
+struct Menu createCreateWorldPrompt()
+{	
+	struct Menu createWorld = emptyMenu();
+	addTextToMenu(&createWorld, 
+			"Create New World", 0.0f, 320.0f, 48.0f);
+	addButtonToMenu(&createWorld, "Create World (300MB)", 0.0f, 0.0f, 32.0f); 
+	addButtonToMenu(&createWorld, "Cancel", 0.0f, -128.0f, 32.0f); 
+	return createWorld;
+}
+
 void initMenus()
 {
-	menus[RESPAWN] = respawnMenu();
-	menus[PAUSED] = pauseMenu();
-	menus[MAIN] = mainMenu();
+	menus[RESPAWN] = createRespawnMenu();
+	menus[PAUSED] = createPauseMenu();
+	menus[MAIN] = createMainMenu();
+	menus[DELETE_WORLD_PROMPT] = createDeleteWorldPrompt();
+	menus[CREATE_WORLD_PROMPT] = createCreateWorldPrompt();
 }

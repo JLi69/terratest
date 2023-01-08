@@ -18,7 +18,6 @@ static int menuBegin = 0, menuEnd = 8;
 
 #define BUCKET_DELAY_TIME 0.5f
 static float bucketDelay = BUCKET_DELAY_TIME + 1.0f;
-static float damageDelay = DAMAGE_COOLDOWN + 1.0f;
 
 static const enum BlockType transparent[] = { LOG,
 											  STUMP,
@@ -33,12 +32,12 @@ static const enum BlockType transparent[] = { LOG,
 											  LADDER,
 											  PILLAR };
 
-void initGame(struct World *world, struct Player *player)
+void initGame(struct World *world, struct Player *player, int seed)
 {
 	const float height = 128.0f;
 	//TODO: save system where we can load worlds from disk
 	//Perhaps also implement chunking to reduce memory usage?
-	*world = generateWorld(time(0), height, 256.0f);
+	*world = generateWorld(seed, height, 256.0f);
 	revealVisible(world);
 
 	player->playerSpr = createSprite(createRect(0.0f, 32.0f * 4.0f * height, 32.0f, 64.0f));
@@ -55,6 +54,8 @@ void initGame(struct World *world, struct Player *player)
 	player->maxHealth = START_HEALTH;
 	player->breath = BREATH;
 	player->maxBreath = BREATH;
+	player->damageCooldown = DAMAGE_COOLDOWN + 1.0f;
+	player->damageTaken = 0;
 
 #ifdef DEV_VERSION 
 	player->inventory.slots[0] = itemAmt(BREAD, 99);
@@ -63,8 +64,7 @@ void initGame(struct World *world, struct Player *player)
 	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
 	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
 #endif
-	damageDelay = DAMAGE_COOLDOWN + 1.0f;
-	//Initialize crafting recipes
+	srand(time(0));
 }
 
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame)
@@ -103,7 +103,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			player->playerSpr.animationState = IDLE;
 			player->playerSpr.animating = 1;
 
-			damageDelay = 0.0f;
+			player->damageCooldown = 0.0f;
 			struct Sprite collision;
 			while(!blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collision))
 				player->playerSpr.hitbox.position.y -= 32.0f;
@@ -166,36 +166,39 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	static float blockUpdateTimer = 0.0f;
 	blockUpdateTimer += secondsPerFrame;
 	bucketDelay += secondsPerFrame;
-	damageDelay -= secondsPerFrame;
+	player->damageCooldown -= secondsPerFrame;
 
 	//Take Damage
 	//Drown if the player is under water
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE + 1, WATER, 0.5f))
 	{	
 		player->breath -= secondsPerFrame;
-		if(player->breath <= 0.0f && damageDelay <= 0.0f)
+		if(player->breath <= 0.0f && player->damageCooldown <= 0.0f)
 		{
 			player->health--;
-			damageDelay = DAMAGE_COOLDOWN;
+			player->damageTaken = 1;
+			player->damageCooldown = DAMAGE_COOLDOWN;
 		}
 	}
 	else player->breath = player->maxBreath;
 	
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1.0f, MAGMA_STONE, 0.0f))
 	{
-		if(damageDelay <= 0.0f)
+		if(player->damageCooldown <= 0.0f)
 		{
 			player->health--;
-			damageDelay = DAMAGE_COOLDOWN;
+			player->damageTaken = 1;
+			player->damageCooldown = DAMAGE_COOLDOWN;
 		}	
 	}
 
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA, 0.1f))
 	{
-		if(damageDelay <= 0.0f)
+		if(player->damageCooldown <= 0.0f)
 		{
 			player->health -= 3;
-			damageDelay = DAMAGE_COOLDOWN;
+			player->damageTaken = 3;
+			player->damageCooldown = DAMAGE_COOLDOWN;
 		}	
 	}
 
@@ -251,9 +254,10 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{		
 		//Apply fall damage
-		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && damageDelay < 0.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f))
+		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && player->damageCooldown < 0.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f))
 		{
-			damageDelay = DAMAGE_COOLDOWN;
+			player->damageCooldown = DAMAGE_COOLDOWN;
+			player->damageTaken = (int)sqrtf(-player->playerSpr.vel.y / BLOCK_SIZE - 20.0f);
 			player->health -= (int)sqrtf(-player->playerSpr.vel.y / BLOCK_SIZE - 20.0f);
 		}
 
@@ -685,9 +689,4 @@ int getMenuBegin()
 int getMenuEnd()
 {
 	return menuEnd;
-}
-
-float getDamageCooldown()
-{
-	return damageDelay;
 }

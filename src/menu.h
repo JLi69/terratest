@@ -22,7 +22,9 @@ enum MenuIds
 	NO_MENU = -1,
 	RESPAWN,
 	PAUSED,
-	MAIN
+	MAIN,
+	DELETE_WORLD_PROMPT,
+	CREATE_WORLD_PROMPT
 };
 
 //Button darkens when you hover over it
@@ -35,6 +37,8 @@ struct MenuObj createMenuObj(const char *str, float x, float y, float chSz);
 void addTextToMenu(struct Menu *menu, const char *text, float x, float y, float sz);
 void addButtonToMenu(struct Menu *menu, const char *text, float x, float y, float sz);
 void initMenus();
+
+void drawTextButton(struct MenuObj obj);
 
 #endif
 

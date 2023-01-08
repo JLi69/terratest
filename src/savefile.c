@@ -61,7 +61,6 @@ void readInventory(struct Inventory *inventory, FILE *file)
 	ret = fread(&maxSize, sizeof(int), 1, file);
 	*inventory = createInventory(maxSize);
 	ret = fread(&inventory->selected, sizeof(int), 1, file);
-	printf("%d %d\n", inventory->maxSize, inventory->selected);
 	for(int i = 0; i < inventory->maxSize; i++)
 	{
 		ret = fread(&inventory->slots[i].amount, sizeof(int), 1, file);
@@ -86,15 +85,16 @@ void readPlayerData(struct Player *player, FILE *file)
 	size_t ret;
 	//Player sprite data
 	readSprite(&player->playerSpr, file);	
-	printf("%f %f\n", player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y);
 	//Read inventory data	
-	printf("Got here\n");
 	readInventory(&player->inventory, file);
 	//Player health and breath data
 	ret = fread(&player->health, sizeof(int), 1, file);
 	ret = fread(&player->maxHealth, sizeof(int), 1, file);
 	ret = fread(&player->breath, sizeof(float), 1, file);
 	ret = fread(&player->maxBreath, sizeof(float), 1, file);
+
+	player->damageCooldown = DAMAGE_COOLDOWN + 1.0f;
+	player->damageTaken = 0;
 }
 
 void readBlockData(struct Block *blocks, int sz, FILE *file)

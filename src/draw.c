@@ -139,6 +139,34 @@ float drawInteger(int value, float x, float y, float digitSz)
 	return x + xOffset + digitSz - (digitCount - 1) / 2.0f * digitSz;
 }
 
+float drawUnsignedInteger(unsigned int value, float x, float y, float digitSz)
+{
+	setRectSize(digitSz, digitSz);
+	
+	if(value == 0)
+	{
+		setTexOffset(0.0f, 1.0f / 16.0f);
+		setRectPos(x, y);
+		drawRect();
+		return x + digitSz * 2.0f;
+	}
+
+	float xOffset = 0.0f;	
+	int digitCount = (int)log10((double)(value > 0 ? value : -value)) + 1;	
+
+	for(int i = digitCount - 1; i >= 0; i--)
+	{
+		int digit = value / (pow(10, i));
+		value -= pow(10, i) * digit;
+		setTexOffset(1.0f / 16.0f * digit, 1.0f / 16.0f);
+		setRectPos(xOffset + x - (digitCount - 1) / 2.0f * digitSz, y);
+		xOffset += digitSz;
+		drawRect();
+	}
+
+	return x + xOffset + digitSz - (digitCount - 1) / 2.0f * digitSz;
+}
+
 int convertChar(char ch)
 {
 	if(ch >= 'a' && ch <= 'z')
