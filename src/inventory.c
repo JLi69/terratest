@@ -116,7 +116,7 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 	switch(type)
 	{	
 	case COAL_BLOCK: return COAL_BLOCK_ITEM;
-	case IRON_BLOCK: return IRON_PICKAXE;
+	case IRON_BLOCK: return IRON_BLOCK_ITEM;
 	case DIAMOND_BLOCK: return DIAMOND_BLOCK_ITEM;
 	case GOLD_BLOCK: return GOLD_BLOCK_ITEM;
 	case RAINBOW_BLOCK: return RAINBOW_BLOCK_ITEM;

@@ -103,7 +103,10 @@ void drawLiquids(struct Block *blocks,
 					setTransparency(1.0f);
 			}	
 
-			setLevel(getBlock(blocks, x, y, maxIndex, boundRect).mass);
+			if(getBlock(blocks, x, y, maxIndex, boundRect).mass < 0.95f)
+				setLevel(getBlock(blocks, x, y, maxIndex, boundRect).mass);
+			else
+				setLevel(1.0f);
 			setRectPos(x * BLOCK_SIZE - camPos.x,
 					   y * BLOCK_SIZE - camPos.y);	
 			drawRect();
@@ -340,8 +343,6 @@ void updateBlocks(struct Block *blocks,
 			}
 			setBlockType(blocks, x, y, maxIndex, newBlocks[x - minX + (y - minY) * sz].type, boundRect);  
 			setBlockMass(blocks, x, y, maxIndex, newBlocks[x - minX + (y - minY) * sz].mass, boundRect);
-			if(newBlocks[x - minX + (y - minY) * sz].mass >= 0.95f)
-				setBlockMass(blocks, x, y, maxIndex, 1.0f, boundRect);
 			//if(getBlock(blocks, x, y, maxIndex, boundRect).type != SOLID) continue;
 			if(getBlock(blocks, x, y, maxIndex, boundRect).mass <= MIN_LIQUID ||
 			  newBlocks[(x - minX) + (y - minY) * sz].type == NONE)	

@@ -63,6 +63,7 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[2] = itemAmt(BRICK_ITEM, 99);
 	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
 	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
+	player->inventory.slots[4] = itemAmt(IRON_BLOCK_ITEM, 99);
 #endif
 	srand(time(0));
 }
