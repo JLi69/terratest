@@ -63,7 +63,8 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[2] = itemAmt(BRICK_ITEM, 99);
 	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
 	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
-	player->inventory.slots[4] = itemAmt(IRON_BLOCK_ITEM, 99);
+	player->inventory.slots[5] = itemAmt(IRON_BLOCK_ITEM, 99);
+	player->inventory.slots[6] = itemAmt(WATER_BUCKET, 1);
 #endif
 	srand(time(0));
 }
@@ -385,7 +386,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			if(getBlock(world->backgroundBlocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type == NONE)		
 			{
 				setBlockType(world->backgroundBlocks, cursorX, cursorY, world->blockArea, placeBlock(player->inventory.slots[player->inventory.selected].item), world->worldBoundingRect);
-				if(placeBlock(player->inventory.slots[player->inventory.selected].item) != NONE)
+				if(!canReplace(placeBlock(player->inventory.slots[player->inventory.selected].item)))
 				{
 					placed = 1;
 					decrementSlot(player->inventory.selected, &player->inventory);
