@@ -4,3 +4,5 @@ build
 *.swp
 
 todo.txt
+
+*.bak

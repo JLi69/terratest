@@ -4,6 +4,7 @@
 #ifndef WORLD_H
 #include "sprite.h"
 #include "inventory.h"
+#include "quadtree.h"
 
 #define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
@@ -88,6 +89,8 @@ struct World
 	
 	int totalItems; 
 	struct DroppedItem droppedItems[MAX_ITEMS];
+
+	struct QuadTree* enemies;
 };
 
 struct World generateWorld(
@@ -151,6 +154,8 @@ void updatePlants(struct World *world, struct Vector2D camPos, int simDist);
 void updateDoor(struct World *world, int x, int y);
 //Returns 1 if it detected a door
 int toggleDoor(struct World *world, int x, int y, struct Sprite playerSpr);
+//Spawn enemies upon creation of the world
+void spawnEnemies(struct World *world, float *worldheight, int worldwidth);
 
 #endif
 #define WORLD_H

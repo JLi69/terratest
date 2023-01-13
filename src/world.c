@@ -7,7 +7,8 @@
 #include "window-func.h"
 
 float interpolate(float a, float b, float weight)
-{ return (b - a) * weight + a;
+{ 
+	return (b - a) * weight + a;
 }
 
 void floodFill(int x, int y, int maxY, enum BlockType type,
@@ -63,6 +64,9 @@ struct World generateWorld(int seed, float amp, int interval)
 	//Set all liquid blocks as empty
 	for(int i = 0; i < world.blockArea; i++)
 		world.blocks[i] = world.backgroundBlocks[i] = world.transparentBlocks[i] = createBlock(NONE, 0.0f); //Fill world with empty blocks 
+	world.enemies = createQuadTree(
+			newpt(world.worldBoundingRect.minX * BLOCK_SIZE, world.worldBoundingRect.minY * BLOCK_SIZE),
+			newpt(world.worldBoundingRect.maxX * BLOCK_SIZE, world.worldBoundingRect.maxY * BLOCK_SIZE));
 
 	float worldHeight[WORLD_WIDTH];
 	struct Vector2D randVecs1[WORLD_WIDTH + 1],
@@ -278,7 +282,7 @@ struct World generateWorld(int seed, float amp, int interval)
 				else if(rand() % TALL_GRASS_PROB == 0)
 				{
 					setBlockType(world.transparentBlocks, i - WORLD_WIDTH / 2, y + 1, world.blockArea, TALL_GRASS, world.worldBoundingRect);
-				}
+				}	
 			}
 
 			if(type == STONE)
@@ -311,6 +315,9 @@ struct World generateWorld(int seed, float amp, int interval)
 		floodFill(i - WORLD_WIDTH / 2.0f, WATER_LEVEL, WATER_LEVEL, WATER, 
 				  world.blocks, world.blockArea, 0, world.worldBoundingRect);
 	}
+
+	//Spawn enemies
+	spawnEnemies(&world, worldHeight, WORLD_WIDTH);
 
 	printf("Inserted %d blocks!\n", total);
 	free(caveValues);

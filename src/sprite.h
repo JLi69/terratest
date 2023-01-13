@@ -2,6 +2,8 @@
 
 #define GRAVITY 640.0f
 
+#define newpt createPoint
+
 #define PI 3.1415926535f
 
 union Point

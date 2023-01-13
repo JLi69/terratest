@@ -1,54 +1,54 @@
 #ifndef QUADTREE_H
 #include "sprite.h"
-#define QUAD_CAPACITY 128
+#include "enemy.h"
 
-//Rectangle quadtree
-struct SpriteQuadTree
-{	
-	union Point botLeftCorner, topRightCorner;
-	int spriteCount;
-	struct Sprite sprites[QUAD_CAPACITY];	
-	struct SpriteQuadTree *botLeft,
-						*botRight,
-						*topLeft,
-						*topRight;
+#define CAPACITY 32
+#define DEFAULT_SZ 2048 
+#define ROOT 0
+#define NIL_NODE -1
+
+struct IntVec
+{
+	int *values;
+	int sz, maxSz;
 };
 
-//Creates an empty quadtree and returns the pointer to it
-struct SpriteQuadTree* createQuadTree(
-		union Point botleft, 
-		union Point topright);
-void destroyQuadTree(struct SpriteQuadTree *tree);
-//Searches for collisions in the quadtree and then gives the
-//pointer to the sprite that it first finds colliding with
-//
-//Returns 0 if found no collision, 1 if found
-int collisionSearch(
-		struct SpriteQuadTree *tree,
-		struct Sprite sprite,
-		struct Sprite **collision);
+struct IntVec createVec();
+void vecPush(struct IntVec *vec, int value);
 
-//Ignore, might delete later
-/*
-//Basically does the same thing as collisionSearch but it
-//is given a list of tags of sprites that it should ignore
-//this list must be terminated with a -1
-int collisionSearchFiltered(
-		struct SpriteQuadTree *tree,
-		struct Sprite sprite,
-		struct Sprite **collision,
-		const int *ignore);*/
+struct Node
+{
+	int topLeftInd,
+		topRightInd,
+		botLeftInd,
+		botRightInd;
+	int *ptIndices;
+	union Point botLeftCorner, topRightCorner;
+	int totalPts;
+};
 
-//Inserts a rectangle into the quadtree
-void insert(
-		struct SpriteQuadTree *tree,
-		struct Sprite sprite);
-//Deletes a sprite by attempting to find the first sprite
-//that is colliding with the sprite passed in
-void deleteSprite(
-		struct SpriteQuadTree *tree,
-		struct Sprite sprite);
-void destroyTree(struct SpriteQuadTree *tree);
+struct QuadTree
+{
+	struct Enemy *enemyArr;
+	struct Node *nodes;
+	int nodeCount, maxNodeCount;
+	int pointCount, maxPointCount;
+	union Point botLeftCorner, topRightCorner;
+};
 
+//Creates a node
+struct Node createNode(union Point pt1, union Point pt2);
+//Creates quadtree
+struct QuadTree* createQuadTree(union Point botleft, union Point topright);
+void destroyQuadtree(struct QuadTree *tree);
+//Add empty node and returns the index
+int addNode(struct QuadTree *qtree, struct Node n);
+void splitNode(struct QuadTree *qtree, int nodeid);
+//Node operations
+void insertIntoNode(struct QuadTree *qtree, int nodeid, int ind);
+void insertEnemy(struct QuadTree *qtree, struct Enemy enemy);
+//Returns number of elements found
+void searchInRect(struct QuadTree *qtree, union Point botleft, union Point topright,
+				 struct IntVec *indices, int nodeid);
 #endif
 #define QUADTREE_H

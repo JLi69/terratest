@@ -41,6 +41,7 @@ void initGL(void)
 	textures[2] = loadTexture("res/textures/icons.png");
 	textures[3] = loadTexture("res/textures/sky.png");
 	textures[4] = loadTexture("res/textures/items.png");
+	textures[5] = loadTexture("res/textures/enemy1x1.png");
 
 	useShader(&shaders[0]);	
 	bindBuffers(buffers[0]);
@@ -198,6 +199,21 @@ void display(struct World world, struct Player player)
 	turnOffFlip();
 	if(player.health > 0)
 		drawItems(world, camPos, 32, 20);
+
+	//Draw enemies
+	bindTexture(textures[5], GL_TEXTURE0);
+	struct IntVec indices = createVec();		
+	searchInRect(world.enemies, 
+				 newpt(player.playerSpr.hitbox.position.x - BLOCK_SIZE * 32.0f, player.playerSpr.hitbox.position.y - BLOCK_SIZE * 20.0f),
+				 newpt(player.playerSpr.hitbox.position.x + BLOCK_SIZE * 32.0f, player.playerSpr.hitbox.position.y + BLOCK_SIZE * 20.0f), &indices, ROOT);	
+	//Draw enemies
+	for(int i = 0; i < indices.sz; i++)
+	{
+		drawEnemy1x1(world.enemies->enemyArr[indices.values[i]], camPos);
+	}
+	flip(0); //Turn off flip
+
+	free(indices.values);
 
 	//Draw liquid blocks	
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	

@@ -222,6 +222,7 @@ void loop(void)
 			free(world.backgroundBlocks);	
 			free(world.transparentBlocks);
 			free(player.inventory.slots);
+			destroyQuadtree(world.enemies);		
 		}	
 	}
 #endif	
