@@ -377,7 +377,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	//Place blocks
 	int placed = 0;
-	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT) && cursorInBounds())
 	{		
 		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));	
 
@@ -445,7 +445,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 
 	//Destroy blocks
-	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT))
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && cursorInBounds())
 	{
 		if((isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT)) &&
 			(canReplace(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type) ||
@@ -520,7 +520,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		breakBlockTimer = 0.0f;	
 
 	//Interact with blocks
-	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT))
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT) && cursorInBounds())
 	{
 		if(player->inventory.slots[player->inventory.selected].item >= WOOD_HOE &&
 			player->inventory.slots[player->inventory.selected].item <= RAINBOW_HOE)

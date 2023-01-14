@@ -228,6 +228,16 @@ void getCursorPos(double *x, double *y)
 	*y -= winHeight / 2.0f;
 }
 
+int cursorInBounds()
+{
+	int winWidth, winHeight;
+	glfwGetWindowSize(win, &winWidth, &winHeight);
+	double cursorX, cursorY;
+	getCursorPos(&cursorX, &cursorY);
+	return cursorX < winWidth / 2.0f && cursorX > -winWidth / 2.0f &&
+		   cursorY < winHeight / 2.0f && cursorY > -winHeight / 2.0f;
+}
+
 void toggleCursor()
 {
 	double cursorX, cursorY;

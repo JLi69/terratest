@@ -5,6 +5,7 @@
 #include "sprite.h"
 #include "inventory.h"
 #include "quadtree.h"
+#include <stdint.h>
 
 #define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
@@ -63,10 +64,10 @@ struct BoundingRect
 
 struct Block 
 {
-	enum BlockType type;
+	uint8_t type;
 	float mass; //a value between 0.0 and 1.0 though if it is under more
 				//water then it could be slightly higher than 1.0
-	enum Visibility visibility;
+	uint8_t visibility;
 };
 
 struct DroppedItem

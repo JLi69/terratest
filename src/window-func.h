@@ -20,6 +20,8 @@ int mouseButtonHeld(int button);
 void releaseMouseButton(int button);
 double getMouseScroll(); //Gets how much the mouse is scrolling in the y direction
 
+int cursorInBounds();
+
 //Quit the program and give an error
 void crash(const char *msg);
 //Quit the program

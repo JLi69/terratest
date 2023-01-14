@@ -312,7 +312,13 @@ struct World generateWorld(int seed, float amp, int interval)
 	{
 		if(WATER_LEVEL < worldHeight[i])
 			continue;
-		floodFill(i - WORLD_WIDTH / 2.0f, WATER_LEVEL, WATER_LEVEL, WATER, 
+		int y;
+		for(y = WATER_LEVEL; y > worldHeight[i]; y--)
+		{
+			setBlockType(world.blocks, i - WORLD_WIDTH / 2.0f, y, world.blockArea, WATER, world.worldBoundingRect);
+			setBlockMass(world.blocks, i - WORLD_WIDTH / 2.0f, y, world.blockArea, 1.0f, world.worldBoundingRect); 
+		}
+		floodFill(i - WORLD_WIDTH / 2.0f, y - 1, WATER_LEVEL, WATER, 
 				  world.blocks, world.blockArea, 0, world.worldBoundingRect);
 	}
 

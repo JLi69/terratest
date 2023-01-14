@@ -102,9 +102,9 @@ void readBlockData(struct Block *blocks, int sz, FILE *file)
 	size_t ret;
 	for(int i = 0; i < sz; i++)
 	{
-		ret = fread(&blocks[i].type, sizeof(enum BlockType), 1, file);
+		ret = fread(&blocks[i].type, sizeof(uint8_t), 1, file);
 		ret = fread(&blocks[i].mass, sizeof(float), 1, file);
-		ret = fread(&blocks[i].visibility, sizeof(enum Visibility), 1, file);
+		ret = fread(&blocks[i].visibility, sizeof(uint8_t), 1, file);
 	}
 }
 
@@ -185,9 +185,9 @@ void writeBlockData(struct Block *blocks, int sz, FILE *file)
 {
 	for(int i = 0; i < sz; i++)
 	{
-		fwrite(&blocks[i].type, sizeof(enum BlockType), 1, file);
+		fwrite(&blocks[i].type, sizeof(uint8_t), 1, file);
 		fwrite(&blocks[i].mass, sizeof(float), 1, file);
-		fwrite(&blocks[i].visibility, sizeof(enum Visibility), 1, file);
+		fwrite(&blocks[i].visibility, sizeof(uint8_t), 1, file);
 	}
 }
 
@@ -245,8 +245,8 @@ int readSave(struct World *world, struct Player *player, const char *path)
 	ret = fread(&world->blockArea, sizeof(int), 1, savefile);
 	world->blocks = (struct Block*)malloc(sizeof(struct Block) * world->blockArea);
 	world->transparentBlocks = (struct Block*)malloc(sizeof(struct Block) * world->blockArea);
-	world->backgroundBlocks = (struct Block*)malloc(sizeof(struct Block) * world->blockArea);
-	
+	world->backgroundBlocks = (struct Block*)malloc(sizeof(struct Block) * world->blockArea);	
+
 	//Read block data
 	readBlockData(world->blocks, world->blockArea, savefile);
 	readBlockData(world->transparentBlocks, world->blockArea, savefile);
@@ -264,5 +264,9 @@ int readSave(struct World *world, struct Player *player, const char *path)
 	for(int i = 0; i < world->totalItems; i++)
 		readDroppedItem(world->droppedItems, savefile);
 	fclose(savefile);
+
+	world->enemies = createQuadTree(
+			newpt(world->worldBoundingRect.minX * BLOCK_SIZE, world->worldBoundingRect.minY * BLOCK_SIZE),
+			newpt(world->worldBoundingRect.maxX * BLOCK_SIZE, world->worldBoundingRect.maxY * BLOCK_SIZE));
 	return 1;
 }
