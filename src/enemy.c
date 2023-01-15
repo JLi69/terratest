@@ -46,15 +46,22 @@ struct Enemy createEnemy(enum EnemyType type, float x, float y)
 					createRect(x, y, BLOCK_SIZE, BLOCK_SIZE),
 					type);
 	enemy.spr.canMove = 1;
+	enemy.spr.animating = 1;
 	enemy.attackmode = WANDER;
 	enemy.health = enemy.maxHealth = maxHealthEnemy(type);
 	enemy.walkDistance = 0;
+	enemy.damageCooldown = enemy.timer = 0.0f;
 	return enemy;
 }
 
 void chickenAI(struct Enemy *enemy, float timePassed,
 			   struct Block *blocks, struct BoundingRect boundRect, int maxBlockInd)
 {
+	if(enemy->timer > 0.0f && enemy->attackmode == PASSIVE)
+		enemy->timer -= timePassed;
+	else if(enemy->timer <= 0.0f && enemy->attackmode == PASSIVE)
+		enemy->attackmode = WANDER;
+
 	//Choose random amount to wander and wander that
 	//if we hit a block, attempt to jump over it
 	//Once we walk that distance, generate new amount
@@ -67,12 +74,14 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 		{
 			enemy->spr.vel.x = enemy->spr.flipped ? -BLOCK_SIZE : BLOCK_SIZE;
 		}
-
+		enemy->attackmode = PASSIVE;
+		enemy->timer = 2.0f;
 		enemy->spr.vel.x *= -1.0f;
 		enemy->spr.flipped = !enemy->spr.flipped;
 	}
 
-	updateSpriteX(&enemy->spr, timePassed);
+	if(enemy->attackmode != PASSIVE)
+		updateSpriteX(&enemy->spr, timePassed);
 	//Check for collision and uncollide
 	struct Sprite collided;
 	if(blockCollisionSearch(enemy->spr, 3, 3, blocks, maxBlockInd, boundRect, &collided))
@@ -152,6 +161,7 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 	//to get to the player
 	
 	//If we are on low health, run away and try to stay away from the player
+	
 }
 
 void updateEnemy(struct Enemy *enemy, float timePassed,

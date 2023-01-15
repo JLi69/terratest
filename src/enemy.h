@@ -27,6 +27,7 @@ struct Enemy
 	int health, maxHealth;
 	enum AttackMode attackmode;
 	float walkDistance;
+	float timer, damageCooldown;
 };
 
 int maxHealthEnemy(enum EnemyType type);
