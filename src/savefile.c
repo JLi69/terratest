@@ -99,13 +99,15 @@ void readPlayerData(struct Player *player, FILE *file)
 
 void readBlockData(struct Block *blocks, int sz, FILE *file)
 {
-	size_t ret;
+	uint8_t* blockData = malloc(sizeof(uint8_t) * 3 * sz);
+	size_t ret = fread(blockData, sz * 3, sizeof(uint8_t), file);
 	for(int i = 0; i < sz; i++)
 	{
-		ret = fread(&blocks[i].type, sizeof(uint8_t), 1, file);
-		ret = fread(&blocks[i].mass, sizeof(float), 1, file);
-		ret = fread(&blocks[i].visibility, sizeof(uint8_t), 1, file);
+		blocks[i].type = blockData[i * 3];
+		blocks[i].mass = (float)blockData[i * 3 + 1] / 128.0f;
+		blocks[i].visibility = blockData[i * 3 + 2];
 	}
+	free(blockData);
 }
 
 void writeRectangle(struct Rectangle *rect, FILE *file)
@@ -183,12 +185,17 @@ void writePlayerData(struct Player *player, FILE *file)
 
 void writeBlockData(struct Block *blocks, int sz, FILE *file)
 {
+	uint8_t* blockData = malloc(sizeof(uint8_t) * 3 * sz);
+	uint8_t* ptr = blockData;
 	for(int i = 0; i < sz; i++)
 	{
-		fwrite(&blocks[i].type, sizeof(uint8_t), 1, file);
-		fwrite(&blocks[i].mass, sizeof(float), 1, file);
-		fwrite(&blocks[i].visibility, sizeof(uint8_t), 1, file);
+		*(ptr++) = blocks[i].type;
+		uint8_t massIntVal = (uint8_t)(128.0f * blocks[i].mass);
+		*(ptr++) = massIntVal;
+		*(ptr++) = blocks[i].visibility;
 	}
+	fwrite(blockData, 3 * sz, sizeof(uint8_t), file);
+	free(blockData);
 }
 
 void saveWorld(struct World *world, struct Player *player, const char *path)

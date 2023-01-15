@@ -239,3 +239,51 @@ void insertEnemy(struct QuadTree *qtree, struct Enemy enemy)
 		insertIntoNode(qtree, ROOT, ind);
 	}
 }
+
+void updatePoint(struct QuadTree *qtree, int ind, int nodeid)
+{
+	if(nodeid < 0)
+		return;
+	if(qtree->enemyArr[ind].spr.hitbox.position.x < qtree->nodes[nodeid].botLeftCorner.x ||
+		qtree->enemyArr[ind].spr.hitbox.position.x >= qtree->nodes[nodeid].topRightCorner.x ||
+		qtree->enemyArr[ind].spr.hitbox.position.y < qtree->nodes[nodeid].botLeftCorner.y ||
+		qtree->enemyArr[ind].spr.hitbox.position.y >= qtree->nodes[nodeid].topRightCorner.y)
+		return;
+
+	//if leaf node, split and copy contents into appropriate child nodes
+	if(qtree->nodes[nodeid].botLeftInd == NIL_NODE ||
+	  qtree->nodes[nodeid].topLeftInd == NIL_NODE ||
+	  qtree->nodes[nodeid].botRightInd == NIL_NODE ||
+	  qtree->nodes[nodeid].topRightInd == NIL_NODE)
+	{
+		//Insert points into the child nodes
+		for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
+		{	
+			int ptInd = qtree->nodes[nodeid].ptIndices[i];
+			if(ptInd == ind)
+			{
+				//Swap
+				int temp = qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1];
+				qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1] = ptInd;
+				qtree->nodes[nodeid].ptIndices[i] = temp;
+				qtree->nodes[nodeid].totalPts--;
+				insertIntoNode(qtree, ROOT, ind);
+				return;	
+			}
+		}
+	}
+	union Point mid = midpoint(qtree->nodes[nodeid].botLeftCorner,
+								qtree->nodes[nodeid].topRightCorner);
+	if(qtree->enemyArr[ind].spr.hitbox.position.x < mid.x &&
+	   qtree->enemyArr[ind].spr.hitbox.position.y < mid.y)
+		updatePoint(qtree, qtree->nodes[nodeid].botLeftInd, ind);
+	else if(qtree->enemyArr[ind].spr.hitbox.position.x >= mid.x &&
+	   qtree->enemyArr[ind].spr.hitbox.position.y < mid.y)
+		updatePoint(qtree, qtree->nodes[nodeid].botRightInd, ind);	
+	else if(qtree->enemyArr[ind].spr.hitbox.position.x < mid.x &&
+	   qtree->enemyArr[ind].spr.hitbox.position.y >= mid.y)
+		updatePoint(qtree, qtree->nodes[nodeid].topLeftInd, ind);	
+	else if(qtree->enemyArr[ind].spr.hitbox.position.x >= mid.x &&
+	   qtree->enemyArr[ind].spr.hitbox.position.y >= mid.y)
+		updatePoint(qtree, qtree->nodes[nodeid].topRightInd, ind);		
+}

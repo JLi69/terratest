@@ -6,12 +6,11 @@
 #include "inventory.h"
 #include "quadtree.h"
 #include <stdint.h>
+#include "block.h"
 
 #define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
 #define MAX_CAVE_VALUE 0.1f
-
-#define BLOCK_SIZE 32.0f
 
 #define TREE_MIN_HEIGHT 8
 #define TREE_MAX_HEIGHT 12
@@ -48,26 +47,6 @@ struct Player
 	
 	float damageCooldown;
 	int damageTaken;
-};
-
-enum Visibility
-{
-	REVEALED,
-	DARK,
-	HIDDEN
-};
-
-struct BoundingRect
-{
-	int minX, maxX, minY, maxY;
-};
-
-struct Block 
-{
-	uint8_t type;
-	float mass; //a value between 0.0 and 1.0 though if it is under more
-				//water then it could be slightly higher than 1.0
-	uint8_t visibility;
 };
 
 struct DroppedItem
@@ -118,24 +97,6 @@ void drawLiquids(struct Block *blocks,
 				  struct Vector2D camPos,
 				  int viewDistX, int viewDistY,
 				  int maxIndex, struct BoundingRect boundRect, float brightness);
-//Pass in X and Y as world coordinates, not grid coordinates
-struct Block getBlock(struct Block *blocks,
-						int x, int y,
-						int maxIndex, struct BoundingRect boundRect);
-void setBlockType(struct Block *blocks,
-				   int x, int y,
-				   int maxIndex,
-				   enum BlockType type, struct BoundingRect boundRect);
-void setBlockMass(struct Block *blocks, 
-				   int x, int y,
-				   int maxIndex,
-				   float mass, struct BoundingRect boundRect);
-void setBlockVisibility(struct Block *blocks, 
-				   int x, int y,
-				   int maxIndex,
-				   enum Visibility visibility,
-				   struct BoundingRect boundRect);
-struct Block createBlock(enum BlockType type, float mass);
 
 int blockCollisionSearch(struct Sprite spr, int distX, int distY, struct Block *blocks,
 						 int maxIndex, struct BoundingRect boundRect, struct Sprite *collided);

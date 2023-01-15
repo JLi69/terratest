@@ -1,4 +1,5 @@
 #ifndef INVENTORY_H
+#include <stdint.h>
 
 #define EMPTY_INVENTORY_SLOT itemAmtWithUses(NOTHING, 0, 0, 0);
 

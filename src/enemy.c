@@ -1,6 +1,8 @@
 #include "enemy.h"
 #include "draw.h"
 #include "world.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 void drawEnemy1x1(struct Enemy enemy, struct Vector2D camPos)
 {
@@ -43,31 +45,121 @@ struct Enemy createEnemy(enum EnemyType type, float x, float y)
 	enemy.spr = createSpriteWithType(
 					createRect(x, y, BLOCK_SIZE, BLOCK_SIZE),
 					type);
+	enemy.spr.canMove = 1;
 	enemy.attackmode = WANDER;
 	enemy.health = enemy.maxHealth = maxHealthEnemy(type);
+	enemy.walkDistance = 0;
 	return enemy;
 }
 
-void chickenAI(struct Enemy *enemy, float timePassed)
+void chickenAI(struct Enemy *enemy, float timePassed,
+			   struct Block *blocks, struct BoundingRect boundRect, int maxBlockInd)
 {
 	//Choose random amount to wander and wander that
 	//if we hit a block, attempt to jump over it
 	//Once we walk that distance, generate new amount
 	//to wander and wander in the opposite direction
+	if(enemy->attackmode == WANDER && enemy->walkDistance <= 0.0f)
+	{
+		enemy->walkDistance = BLOCK_SIZE * (rand() % 8 + 8.0f);
+		//If enemy is still, have it start moving
+		if(enemy->spr.vel.x == 0.0f)
+		{
+			enemy->spr.vel.x = enemy->spr.flipped ? -BLOCK_SIZE : BLOCK_SIZE;
+		}
+
+		enemy->spr.vel.x *= -1.0f;
+		enemy->spr.flipped = !enemy->spr.flipped;
+	}
+
+	updateSpriteX(&enemy->spr, timePassed);
+	//Check for collision and uncollide
+	struct Sprite collided;
+	if(blockCollisionSearch(enemy->spr, 3, 3, blocks, maxBlockInd, boundRect, &collided))
+	{				
+		//Uncollide the enemy	
+		if(enemy->spr.vel.x != 0.0f)
+		{
+			if(enemy->spr.hitbox.position.x >=
+			   collided.hitbox.position.x + collided.hitbox.dimensions.w / 2.0f)
+			{
+				if(enemy->spr.vel.y == 0.0f)
+					enemy->spr.vel.y = 8.0f * BLOCK_SIZE;
+				enemy->spr.hitbox.position.x =
+					collided.hitbox.position.x +
+					collided.hitbox.dimensions.w / 2.0f +
+					enemy->spr.hitbox.dimensions.w / 2.0f;	
+			}	
+			else if(enemy->spr.hitbox.position.x <= 
+					collided.hitbox.position.x - collided.hitbox.dimensions.x / 2.0f)
+			{
+				if(enemy->spr.vel.y == 0.0f)
+					enemy->spr.vel.y = 8.0f * BLOCK_SIZE; //Attempt to jump over
+				enemy->spr.hitbox.position.x =
+					collided.hitbox.position.x -
+					collided.hitbox.dimensions.w / 2.0f -
+					enemy->spr.hitbox.dimensions.w / 2.0f;	
+			}	
+		}
+	}
+
+	if(enemy->spr.vel.y < -BLOCK_SIZE * 4.0f)
+		enemy->spr.vel.y = -BLOCK_SIZE * 4.0f;
+	updateSpriteY(&enemy->spr, timePassed);
+	//Check for collision	
+	if(blockCollisionSearch(enemy->spr, 3, 3, blocks, maxBlockInd, boundRect, &collided))
+	{		
+		//Uncollide the enemy
+		if(enemy->spr.vel.y != 0.0f)
+		{
+			if(enemy->spr.hitbox.position.y >=
+			   collided.hitbox.position.y + collided.hitbox.dimensions.h / 2.0f)
+			{
+				enemy->spr.vel.y = 0.0f;
+				enemy->spr.hitbox.position.y =
+					collided.hitbox.position.y +
+					collided.hitbox.dimensions.h / 2.0f +
+					enemy->spr.hitbox.dimensions.h / 2.0f;	
+				//The player is supported by a block	
+				enemy->spr.falling = 0;	
+			}	
+			else if(enemy->spr.hitbox.position.y <= 
+					collided.hitbox.position.y - collided.hitbox.dimensions.h / 2.0f)
+			{
+				enemy->spr.falling = 1;	
+				enemy->spr.vel.y = -0.5f;
+				enemy->spr.hitbox.position.y =
+					collided.hitbox.position.y -
+					collided.hitbox.dimensions.h / 2.0f -
+					enemy->spr.hitbox.dimensions.h / 2.0f;	
+			}	
+		}	
+	}
+	else
+	{
+		//The enemy is not supported by a block
+		enemy->spr.falling = 1;
+	}
 	
+	if(enemy->attackmode == WANDER)
+	{
+		enemy->walkDistance -= (enemy->spr.vel.x * timePassed > 0.0f) ? 
+								enemy->spr.vel.x * timePassed :
+								-enemy->spr.vel.x * timePassed;
+	}
+
 	//if we are close enough to the player, enter chase mode and attempt
 	//to get to the player
 	
 	//If we are on low health, run away and try to stay away from the player
 }
 
-void updateEnemy(struct Enemy *enemy, float timePassed)
+void updateEnemy(struct Enemy *enemy, float timePassed,
+				 struct Block *blocks, struct BoundingRect boundRect, int maxBlockInd)
 {
 	switch(enemy->spr.type)
 	{
-	case CHICKEN: 
-		chickenAI(enemy, timePassed); 
-		break;
+	case CHICKEN: chickenAI(enemy, timePassed, blocks, boundRect, maxBlockInd); break;
 	default: return;
 	}
 }

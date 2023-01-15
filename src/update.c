@@ -627,6 +627,20 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		world->dayCycle = 0.0f;
 	}
 
+	//Update enemies
+	struct IntVec indices = createVec();
+	searchInRect(world->enemies,
+				 newpt(camPos.x - 64.0f * BLOCK_SIZE, camPos.y - 64.0f * BLOCK_SIZE),
+				 newpt(camPos.x + 64.0f * BLOCK_SIZE, camPos.y + 64.0f * BLOCK_SIZE),
+				 &indices, ROOT);
+	for(int i = 0; i < indices.sz; i++)
+	{
+		int ind = indices.values[i];
+		updateEnemy(&world->enemies->enemyArr[ind], secondsPerFrame, world->blocks, world->worldBoundingRect, world->blockArea);
+		updatePoint(world->enemies, ind, ROOT);
+	}
+	free(indices.values);
+
 	//Update clouds
 	for(int i = 0; i < MAX_CLOUD; i++)
 	{

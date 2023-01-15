@@ -50,5 +50,10 @@ void insertEnemy(struct QuadTree *qtree, struct Enemy enemy);
 //Returns number of elements found
 void searchInRect(struct QuadTree *qtree, union Point botleft, union Point topright,
 				 struct IntVec *indices, int nodeid);
+//Takes the index of a point and then removes the point from the quadtree
+//and then reinserts it to keep the quadtree accurate when we have dynamic
+//objects in it
+void updatePoint(struct QuadTree *qtree, int ind, int nodeid);
+
 #endif
 #define QUADTREE_H
