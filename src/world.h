@@ -36,19 +36,6 @@
 #define ITEM_SIZE 16.0f
 #define TIME_TO_DESPAWN 300.0f
 
-#define DAMAGE_COOLDOWN 1.0f
-
-struct Player
-{
-	struct Sprite playerSpr;
-	struct Inventory inventory;
-	int health, maxHealth;
-	float breath, maxBreath;
-	
-	float damageCooldown;
-	int damageTaken;
-};
-
 struct DroppedItem
 {
 	struct Sprite itemSpr;

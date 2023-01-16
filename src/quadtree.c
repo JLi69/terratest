@@ -1,6 +1,8 @@
 #include "quadtree.h"
 #include <stdlib.h>
 
+#include <stdio.h>
+
 struct Node createNode(union Point pt1, union Point pt2)
 {
 	struct Node node;
@@ -82,6 +84,50 @@ void searchInRect(struct QuadTree *qtree, union Point botleft, union Point topri
 	searchInRect(qtree, botleft, topright, indices, 
 				 qtree->nodes[nodeid].botRightInd);
 	searchInRect(qtree, botleft, topright, indices, 
+				 qtree->nodes[nodeid].topRightInd);
+}
+
+void searchInRectAndGetNodes(struct QuadTree *qtree, union Point botleft, union Point topright,
+				 struct IntVec *indices, struct IntVec *nodes, int nodeid)
+{
+	if(nodeid == NIL_NODE)
+		return;
+	float width = topright.x - botleft.x,
+		  height = topright.y - botleft.y;
+	//Check if node's bounding rectangle is colliding with range
+	//if it isn't quit the search
+	if(qtree->nodes[nodeid].botLeftCorner.x > topright.x ||
+		qtree->nodes[nodeid].botLeftCorner.y > topright.y ||
+		qtree->nodes[nodeid].topRightCorner.x < botleft.x ||
+		qtree->nodes[nodeid].topRightCorner.y < botleft.y)
+		return;
+	//Otherwise continue and check if it is a leaf node
+	if(qtree->nodes[nodeid].ptIndices != NULL)
+	{
+		for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
+		{
+			union Point pt = qtree->enemyArr[qtree->nodes[nodeid].ptIndices[i]].spr.hitbox.position;
+			if(pt.x >= botleft.x &&
+			   pt.x <= topright.x &&
+			   pt.y >= botleft.y &&
+			   pt.y <= topright.y)
+			{
+				//Add point to the index vector
+				vecPush(indices, qtree->nodes[nodeid].ptIndices[i]);
+				vecPush(nodes, nodeid);
+			}
+		}
+		return;
+	}
+
+	//If not a leaf node, continue searching
+	searchInRectAndGetNodes(qtree, botleft, topright, indices, nodes,
+				 qtree->nodes[nodeid].botLeftInd);
+	searchInRectAndGetNodes(qtree, botleft, topright, indices, nodes,
+				 qtree->nodes[nodeid].topLeftInd);
+	searchInRectAndGetNodes(qtree, botleft, topright, indices, nodes,
+				 qtree->nodes[nodeid].botRightInd);
+	searchInRectAndGetNodes(qtree, botleft, topright, indices, nodes, 
 				 qtree->nodes[nodeid].topRightInd);
 }
 
@@ -242,48 +288,23 @@ void insertEnemy(struct QuadTree *qtree, struct Enemy enemy)
 
 void updatePoint(struct QuadTree *qtree, int ind, int nodeid)
 {
-	if(nodeid < 0)
-		return;
-	if(qtree->enemyArr[ind].spr.hitbox.position.x < qtree->nodes[nodeid].botLeftCorner.x ||
-		qtree->enemyArr[ind].spr.hitbox.position.x >= qtree->nodes[nodeid].topRightCorner.x ||
-		qtree->enemyArr[ind].spr.hitbox.position.y < qtree->nodes[nodeid].botLeftCorner.y ||
-		qtree->enemyArr[ind].spr.hitbox.position.y >= qtree->nodes[nodeid].topRightCorner.y)
-		return;
-
-	//if leaf node, split and copy contents into appropriate child nodes
-	if(qtree->nodes[nodeid].botLeftInd == NIL_NODE ||
-	  qtree->nodes[nodeid].topLeftInd == NIL_NODE ||
-	  qtree->nodes[nodeid].botRightInd == NIL_NODE ||
-	  qtree->nodes[nodeid].topRightInd == NIL_NODE)
-	{
-		//Insert points into the child nodes
-		for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
-		{	
-			int ptInd = qtree->nodes[nodeid].ptIndices[i];
-			if(ptInd == ind)
-			{
-				//Swap
-				int temp = qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1];
-				qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1] = ptInd;
-				qtree->nodes[nodeid].ptIndices[i] = temp;
-				qtree->nodes[nodeid].totalPts--;
-				insertIntoNode(qtree, ROOT, ind);
-				return;	
-			}
+	for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
+	{	
+		int ptInd = qtree->nodes[nodeid].ptIndices[i];
+		if(ptInd == ind && 
+			(qtree->enemyArr[ind].spr.hitbox.position.x < qtree->nodes[nodeid].botLeftCorner.x ||
+			 qtree->enemyArr[ind].spr.hitbox.position.x >= qtree->nodes[nodeid].topRightCorner.x ||
+			 qtree->enemyArr[ind].spr.hitbox.position.y < qtree->nodes[nodeid].botLeftCorner.y ||
+			 qtree->enemyArr[ind].spr.hitbox.position.y >= qtree->nodes[nodeid].topRightCorner.y)) //Reinsert into tree only if it is no longer inside the node
+		{
+			//Swap
+			int temp = qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1];
+			qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1] = ptInd;
+			qtree->nodes[nodeid].ptIndices[i] = temp;
+			qtree->nodes[nodeid].totalPts--;
+			insertIntoNode(qtree, ROOT, ind);
+			return;	
 		}
+		else if(ptInd == ind) return;
 	}
-	union Point mid = midpoint(qtree->nodes[nodeid].botLeftCorner,
-								qtree->nodes[nodeid].topRightCorner);
-	if(qtree->enemyArr[ind].spr.hitbox.position.x < mid.x &&
-	   qtree->enemyArr[ind].spr.hitbox.position.y < mid.y)
-		updatePoint(qtree, qtree->nodes[nodeid].botLeftInd, ind);
-	else if(qtree->enemyArr[ind].spr.hitbox.position.x >= mid.x &&
-	   qtree->enemyArr[ind].spr.hitbox.position.y < mid.y)
-		updatePoint(qtree, qtree->nodes[nodeid].botRightInd, ind);	
-	else if(qtree->enemyArr[ind].spr.hitbox.position.x < mid.x &&
-	   qtree->enemyArr[ind].spr.hitbox.position.y >= mid.y)
-		updatePoint(qtree, qtree->nodes[nodeid].topLeftInd, ind);	
-	else if(qtree->enemyArr[ind].spr.hitbox.position.x >= mid.x &&
-	   qtree->enemyArr[ind].spr.hitbox.position.y >= mid.y)
-		updatePoint(qtree, qtree->nodes[nodeid].topRightInd, ind);		
 }

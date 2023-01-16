@@ -175,34 +175,16 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE + 1, WATER, 0.5f))
 	{	
 		player->breath -= secondsPerFrame;
-		if(player->breath <= 0.0f && player->damageCooldown <= 0.0f)
-		{
-			player->health--;
-			player->damageTaken = 1;
-			player->damageCooldown = DAMAGE_COOLDOWN;
-		}
+		if(player->breath <= 0.0f)
+			damagePlayer(player, 1);
 	}
 	else player->breath = player->maxBreath;
 	
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1.0f, MAGMA_STONE, 0.0f))
-	{
-		if(player->damageCooldown <= 0.0f)
-		{
-			player->health--;
-			player->damageTaken = 1;
-			player->damageCooldown = DAMAGE_COOLDOWN;
-		}	
-	}
+		damagePlayer(player, 1);
 
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA, 0.1f))
-	{
-		if(player->damageCooldown <= 0.0f)
-		{
-			player->health -= 3;
-			player->damageTaken = 3;
-			player->damageCooldown = DAMAGE_COOLDOWN;
-		}	
-	}
+		damagePlayer(player, 3);
 
 	struct Sprite collided;	
 
@@ -256,11 +238,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{		
 		//Apply fall damage
-		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && player->damageCooldown < 0.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f))
+		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f))
 		{
-			player->damageCooldown = DAMAGE_COOLDOWN;
-			player->damageTaken = (int)sqrtf(-player->playerSpr.vel.y / BLOCK_SIZE - 20.0f);
-			player->health -= (int)sqrtf(-player->playerSpr.vel.y / BLOCK_SIZE - 20.0f);
+			damagePlayer(player, (int)sqrtf(-player->playerSpr.vel.y / BLOCK_SIZE - 20.0f));	
 		}
 
 		//Uncollide the player
@@ -629,17 +609,19 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	//Update enemies
 	struct IntVec indices = createVec();
-	searchInRect(world->enemies,
+	struct IntVec nodes = createVec();
+	searchInRectAndGetNodes(world->enemies,
 				 newpt(camPos.x - 64.0f * BLOCK_SIZE, camPos.y - 64.0f * BLOCK_SIZE),
 				 newpt(camPos.x + 64.0f * BLOCK_SIZE, camPos.y + 64.0f * BLOCK_SIZE),
-				 &indices, ROOT);
+				 &indices, &nodes, ROOT);
 	for(int i = 0; i < indices.sz; i++)
 	{
 		int ind = indices.values[i];
-		updateEnemy(&world->enemies->enemyArr[ind], secondsPerFrame, world->blocks, world->worldBoundingRect, world->blockArea);
-		updatePoint(world->enemies, ind, ROOT);
+		updateEnemy(&world->enemies->enemyArr[ind], secondsPerFrame, world->blocks, world->worldBoundingRect, world->blockArea, player);
+		updatePoint(world->enemies, ind, nodes.values[i]);
 	}
 	free(indices.values);
+	free(nodes.values);
 
 	//Update clouds
 	for(int i = 0; i < MAX_CLOUD; i++)

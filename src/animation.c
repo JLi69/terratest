@@ -51,6 +51,10 @@ void animateSprites(struct World *world, struct Sprite *player, float secondsPer
 		case WANDER:
 			updateAnimation(&world->enemies->enemyArr[ind].spr, &enemyWalk[0], 4, timePassed, 0.3f);
 			break;
+		case RUN_AWAY: //Fall through
+		case CHASE:
+			updateAnimation(&world->enemies->enemyArr[ind].spr, &enemyWalk[0], 4, timePassed, 0.1f);
+			break;
 		default: break;
 		}
 	}
