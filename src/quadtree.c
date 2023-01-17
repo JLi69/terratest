@@ -62,6 +62,8 @@ void searchInRect(struct QuadTree *qtree, union Point botleft, union Point topri
 	{
 		for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
 		{
+			if(qtree->enemyArr[qtree->nodes[nodeid].ptIndices[i]].spr.type == DELETED)
+				continue;
 			union Point pt = qtree->enemyArr[qtree->nodes[nodeid].ptIndices[i]].spr.hitbox.position;
 			if(pt.x >= botleft.x &&
 			   pt.x <= topright.x &&
@@ -106,6 +108,8 @@ void searchInRectAndGetNodes(struct QuadTree *qtree, union Point botleft, union 
 	{
 		for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
 		{
+			if(qtree->enemyArr[qtree->nodes[nodeid].ptIndices[i]].spr.type == DELETED)
+				continue;
 			union Point pt = qtree->enemyArr[qtree->nodes[nodeid].ptIndices[i]].spr.hitbox.position;
 			if(pt.x >= botleft.x &&
 			   pt.x <= topright.x &&
@@ -152,6 +156,7 @@ struct QuadTree* createQuadTree(union Point botleft, union Point topright)
 	qtree->nodes[ROOT] = createNode(botleft, topright);
 	qtree->pointCount = 0;
 	qtree->maxPointCount = DEFAULT_SZ * CAPACITY;
+	qtree->deletedPoints = 0;
 	return qtree;
 }
 
@@ -307,4 +312,15 @@ void updatePoint(struct QuadTree *qtree, int ind, int nodeid)
 		}
 		else if(ptInd == ind) return;
 	}
+}
+
+void deletePtOutOfNode(struct QuadTree *qtree, int ind, int nodeid)
+{
+	
+}
+
+void deletePoint(struct QuadTree *qtree, int ind)
+{
+	qtree->deletedPoints++;
+	qtree->enemyArr[ind].spr.type = DELETED;
 }

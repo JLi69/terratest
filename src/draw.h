@@ -29,6 +29,7 @@ float drawUnsignedInteger(unsigned int value, float x, float y, float digitSz);
 //assumes icons.png is loaded already
 //Draws all letters as Capitals
 float drawString(const char *str, float x, float y, float charSz);
+void setRotationRad(float rotation); //In radians
 
 #endif
 #define DRAW_H

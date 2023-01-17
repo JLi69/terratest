@@ -323,7 +323,7 @@ struct World generateWorld(int seed, float amp, int interval)
 	}
 
 	//Spawn enemies
-	spawnEnemies(&world, worldHeight, WORLD_WIDTH);
+	spawnEnemies(&world, worldHeight, WORLD_WIDTH, newpt(0.0f, worldHeight[WORLD_WIDTH / 2] * BLOCK_SIZE));
 
 	printf("Inserted %d blocks!\n", total);
 	free(caveValues);

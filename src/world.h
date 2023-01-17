@@ -104,7 +104,7 @@ void updateDoor(struct World *world, int x, int y);
 //Returns 1 if it detected a door
 int toggleDoor(struct World *world, int x, int y, struct Sprite playerSpr);
 //Spawn enemies upon creation of the world
-void spawnEnemies(struct World *world, float *worldheight, int worldwidth);
+void spawnEnemies(struct World *world, float *worldheight, int worldwidth, union Point playerPos);
 
 #endif
 #define WORLD_H

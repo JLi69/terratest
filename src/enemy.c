@@ -7,9 +7,6 @@
 
 void drawEnemy1x1(struct Enemy enemy, struct Vector2D camPos)
 {
-	if(enemy.health <= 0)
-		return;
-
 	flip(enemy.spr.flipped);
 	setRectPos(enemy.spr.hitbox.position.x - camPos.x, enemy.spr.hitbox.position.y - camPos.y);
 	setRectSize(enemy.spr.hitbox.dimensions.w, enemy.spr.hitbox.dimensions.h);	
@@ -54,7 +51,7 @@ struct Enemy createEnemy(enum EnemyType type, float x, float y)
 	enemy.attackmode = WANDER;
 	enemy.health = enemy.maxHealth = maxHealthEnemy(type);
 	enemy.walkDistance = 0;
-	enemy.damageCooldown = enemy.timer = 0.0f;
+	enemy.damageCooldown = enemy.timer = 0.0f;	
 	return enemy;
 }
 
@@ -64,10 +61,13 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 {
 	if(enemy->health <= 0)
 		return;
+	
+	if(enemy->attackmode == KNOCKBACK && enemy->timer >= 0.2f)
+		enemy->spr.vel.x = -fabs(enemy->spr.vel.x) / enemy->spr.vel.x * 3.0f * BLOCK_SIZE;
 
-	if(enemy->timer > 0.0f && enemy->attackmode == PASSIVE)
+	if(enemy->timer > 0.0f && (enemy->attackmode == PASSIVE || enemy->attackmode == KNOCKBACK))
 		enemy->timer -= timePassed;
-	else if(enemy->timer <= 0.0f && enemy->attackmode == PASSIVE)
+	else if(enemy->timer <= 0.0f && (enemy->attackmode == PASSIVE || enemy->attackmode == KNOCKBACK))
 		enemy->attackmode = WANDER;
 
 	//Choose random amount to wander and wander that
@@ -122,7 +122,7 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 				BLOCK_SIZE * 4.0f && enemy->spr.vel.y == 0.0f &&
 				enemy->spr.hitbox.position.y < player->playerSpr.hitbox.position.y)
 			enemy->spr.vel.y = 8.0f * BLOCK_SIZE;
-	}
+	}	
 
 	if(enemy->attackmode != PASSIVE)
 		updateSpriteX(&enemy->spr, timePassed);
@@ -206,15 +206,15 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 	float dist = sqrtf(
 					powf(enemy->spr.hitbox.position.x - player->playerSpr.hitbox.position.x, 2.0f) +
 					powf(enemy->spr.hitbox.position.y - player->playerSpr.hitbox.position.y, 2.0f));
-	if(dist < 8.0f * BLOCK_SIZE && enemy->health > 1)
+	if(dist < 8.0f * BLOCK_SIZE && enemy->health > 1 && enemy->attackmode != KNOCKBACK)
 		enemy->attackmode = CHASE;
-	else
+	else if(enemy->attackmode != KNOCKBACK && enemy->attackmode != PASSIVE)
 		enemy->attackmode = WANDER;
 
 	//Colliding with player
 	if(colliding(player->playerSpr.hitbox, enemy->spr.hitbox))
 	{
-		if(player->playerSpr.hitbox.position.y - player->playerSpr.hitbox.dimensions.h / 2.0f >
+		/*if(player->playerSpr.hitbox.position.y - player->playerSpr.hitbox.dimensions.h / 2.0f >
 			enemy->spr.hitbox.position.y && player->playerSpr.vel.y < 0.0f)
 		{
 			player->playerSpr.canJump = 1;
@@ -226,17 +226,17 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 			player->playerSpr.vel.y = BLOCK_SIZE * 8.0f;
 			damageEnemy(enemy, 1);
 		}
-		else
-			damagePlayer(player, 1);	
+		else*/
+		damagePlayer(player, 1);	
 	}
 
 	//If we are on low health, run away and try to stay away from the player
-	if(enemy->health <= 1)
+	if(enemy->health <= 1 && enemy->attackmode != KNOCKBACK && dist <= 8.0f * BLOCK_SIZE)
 		enemy->attackmode = RUN_AWAY;
-	else if(dist >= 8.0f * BLOCK_SIZE && enemy->health <= 1)
-		enemy->attackmode = WANDER;
-
-	enemy->damageCooldown -= timePassed;
+	else if(dist >= 8.0f * BLOCK_SIZE && enemy->health <= 1 && enemy->attackmode != KNOCKBACK)
+		enemy->attackmode = WANDER;	
+	
+	enemy->damageCooldown -= timePassed;	
 }
 
 void updateEnemy(struct Enemy *enemy, 
@@ -253,10 +253,13 @@ void updateEnemy(struct Enemy *enemy,
 	}
 }
 
-void damageEnemy(struct Enemy *enemy, int amt)
+int damageEnemy(struct Enemy *enemy, int amt)
 {
 	if(enemy->damageCooldown > 0.0f)
-		return;
+		return 0;
 	enemy->health -= amt;
 	enemy->damageCooldown = ENEMY_DAMAGE_COOLDOWN;
+	enemy->attackmode = KNOCKBACK;
+	enemy->timer = 0.2f;
+	return amt;
 }

@@ -3,6 +3,7 @@
 #include "sprite.h"
 
 #define DAMAGE_COOLDOWN 1.0f
+#define USE_ANIMATION_LENGTH 0.2f
 
 struct Player
 {
@@ -13,8 +14,11 @@ struct Player
 	
 	float damageCooldown;
 	int damageTaken;
+
+	float useItemTimer;
 };
 
 void damagePlayer(struct Player *player, int amt);
+void activateUseAnimation(struct Player *player);
 
 #endif

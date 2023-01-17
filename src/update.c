@@ -56,6 +56,7 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->maxBreath = BREATH;
 	player->damageCooldown = DAMAGE_COOLDOWN + 1.0f;
 	player->damageTaken = 0;
+	player->useItemTimer = 0.0f;
 
 #ifdef DEV_VERSION 
 	player->inventory.slots[0] = itemAmt(BREAD, 99);
@@ -358,7 +359,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//Place blocks
 	int placed = 0;
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT) && cursorInBounds())
-	{		
+	{
 		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));	
 
 		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
@@ -369,7 +370,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				if(!canReplace(placeBlock(player->inventory.slots[player->inventory.selected].item)))
 				{
 					placed = 1;
-					decrementSlot(player->inventory.selected, &player->inventory);
+					decrementSlot(player->inventory.selected, &player->inventory);	
 				}
 			}	
 		}
@@ -424,6 +425,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		}	
 	}
 
+	if(placed) activateUseAnimation(player);
+
 	//Destroy blocks
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && cursorInBounds())
 	{
@@ -444,6 +447,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			breakBlockTimer += secondsPerFrame;	
 		else
 			breakBlockTimer = 0.0f;
+
+		if(breakBlockTimer > 0.0f)
+			activateUseAnimation(player);
 
 		if(breakBlockTimer > timeToBreakBlock(getSelectedBlock(), player->inventory.slots[player->inventory.selected].item))
 		{
@@ -545,6 +551,11 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);	
 	}
 
+	if(player->useItemTimer > 0.0f)
+		player->useItemTimer -= secondsPerFrame;
+	if(player->useItemTimer < 0.0f)
+		player->useItemTimer = 0.0f;
+
 	//Inventory keys
 	static const int inventoryHotKeys[] = { GLFW_KEY_1,
 											GLFW_KEY_2,
@@ -614,12 +625,33 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				 newpt(camPos.x - 64.0f * BLOCK_SIZE, camPos.y - 64.0f * BLOCK_SIZE),
 				 newpt(camPos.x + 64.0f * BLOCK_SIZE, camPos.y + 64.0f * BLOCK_SIZE),
 				 &indices, &nodes, ROOT);
+	int attacked = 0; //Did the player hit any enemy?
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && damageAmount(player->inventory.slots[player->inventory.selected].item) > 1)
+		activateUseAnimation(player);
 	for(int i = 0; i < indices.sz; i++)
 	{
 		int ind = indices.values[i];
 		updateEnemy(&world->enemies->enemyArr[ind], secondsPerFrame, world->blocks, world->worldBoundingRect, world->blockArea, player);
 		updatePoint(world->enemies, ind, nodes.values[i]);
+		
+		//Attack enemies
+		if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && 
+		   sqrtf(powf(world->enemies->enemyArr[ind].spr.hitbox.position.x - player->playerSpr.hitbox.position.x, 2.0f) +
+			     powf(world->enemies->enemyArr[ind].spr.hitbox.position.y - player->playerSpr.hitbox.position.y, 2.0f)) < BLOCK_SIZE * 3.0f)
+		{
+			if(damageEnemy(&world->enemies->enemyArr[ind], damageAmount(player->inventory.slots[player->inventory.selected].item)) > 1)
+			{
+				attacked = 1;
+				use(player->inventory.selected, &player->inventory);
+			}	
+		}
+
+		if(world->enemies->enemyArr[ind].health <= 0)
+			deletePoint(world->enemies, ind);
 	}
+	//If the player attacked an enemy, release the left mouse button	
+	if(attacked) releaseMouseButton(GLFW_MOUSE_BUTTON_LEFT);	
+
 	free(indices.values);
 	free(nodes.values);
 

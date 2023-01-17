@@ -7,6 +7,7 @@
 
 enum EnemyType
 {
+	DELETED = -1,
 	CHICKEN,
 	GREEN_SLIME,
 	BLUE_SLIME,
@@ -21,7 +22,8 @@ enum AttackMode
 	WANDER,
 	CHASE,
 	RUN_AWAY,
-	PASSIVE
+	PASSIVE,
+	KNOCKBACK
 };
 
 struct Enemy
@@ -42,7 +44,7 @@ void updateEnemy(struct Enemy *enemy,
 				 struct BoundingRect boundRect,
 				 int maxBlockInd,
 				 struct Player *player);
-void damageEnemy(struct Enemy *enemy, int amt);
+int damageEnemy(struct Enemy *enemy, int amt);
 
 #endif
 #define ENEMY_H

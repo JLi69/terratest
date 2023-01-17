@@ -195,3 +195,8 @@ float drawString(const char *str, float x, float y, float charSz)
 
 	return x + xOffset - (strSz - 1) / 2.0f * charSz + charSz;
 }
+
+void setRotationRad(float rotation)
+{
+	glUniform1f(getUniformLocation("uRotation", getActiveShader()), rotation);
+}

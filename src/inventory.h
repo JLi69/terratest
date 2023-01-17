@@ -182,6 +182,7 @@ int isPartOfDoor(enum BlockType type);
 int canReplace(enum BlockType type);
 
 int healAmount(enum Item item);
+int damageAmount(enum Item item);
 
 #endif
 

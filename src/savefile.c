@@ -247,6 +247,7 @@ int readSave(struct World *world, struct Player *player, const char *path)
 	
 	//Read player data
 	readPlayerData(player, savefile);
+	player->useItemTimer = 0.0f;
 
 	//Read world data
 	ret = fread(&world->blockArea, sizeof(int), 1, savefile);

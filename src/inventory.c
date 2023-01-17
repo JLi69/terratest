@@ -514,3 +514,19 @@ int healAmount(enum Item item)
 	}
 	return 0;
 }
+
+int damageAmount(enum Item item)
+{
+	switch(item)
+	{
+	case WOOD_SWORD: return 2;
+	case STONE_SWORD: return 3;
+	case IRON_SWORD: return 5;
+	case GOLD_SWORD: return 6;
+	case DIAMOND_SWORD: return 8;
+	case RAINBOW_SWORD: return 12;	
+	default: break;
+	}
+
+	return 1;
+}

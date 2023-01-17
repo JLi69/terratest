@@ -33,6 +33,7 @@ struct QuadTree
 	struct Node *nodes;
 	int nodeCount, maxNodeCount;
 	int pointCount, maxPointCount;
+	int deletedPoints;
 	union Point botLeftCorner, topRightCorner;
 };
 
@@ -56,6 +57,11 @@ void searchInRectAndGetNodes(struct QuadTree *qtree, union Point botleft, union 
 //and then reinserts it to keep the quadtree accurate when we have dynamic
 //objects in it
 void updatePoint(struct QuadTree *qtree, int ind, int nodeid);
+
+//Removes a point out of the quadtree
+void deletePtOutOfNode(struct QuadTree *qtree, int ind, int nodeid);
+//Deletes the object at an index and deletes it from the quadtree
+void deletePoint(struct QuadTree *qtree, int ind);
 
 #endif
 #define QUADTREE_H

@@ -172,7 +172,8 @@ void display(struct World world, struct Player player)
 	}
 
 	//Draw items
-	setRectSize(ITEM_SIZE, ITEM_SIZE);
+	setRotationRad((-fabs(player.useItemTimer - USE_ANIMATION_LENGTH / 2.0f) + USE_ANIMATION_LENGTH / 2.0f) * 3.14159f * 1.0f / USE_ANIMATION_LENGTH);
+	setRectSize(ITEM_SIZE * 1.5f, ITEM_SIZE * 1.5f);
 	bindTexture(textures[4], GL_TEXTURE0);
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 	setTexSize(256.0f, 256.0f);		
@@ -195,8 +196,11 @@ void display(struct World world, struct Player player)
 				1.0f / 16.0f * (float)((player.inventory.slots[player.inventory.selected].item - 1) / 16));	
 	if(player.inventory.slots[player.inventory.selected].item != NOTHING)
 		drawRect();
+	setRotationRad(0.0f);
 
 	turnOffFlip();
+	
+	setRectSize(ITEM_SIZE, ITEM_SIZE);
 	if(player.health > 0)
 		drawItems(world, camPos, 32, 20);
 

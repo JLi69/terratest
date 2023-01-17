@@ -8,3 +8,10 @@ void damagePlayer(struct Player *player, int amt)
 	player->damageTaken = amt;
 	player->health -= amt;
 }
+
+void activateUseAnimation(struct Player *player)
+{	
+	if(player->useItemTimer > 0.0f)
+		return;
+	player->useItemTimer = USE_ANIMATION_LENGTH;
+}
