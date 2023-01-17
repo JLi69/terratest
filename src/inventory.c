@@ -528,5 +528,5 @@ int damageAmount(enum Item item)
 	default: break;
 	}
 
-	return 1;
+	return 0;
 }

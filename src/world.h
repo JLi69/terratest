@@ -100,9 +100,9 @@ void updateItems(struct World *world, struct Vector2D camPos, int simDist,
 
 void updatePlants(struct World *world, struct Vector2D camPos, int simDist);
 //Pass in coordinates of the bottom of the door
-void updateDoor(struct World *world, int x, int y);
+void updateDoor(struct World *world, int x, int y, struct Enemy *enemyArr, struct IntVec indices);
 //Returns 1 if it detected a door
-int toggleDoor(struct World *world, int x, int y, struct Sprite playerSpr);
+int toggleDoor(struct World *world, int x, int y, struct Sprite playerSpr, struct Enemy *enemyArr, struct IntVec indices);
 //Spawn enemies upon creation of the world
 void spawnEnemies(struct World *world, float *worldheight, int worldwidth, union Point playerPos);
 

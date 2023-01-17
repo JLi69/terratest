@@ -356,11 +356,23 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		}	
 	}
 
+	struct IntVec indices = createVec();
+	struct IntVec nodes = createVec();
+	searchInRectAndGetNodes(world->enemies,
+				 newpt(camPos.x - 64.0f * BLOCK_SIZE, camPos.y - 64.0f * BLOCK_SIZE),
+				 newpt(camPos.x + 64.0f * BLOCK_SIZE, camPos.y + 64.0f * BLOCK_SIZE),
+				 &indices, &nodes, ROOT);
+
 	//Place blocks
 	int placed = 0;
 	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT) && cursorInBounds())
 	{
 		struct Sprite temp = createSprite(createRect(cursorX * BLOCK_SIZE, cursorY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE));	
+		
+		int collidingWithEnemy = 0;
+		for(int i = 0; i < indices.sz && !collidingWithEnemy; i++)
+			if(colliding(temp.hitbox, world->enemies->enemyArr[indices.values[i]].spr.hitbox))
+				collidingWithEnemy = 1;
 
 		if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))
 		{
@@ -375,7 +387,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			}	
 		}
 		else if(!colliding(temp.hitbox, player->playerSpr.hitbox) &&
-				canReplace(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type))
+				canReplace(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type) &&
+				!collidingWithEnemy)
 		{	
 			//Check if block is transparent
 			int found = 0, ableToPlace = 0;
@@ -404,7 +417,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 					setBlockMass(world->blocks, cursorX, cursorY, world->blockArea, 1.0f, world->worldBoundingRect);			
 				
 					if(placeBlock(player->inventory.slots[player->inventory.selected].item) == DOOR_BOTTOM_CLOSED)
-						updateDoor(world, cursorX, cursorY);
+						updateDoor(world, cursorX, cursorY, world->enemies->enemyArr, indices);
 				}	
 			}	
 
@@ -546,8 +559,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			decrementSlot(player->inventory.selected, &player->inventory);
 			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);	
 		}
-
-		if((!placed && toggleDoor(world, cursorX, cursorY, player->playerSpr)) || (placed && isPartOfDoor(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type)))
+	
+		if((!placed && toggleDoor(world, cursorX, cursorY, player->playerSpr, world->enemies->enemyArr, indices)) ||
+			(placed && isPartOfDoor(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type)))
 			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);	
 	}
 
@@ -618,15 +632,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		world->dayCycle = 0.0f;
 	}
 
-	//Update enemies
-	struct IntVec indices = createVec();
-	struct IntVec nodes = createVec();
-	searchInRectAndGetNodes(world->enemies,
-				 newpt(camPos.x - 64.0f * BLOCK_SIZE, camPos.y - 64.0f * BLOCK_SIZE),
-				 newpt(camPos.x + 64.0f * BLOCK_SIZE, camPos.y + 64.0f * BLOCK_SIZE),
-				 &indices, &nodes, ROOT);
+	//Update enemies	
 	int attacked = 0; //Did the player hit any enemy?
-	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && damageAmount(player->inventory.slots[player->inventory.selected].item) > 1)
+	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && maxUses(player->inventory.slots[player->inventory.selected].item) > 0)
 		activateUseAnimation(player);
 	for(int i = 0; i < indices.sz; i++)
 	{
@@ -639,7 +647,11 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		   sqrtf(powf(world->enemies->enemyArr[ind].spr.hitbox.position.x - player->playerSpr.hitbox.position.x, 2.0f) +
 			     powf(world->enemies->enemyArr[ind].spr.hitbox.position.y - player->playerSpr.hitbox.position.y, 2.0f)) < BLOCK_SIZE * 3.0f)
 		{
-			if(damageEnemy(&world->enemies->enemyArr[ind], damageAmount(player->inventory.slots[player->inventory.selected].item)) > 1)
+			if(((world->enemies->enemyArr[ind].spr.hitbox.position.x > player->playerSpr.hitbox.position.x &&
+				!player->playerSpr.flipped) ||
+				(world->enemies->enemyArr[ind].spr.hitbox.position.x < player->playerSpr.hitbox.position.x &&
+				player->playerSpr.flipped)) &&
+				damageEnemy(&world->enemies->enemyArr[ind], damageAmount(player->inventory.slots[player->inventory.selected].item)) > 0)
 			{
 				attacked = 1;
 				use(player->inventory.selected, &player->inventory);
