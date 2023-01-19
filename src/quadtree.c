@@ -364,3 +364,46 @@ void deletePoint(struct QuadTree *qtree, int ind)
 	//Reinsert last one into quadtree
 	insertIntoNode(qtree, ROOT, ind);
 }
+
+int getCollision(struct QuadTree *qtree, struct Enemy enemy, int nodeid)
+{
+	if(nodeid < 0)
+		return -1;
+	if(enemy.spr.hitbox.position.x - enemy.spr.hitbox.dimensions.w 
+			< qtree->nodes[nodeid].botLeftCorner.x ||
+		enemy.spr.hitbox.position.x + enemy.spr.hitbox.dimensions.w 
+			>= qtree->nodes[nodeid].topRightCorner.x ||
+		enemy.spr.hitbox.position.y - enemy.spr.hitbox.dimensions.h 
+			< qtree->nodes[nodeid].botLeftCorner.y ||
+		enemy.spr.hitbox.position.y + enemy.spr.hitbox.dimensions.h
+			>= qtree->nodes[nodeid].topRightCorner.y)
+		return -1;
+
+	if((qtree->nodes[nodeid].botLeftInd == NIL_NODE ||
+       qtree->nodes[nodeid].topLeftInd == NIL_NODE ||
+       qtree->nodes[nodeid].botRightInd == NIL_NODE ||
+       qtree->nodes[nodeid].topRightInd == NIL_NODE) &&
+	   qtree->nodes[nodeid].ptIndices != NULL)
+	{
+		for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
+		{	
+			int ptInd = qtree->nodes[nodeid].ptIndices[i];
+			if(colliding(qtree->enemyArr[ptInd].spr.hitbox, enemy.spr.hitbox))
+				return ptInd;	
+		}
+		return -1;
+	}
+
+	int indices[] = 
+	{
+		getCollision(qtree, enemy, qtree->nodes[nodeid].botLeftInd),
+		getCollision(qtree, enemy, qtree->nodes[nodeid].topLeftInd),
+		getCollision(qtree, enemy, qtree->nodes[nodeid].botRightInd),
+		getCollision(qtree, enemy, qtree->nodes[nodeid].topRightInd)
+	};
+
+	for(int i = 0; i < 4; i++)
+		if(indices[i] != -1)
+			return indices[i];
+	return -1;
+}

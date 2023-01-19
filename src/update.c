@@ -67,6 +67,8 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[5] = itemAmt(IRON_BLOCK_ITEM, 99);
 	player->inventory.slots[6] = itemAmt(WATER_BUCKET, 1);
 	player->inventory.slots[7] = itemAmt(SLIMEBALL, 99);
+
+	world->dayCycle = 0.8f;
 #endif
 	srand(time(0));
 }
@@ -658,6 +660,11 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 
 	//Update enemies	
+	//If it's night, attempt to spawn enemies
+	if((world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
+		rand() % SPAWN_AT_NIGHT == 0 &&
+		indices.sz < 64)
+		spawnEnemiesAtNight(world, camPos, 64.0f);
 	int attacked = 0; //Did the player hit any enemy?
 	/*if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && maxUses(player->inventory.slots[player->inventory.selected].item) > 0)
 		activateUseAnimation(player);*/

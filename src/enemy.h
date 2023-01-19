@@ -5,6 +5,8 @@
 
 #define ENEMY_DAMAGE_COOLDOWN 0.5f
 
+#define SPAWN_AT_NIGHT 512
+
 enum EnemyType
 {
 	DELETED = -1,

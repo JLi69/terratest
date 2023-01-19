@@ -62,5 +62,9 @@ void deletePtOutOfNode(struct QuadTree *qtree, int ind, int nodeid);
 //Deletes the object at an index and deletes it from the quadtree
 void deletePoint(struct QuadTree *qtree, int ind);
 
+//Returns the index of the first object found that the enemy is colliding with
+//If it can't find any collision, return -1
+int getCollision(struct QuadTree *qtree, struct Enemy enemy, int nodeid);
+
 #endif
 #define QUADTREE_H

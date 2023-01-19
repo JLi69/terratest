@@ -105,6 +105,7 @@ void updateDoor(struct World *world, int x, int y, struct Enemy *enemyArr, struc
 int toggleDoor(struct World *world, int x, int y, struct Sprite playerSpr, struct Enemy *enemyArr, struct IntVec indices);
 //Spawn enemies upon creation of the world
 void spawnEnemies(struct World *world, float *worldheight, int worldwidth, union Point playerPos);
+void spawnEnemiesAtNight(struct World *world, struct Vector2D camPos, float range);
 
 #endif
 #define WORLD_H
