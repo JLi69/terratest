@@ -56,6 +56,7 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 	case TALL_GRASS: //Fall through
 	case VINES: breakTime = 0.1f; break;
 
+	case SLIME_BLOCK: //Fall through
 	case WHEAT1: //Fall through
 	case WHEAT2: //Fall through
 	case WHEAT3: //Fall through
@@ -105,7 +106,8 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 
 int maxStack(enum Item item)
 {
-	if(item >= WOOD_PICKAXE && item <= CAKE)
+	if((item >= WOOD_PICKAXE && item <= CAKE) ||
+		item == RAW_MEAT || item == COOKED_MEAT)
 		return 1;
 	return 99;
 }
@@ -115,6 +117,7 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 {
 	switch(type)
 	{	
+	case SLIME_BLOCK: return SLIME_BLOCK_ITEM;
 	case COAL_BLOCK: return COAL_BLOCK_ITEM;
 	case IRON_BLOCK: return IRON_BLOCK_ITEM;
 	case DIAMOND_BLOCK: return DIAMOND_BLOCK_ITEM;
@@ -201,6 +204,7 @@ enum BlockType placeBlock(enum Item item)
 {
 	switch(item)
 	{
+	case SLIME_BLOCK_ITEM: return SLIME_BLOCK;
 	case DOOR_ITEM: return DOOR_BOTTOM_CLOSED;
 	case MAGMA_BRICK_ITEM: return MAGMA_BRICK;
 	case MAGMA_TILE_ITEM: return MAGMA_TILE;
@@ -510,6 +514,10 @@ int healAmount(enum Item item)
 	{
 	case BREAD: return 1;
 	case CAKE: return 3;
+	case RAW_MEAT: 
+		if(rand() % 2) return -1;
+		else return 1;
+	case COOKED_MEAT: return 2;
 	default: break;
 	}
 	return 0;
@@ -528,5 +536,5 @@ int damageAmount(enum Item item)
 	default: break;
 	}
 
-	return 0;
+	return 1;
 }

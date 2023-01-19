@@ -66,6 +66,7 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
 	player->inventory.slots[5] = itemAmt(IRON_BLOCK_ITEM, 99);
 	player->inventory.slots[6] = itemAmt(WATER_BUCKET, 1);
+	player->inventory.slots[7] = itemAmt(SLIMEBALL, 99);
 #endif
 	srand(time(0));
 }
@@ -163,7 +164,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		menuBegin = (menuSelection / 8) * 8;
 		menuEnd = (menuSelection / 8 + 1) * 8;
 
-		return; //Pause game when on crafting menu
+		//return; //Pause game when on crafting menu
 	}	
 
 	static float blockUpdateTimer = 0.0f;
@@ -204,6 +205,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			player->playerSpr.vel.y *= 0.1f;	
 	}
 
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1, SLIME_BLOCK, -1.0f))
+		player->playerSpr.vel.x *= 0.5f;
 	//Move player in the x direction
 	updateSpriteX(&player->playerSpr, secondsPerFrame);
 	//Check for collision
@@ -233,16 +236,34 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		}
 	}
 
+	//Ladder, climb
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LADDER, 0.0f))
+	{
+		player->playerSpr.falling = 0;
+		player->playerSpr.canJump = 1;
+	
+		if(isPressed(GLFW_KEY_W) || isPressed(GLFW_KEY_SPACE))
+			player->playerSpr.vel.y = JUMP_SPEED;
+		else if(isPressed(GLFW_KEY_S))
+			player->playerSpr.vel.y = -JUMP_SPEED;
+		else
+			player->playerSpr.vel.y = 0.0f;
+	}
+
 	//Move player in y direction
 	updateSpriteY(&player->playerSpr, secondsPerFrame);
 	//Check for collision	
 	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{		
 		//Apply fall damage
-		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f))
+		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f) 
+			 && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1, SLIME_BLOCK, -1.0f))
 		{
 			damagePlayer(player, (int)sqrtf(-player->playerSpr.vel.y / BLOCK_SIZE - 20.0f));	
 		}
+
+		if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1, SLIME_BLOCK, -1.0f))
+			player->playerSpr.vel.y *= -0.5f;
 
 		//Uncollide the player
 		if(player->playerSpr.vel.y != 0.0f)
@@ -250,7 +271,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			if(player->playerSpr.hitbox.position.y >=
 			   collided.hitbox.position.y + collided.hitbox.dimensions.h / 2.0f)
 			{
-				player->playerSpr.vel.y = 0.0f;
+				if((!touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1, SLIME_BLOCK, -1.0f) ||
+					player->playerSpr.vel.y < BLOCK_SIZE * 2.0f))	
+					player->playerSpr.vel.y = 0.0f;
 				player->playerSpr.hitbox.position.y =
 					collided.hitbox.position.y +
 					collided.hitbox.dimensions.h / 2.0f +
@@ -310,11 +333,10 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	if(!player->playerSpr.falling || 
 	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.0f) || 
 	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, VINES, 0.0f) || 
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA, 0.0f) ||
-	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LADDER, 0.0f))
+	   touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LAVA, 0.0f))
 		player->playerSpr.canJump = 1;
 	else
-		player->playerSpr.canJump = 0;
+		player->playerSpr.canJump = 0;	
 
 	//Jump
 	if(player->playerSpr.canJump && isPressed(GLFW_KEY_SPACE))
@@ -551,9 +573,12 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			bucketDelay = 0.0f;
 		}
 		//Heal
-		else if(healAmount(player->inventory.slots[player->inventory.selected].item) > 0 && player->health < player->maxHealth)
+		else if(healAmount(player->inventory.slots[player->inventory.selected].item) > 0 && player->health < player->maxHealth && player->damageCooldown <= 0.0f)
 		{
-			player->health += healAmount(player->inventory.slots[player->inventory.selected].item);
+			int heal = healAmount(player->inventory.slots[player->inventory.selected].item);
+			if(heal < 0) damagePlayer(player, -heal);
+			else player->health += heal;	
+
 			if(player->health > player->maxHealth)
 				player->health = player->maxHealth;
 			decrementSlot(player->inventory.selected, &player->inventory);
@@ -634,8 +659,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	//Update enemies	
 	int attacked = 0; //Did the player hit any enemy?
-	if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && maxUses(player->inventory.slots[player->inventory.selected].item) > 0)
-		activateUseAnimation(player);
+	/*if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && maxUses(player->inventory.slots[player->inventory.selected].item) > 0)
+		activateUseAnimation(player);*/
 	for(int i = 0; i < indices.sz; i++)
 	{
 		int ind = indices.values[i];
@@ -651,15 +676,20 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				!player->playerSpr.flipped) ||
 				(world->enemies->enemyArr[ind].spr.hitbox.position.x < player->playerSpr.hitbox.position.x &&
 				player->playerSpr.flipped)) &&
+				breakBlockTimer <= 0.0f &&
 				damageEnemy(&world->enemies->enemyArr[ind], damageAmount(player->inventory.slots[player->inventory.selected].item)) > 0)
 			{
+				activateUseAnimation(player);
 				attacked = 1;
 				use(player->inventory.selected, &player->inventory);
 			}	
 		}
 
 		if(world->enemies->enemyArr[ind].health <= 0)
+		{
+			addItem(world, itemAmt(droppedLoot(world->enemies->enemyArr[ind].spr.type), 1), world->enemies->enemyArr[ind].spr.hitbox.position.x, world->enemies->enemyArr[ind].spr.hitbox.position.y); 
 			deletePoint(world->enemies, ind);
+		}	
 	}
 	//If the player attacked an enemy, release the left mouse button	
 	if(attacked) releaseMouseButton(GLFW_MOUSE_BUTTON_LEFT);	

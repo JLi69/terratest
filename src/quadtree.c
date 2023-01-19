@@ -156,7 +156,6 @@ struct QuadTree* createQuadTree(union Point botleft, union Point topright)
 	qtree->nodes[ROOT] = createNode(botleft, topright);
 	qtree->pointCount = 0;
 	qtree->maxPointCount = DEFAULT_SZ * CAPACITY;
-	qtree->deletedPoints = 0;
 	return qtree;
 }
 
@@ -316,11 +315,52 @@ void updatePoint(struct QuadTree *qtree, int ind, int nodeid)
 
 void deletePtOutOfNode(struct QuadTree *qtree, int ind, int nodeid)
 {
-	
+	if(nodeid < 0)
+		return;
+	if(qtree->enemyArr[ind].spr.hitbox.position.x < qtree->nodes[nodeid].botLeftCorner.x ||
+		qtree->enemyArr[ind].spr.hitbox.position.x >= qtree->nodes[nodeid].topRightCorner.x ||
+		qtree->enemyArr[ind].spr.hitbox.position.y < qtree->nodes[nodeid].botLeftCorner.y ||
+		qtree->enemyArr[ind].spr.hitbox.position.y >= qtree->nodes[nodeid].topRightCorner.y)
+		return;
+
+	if((qtree->nodes[nodeid].botLeftInd == NIL_NODE ||
+       qtree->nodes[nodeid].topLeftInd == NIL_NODE ||
+       qtree->nodes[nodeid].botRightInd == NIL_NODE ||
+       qtree->nodes[nodeid].topRightInd == NIL_NODE) &&
+	   qtree->nodes[nodeid].ptIndices != NULL)
+	{
+		for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
+		{	
+			int ptInd = qtree->nodes[nodeid].ptIndices[i];
+			if(ptInd == ind)
+			{
+				//Swap
+				int temp = qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1];
+				qtree->nodes[nodeid].ptIndices[qtree->nodes[nodeid].totalPts - 1] = ptInd;
+				qtree->nodes[nodeid].ptIndices[i] = temp;
+				qtree->nodes[nodeid].totalPts--;
+				return;	
+			}
+		}
+	}
+
+	deletePtOutOfNode(qtree, ind, qtree->nodes[nodeid].botLeftInd);
+	deletePtOutOfNode(qtree, ind, qtree->nodes[nodeid].topLeftInd);
+	deletePtOutOfNode(qtree, ind, qtree->nodes[nodeid].botRightInd);
+	deletePtOutOfNode(qtree, ind, qtree->nodes[nodeid].topRightInd);	
 }
 
 void deletePoint(struct QuadTree *qtree, int ind)
 {
-	qtree->deletedPoints++;
-	qtree->enemyArr[ind].spr.type = DELETED;
+	//Store last one in a temporary variable
+	struct Enemy temp = qtree->enemyArr[qtree->pointCount - 1];
+	//Delete last one out of quadtree
+	deletePtOutOfNode(qtree, qtree->pointCount - 1, ROOT);
+	//Delete ind out of tree
+	deletePtOutOfNode(qtree, ind, ROOT);
+	qtree->enemyArr[ind] = temp;	
+	//Decrement size
+	qtree->pointCount--;
+	//Reinsert last one into quadtree
+	insertIntoNode(qtree, ROOT, ind);
 }

@@ -205,6 +205,7 @@ void display(struct World world, struct Player player)
 		drawItems(world, camPos, 32, 20);
 
 	//Draw enemies
+	setTransparency(1.0f);
 	bindTexture(textures[5], GL_TEXTURE0);
 	struct IntVec indices = createVec();		
 	searchInRect(world.enemies, 
@@ -242,6 +243,7 @@ void display(struct World world, struct Player player)
 	int winWidth, winHeight;
 	getWindowSize(&winWidth, &winHeight);
 
+	setTransparency(0.7f);
 	bindTexture(textures[2], GL_TEXTURE0);
 	//Display health and breath bars
 	if(player.health > 0)
@@ -267,7 +269,7 @@ void display(struct World world, struct Player player)
 			}
 		}
 	}
-	
+	setTransparency(1.0f);
 
 	//Crafting recipes
 	if(craftingMenuShown())
@@ -362,7 +364,7 @@ void displayMainMenu(float secondsPerFrame)
 										(float)rand() / (float)RAND_MAX * 1920.0f - 960.0f,
 										(float)rand() / (float)RAND_MAX * (1080.0f) + 540.0f,
 										BLOCK_SIZE, BLOCK_SIZE),
-									rand() % (PILLAR) + 1); 
+									rand() % (SLIME_BLOCK) + 1); 
 		}
 		fallingblocksInit = 1;
 	}
@@ -399,7 +401,7 @@ void displayMainMenu(float secondsPerFrame)
 										(float)rand() / (float)RAND_MAX * 1920.0f - 960.0f,
 										(float)rand() / (float)RAND_MAX * 128.0f + 540.0f + BLOCK_SIZE,
 										BLOCK_SIZE, BLOCK_SIZE),
-									rand() % (PILLAR) + 1);
+									rand() % (SLIME_BLOCK) + 1);
 		}
 	}
 	bindTexture(textures[2], GL_TEXTURE0);

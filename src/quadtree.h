@@ -33,7 +33,6 @@ struct QuadTree
 	struct Node *nodes;
 	int nodeCount, maxNodeCount;
 	int pointCount, maxPointCount;
-	int deletedPoints;
 	union Point botLeftCorner, topRightCorner;
 };
 

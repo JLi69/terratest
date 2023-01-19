@@ -159,6 +159,11 @@ void initRecipes()
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 	
+	CREATE_RECIPE(itemAmt(COOKED_MEAT, 1), //Result
+				  itemAmt(RAW_MEAT, 1), //Ingredients
+				  itemAmt(COAL_ITEM, 1), 
+				  END_RECIPE, END_RECIPE);
+
 	CREATE_RECIPE(itemAmt(DOOR_ITEM, 1), //Result
 				  itemAmt(PLANK, 2), //Ingredients
 				  END_RECIPE, 
@@ -241,6 +246,11 @@ void initRecipes()
 				  END_RECIPE, END_RECIPE);
 	CREATE_RECIPE(itemAmt(RAINBOW_ITEM, 10), //Result
 				  itemAmt(RAINBOW_BLOCK_ITEM, 1), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+
+	CREATE_RECIPE(itemAmt(SLIME_BLOCK_ITEM, 1), //Result
+				  itemAmt(SLIMEBALL, 10), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 }

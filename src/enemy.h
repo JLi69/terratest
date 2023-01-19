@@ -45,6 +45,7 @@ void updateEnemy(struct Enemy *enemy,
 				 int maxBlockInd,
 				 struct Player *player);
 int damageEnemy(struct Enemy *enemy, int amt);
+enum Item droppedLoot(enum EnemyType enemy);
 
 #endif
 #define ENEMY_H

@@ -3,6 +3,7 @@
 #include <math.h>
 
 #define CHICKEN_PROB 32
+#define SLIME_PROB 64
 
 void spawnEnemies(struct World *world, float *worldheight, int worldwidth, union Point playerPos)
 {
@@ -22,6 +23,14 @@ void spawnEnemies(struct World *world, float *worldheight, int worldwidth, union
 			struct Enemy chicken = createEnemy(CHICKEN, x, y);
 			chicken.spr.flipped = rand() % 2;
 			insertEnemy(world->enemies, chicken);
-		}	
+		}
+		else if(getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type == GRASS &&
+		   getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE, world->blockArea, world->worldBoundingRect).type == NONE &&
+			rand() % SLIME_PROB == 0)
+		{
+			struct Enemy slime = createEnemy(GREEN_SLIME, x, y);
+			slime.spr.flipped = rand() % 2;
+			insertEnemy(world->enemies, slime);
+		}
 	}
 }

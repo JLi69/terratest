@@ -52,6 +52,7 @@ enum BlockType
 	DOOR_TOP_CLOSED,
 	DOOR_BOTTOM_OPEN,
 	DOOR_TOP_OPEN,
+	SLIME_BLOCK
 };
 
 //item types
@@ -134,6 +135,12 @@ enum Item
 	PILLAR_ITEM,
 
 	DOOR_ITEM,
+
+	RAW_MEAT,
+	COOKED_MEAT,
+
+	SLIMEBALL,
+	SLIME_BLOCK_ITEM
 };
 
 struct InventorySlot
