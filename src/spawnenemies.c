@@ -7,6 +7,7 @@
 #define GREEN_SLIME_PROB 128
 #define BLUE_SLIME_PROB 1024
 #define RED_SLIME_PROB 64
+#define PINK_SLIME_PROB 128
 
 void spawnEnemies(struct World *world, float *worldheight, int worldwidth, union Point playerPos)
 {
@@ -141,7 +142,17 @@ void spawnEnemiesInCave(struct World *world, struct Vector2D camPos, float range
 				struct Enemy slime = createEnemy(BLUE_SLIME, x, y);
 				slime.spr.flipped = rand() % 2;
 				insertEnemy(world->enemies, slime);
-			} 
+			}
+			else if(!canReplace(getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type) &&
+			    getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type != LEAF &&
+				getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE, world->blockArea, world->worldBoundingRect).type == NONE &&
+				(rand() % PINK_SLIME_PROB) == 0 &&
+				y < BLOCK_SIZE * 128.0f)
+			{
+				struct Enemy slime = createEnemy(PINK_SLIME, x, y);
+				slime.spr.flipped = rand() % 2;
+				insertEnemy(world->enemies, slime);
+			}
 		}
 	}
 }
@@ -164,7 +175,7 @@ void spawnWave(struct World *world, struct Vector2D camPos, float range)
 			if(!canReplace(getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type) &&
 			    getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type != LEAF &&
 				getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE, world->blockArea, world->worldBoundingRect).type == NONE &&
-				(rand() % (RED_SLIME_PROB * 16)) == 0)
+				(rand() % (RED_SLIME_PROB * 4)) == 0)
 			{
 				struct Enemy slime = createEnemy(RED_SLIME, x, y);
 				slime.spr.flipped = rand() % 2;
@@ -187,7 +198,16 @@ void spawnWave(struct World *world, struct Vector2D camPos, float range)
 				struct Enemy slime = createEnemy(BLUE_SLIME, x, y);
 				slime.spr.flipped = rand() % 2;
 				insertEnemy(world->enemies, slime);
-			} 
+			}
+			else if(!canReplace(getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type) &&
+			    getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type != LEAF &&
+				getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE, world->blockArea, world->worldBoundingRect).type == NONE &&
+				(rand() % PINK_SLIME_PROB) / 4 == 0)
+			{
+				struct Enemy slime = createEnemy(PINK_SLIME, x, y);
+				slime.spr.flipped = rand() % 2;
+				insertEnemy(world->enemies, slime);
+			}
 		}
 	}
 }

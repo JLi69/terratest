@@ -48,6 +48,7 @@ enum BlockType getSelectedBlock();
 int getMenuBegin();
 int getMenuEnd();
 
+void displayFPS(int fps); //Frame Counter
 void display(struct World world, struct Player player);
 void updateGameobjects(struct World *world, struct Player *player, float secondsPerFrame);
 void loop(void);

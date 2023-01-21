@@ -518,6 +518,7 @@ int healAmount(enum Item item)
 		if(rand() % 2) return -1;
 		else return 1;
 	case COOKED_MEAT: return 2;
+	case HEAL_POTION: return 4;
 	default: break;
 	}
 	return 0;

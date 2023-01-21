@@ -320,6 +320,10 @@ struct World generateWorld(int seed, float amp, int interval)
 		}
 		floodFill(i - WORLD_WIDTH / 2.0f, y, WATER_LEVEL, WATER, 
 				  world.blocks, world.blockArea, 0, world.worldBoundingRect);
+		floodFill(i - WORLD_WIDTH / 2.0f - 1, y + 1, WATER_LEVEL, WATER, 
+				  world.blocks, world.blockArea, 0, world.worldBoundingRect);	
+		floodFill(i - WORLD_WIDTH / 2.0f + 1, y + 1, WATER_LEVEL, WATER, 
+				  world.blocks, world.blockArea, 0, world.worldBoundingRect);
 	}
 
 	//Spawn enemies

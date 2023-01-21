@@ -162,26 +162,30 @@ void loop(void)
 			}
 		}
 
+		float timeSinceLastFrame = 999.0f;
 		while(gameState == PLAYING && !canQuit())
 		{
 			gettimeofday(&beginFrame, 0);
-			display(world, player);
+			if(timeSinceLastFrame > 1.0f / 120.0f) //Cap frame rate
+			{
+				display(world, player);
+				displayFPS(fps);
+				swapBuffers();	
+				timeSinceLastFrame = 0.0f;
+			}
 			animateSprites(&world, &player.playerSpr, seconds);
+			//TODO: optimize updating game objects
 			updateGameobjects(&world, &player, seconds);
-			
+
 			//FPS counter
 			frameUpdateTimer += seconds;
 			if(frameUpdateTimer > 1.0f)
 			{
 				frameUpdateTimer = 0.0f;
 				fps = 1.0f / seconds;
-			}	
-			int winWidth, winHeight;
-			getWindowSize(&winWidth, &winHeight);
-			float end = drawString("FPS:", winWidth / 2.0f - 256.0f + 16.0f, winHeight / 2.0f - 80.0f, 16.0f);
-			drawInteger((int)fps, end, winHeight / 2.0f - 80.0f, 16.0f);
+			}
 
-			updateWindow();			
+			updateWindowNoSwap();			
 
 			gettimeofday(&endFrame, 0);
 
@@ -208,6 +212,7 @@ void loop(void)
 			//Calculate the number of seconds a frame took
 			seconds = endFrame.tv_sec - beginFrame.tv_sec +
 					  1e-6 * (endFrame.tv_usec - beginFrame.tv_usec);	
+			timeSinceLastFrame += seconds;	
 		}
 
 		if(!quitFromMenu && pathind >= 0)

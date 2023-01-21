@@ -39,6 +39,7 @@ int maxHealthEnemy(enum EnemyType type)
 	case GREEN_SLIME: return 8;
 	case BLUE_SLIME: return 16;
 	case RED_SLIME: return 32;
+	case PINK_SLIME: return 24;
 	default: return 0;
 	}
 }
@@ -249,7 +250,7 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 
 void slimeAI(struct Enemy *enemy, float timePassed,
 			   struct Block *blocks, struct BoundingRect boundRect, int maxBlockInd,
-			   struct Player *player, int damageAmt, int immuneToLava)
+			   struct Player *player, int damageAmt, int immuneToLava, int healAmount)
 {
 	if(enemy->health <= 0)
 		return;
@@ -394,7 +395,13 @@ void slimeAI(struct Enemy *enemy, float timePassed,
 
 	//Colliding with player
 	if(colliding(player->playerSpr.hitbox, enemy->spr.hitbox))
-		damagePlayer(player, damageAmt);	
+	{	
+		//Enemy heals whenever damaging player (if healAmount > 0)
+		if(damagePlayer(player, damageAmt))	
+			enemy->health += healAmount;	
+		if(enemy->health > enemy->maxHealth)
+			enemy->health = enemy->maxHealth;
+	}
 
 	if(!immuneToLava)
 	{
@@ -436,9 +443,10 @@ void updateEnemy(struct Enemy *enemy,
 	switch(enemy->spr.type)
 	{
 	case CHICKEN: chickenAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player); break;
-	case GREEN_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 1, 0); break;
-	case BLUE_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 2, 0); break;
-	case RED_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 3, 1); break;
+	case GREEN_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 1, 0, 0); break;
+	case BLUE_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 2, 0, 0); break;
+	case RED_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 3, 1, 0); break;
+	case PINK_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 1, 0, 4); break;
 	default: return;
 	}
 }
@@ -474,7 +482,11 @@ enum Item droppedLoot(enum EnemyType enemy)
 			return COAL_ITEM;
 		else if(rand() % 8 == 0)
 			return IRON_ITEM;
-		return SLIMEBALL;	
+		return SLIMEBALL;
+	case PINK_SLIME:
+		if(rand() % 3 == 0)
+			return HEART_ITEM;
+		return SLIMEBALL;
 	default: break;
 	}
 

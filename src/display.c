@@ -540,3 +540,12 @@ void displayCreatePrompt(unsigned int seed)
 
 	drawMenu(CREATE_WORLD_PROMPT);
 }
+
+void displayFPS(int fps)
+{
+	bindTexture(textures[2], GL_TEXTURE0);
+	int winWidth, winHeight;
+	getWindowSize(&winWidth, &winHeight);
+	float end = drawString("FPS:", winWidth / 2.0f - 256.0f + 16.0f, winHeight / 2.0f - 80.0f, 16.0f);
+	drawInteger((int)fps, end, winHeight / 2.0f - 80.0f, 16.0f);
+}

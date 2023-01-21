@@ -12,13 +12,15 @@
 
 enum EnemyType
 {
+	//1 x 1 enemies
 	DELETED = -1,
 	CHICKEN,
 	GREEN_SLIME,
 	BLUE_SLIME,	
 	RED_SLIME,
 	PINK_SLIME,
-	ZOMBIE
+	//1 x 2 enemies
+	ZOMBIE = 64
 };
 
 enum AttackMode

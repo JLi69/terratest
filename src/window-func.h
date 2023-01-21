@@ -10,6 +10,8 @@ int isPaused(void);
 //0 = not paused, 1 = paused
 void setPaused(int value);
 void updateWindow(void);
+void updateWindowNoSwap(void);
+void swapBuffers(void);
 
 //Helper function for checking if a key is pressed
 //Returns 1 if the key is pressed, 0 if the key is not 
@@ -18,9 +20,9 @@ int isPressed(int key);
 int isPressedOnce(int key); //"Unpresses" a key after queried
 int mouseButtonHeld(int button);
 void releaseMouseButton(int button);
-double getMouseScroll(); //Gets how much the mouse is scrolling in the y direction
+double getMouseScroll(void); //Gets how much the mouse is scrolling in the y direction
 
-int cursorInBounds();
+int cursorInBounds(void);
 
 //Quit the program and give an error
 void crash(const char *msg);
@@ -35,8 +37,8 @@ void getWindowSize(int *w, int *h);
 //center of the window
 void getCursorPos(double *x, double *y);
 
-void toggleCursor();
-void enableCursor();
+void toggleCursor(void);
+void enableCursor(void);
 
 #endif
 #define WINDOW_UTIL_H

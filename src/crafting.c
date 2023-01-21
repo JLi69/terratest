@@ -253,6 +253,15 @@ void initRecipes()
 				  itemAmt(SLIMEBALL, 10), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
+
+	CREATE_RECIPE(itemAmt(HEAL_POTION, 1), //Result
+				  itemAmt(HEART_ITEM, 5), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
+	CREATE_RECIPE(itemAmt(HEALTH_BOOST, 1), //Result
+				  itemAmt(HEART_ITEM, 20), //Ingredients
+				  END_RECIPE, 
+				  END_RECIPE, END_RECIPE);
 }
 
 struct InventorySlot craft(struct Inventory *inventory, int recipeId)

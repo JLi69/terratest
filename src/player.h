@@ -18,7 +18,7 @@ struct Player
 	float useItemTimer;
 };
 
-void damagePlayer(struct Player *player, int amt);
+int damagePlayer(struct Player *player, int amt);
 void activateUseAnimation(struct Player *player);
 
 #endif

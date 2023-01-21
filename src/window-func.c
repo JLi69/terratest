@@ -200,6 +200,17 @@ void updateWindow(void)
 	glfwSwapBuffers(win);
 }
 
+void updateWindowNoSwap(void)
+{
+	outputGLErrors();
+	glfwPollEvents();
+}
+
+void swapBuffers(void)
+{
+	glfwSwapBuffers(win);
+}
+
 void crash(const char *msg)
 {
 	fprintf(stderr, "%s\n", msg);
