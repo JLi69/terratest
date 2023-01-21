@@ -264,6 +264,8 @@ void insertIntoNode(struct QuadTree *qtree, int nodeid, int ind)
 
 void insertEnemy(struct QuadTree *qtree, struct Enemy enemy)
 {
+	if(qtree->pointCount >= MAX_ENEMIES)
+		return;
 	int ind = qtree->pointCount;
 	//Insert it into the list 
 	if(qtree->pointCount < qtree->maxPointCount)
@@ -275,6 +277,7 @@ void insertEnemy(struct QuadTree *qtree, struct Enemy enemy)
 	//List is full, expand it	
 	else
 	{
+		printf("Expand\n");
 		struct Enemy* temp = (struct Enemy*)malloc(sizeof(struct Enemy) * qtree->maxPointCount);
 		for(int i = 0; i < qtree->maxPointCount; i++)
 			temp[i] = qtree->enemyArr[i];
@@ -406,4 +409,12 @@ int getCollision(struct QuadTree *qtree, struct Enemy enemy, int nodeid)
 		if(indices[i] != -1)
 			return indices[i];
 	return -1;
+}
+
+struct QuadTree* rebuildQTree(struct QuadTree *qtree)
+{
+	struct QuadTree* newQtree = createQuadTree(qtree->botLeftCorner, qtree->topRightCorner);
+	for(int i = 0; i < qtree->pointCount; i++)
+		insertEnemy(newQtree, qtree->enemyArr[i]);
+	return newQtree;
 }

@@ -39,7 +39,7 @@ void initGL(void)
 	textures[0] = loadTexture("res/textures/player.png");
 	textures[1] = loadTexture("res/textures/tiles.png");	
 	textures[2] = loadTexture("res/textures/icons.png");
-	textures[3] = loadTexture("res/textures/sky.png");
+	textures[3] = loadTexture("res/textures/cloud.png");
 	textures[4] = loadTexture("res/textures/items.png");
 	textures[5] = loadTexture("res/textures/enemy1x1.png");
 
@@ -96,8 +96,8 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 
 	//Draw clouds		
 	bindTexture(textures[3], GL_TEXTURE0);	
-	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
-	setTexSize(256.0f, 256.0f);		
+	setTexFrac(1.0f, 1.0f);
+	setTexSize(16.0f, 16.0f);		
 	setTexOffset(0.0f, 0.0f);
 	setTransparency(0.8f);
 	for(int i = 0; i < MAX_CLOUD; i++)
@@ -296,6 +296,11 @@ void display(struct World world, struct Player player)
 
 
 	bindTexture(textures[2], GL_TEXTURE0);		
+
+	//If there is a monster wave incoming, draw text onto screen
+	if((world.moonPhase > 0.7f && world.moonPhase < 0.8f) &&
+		(world.dayCycle > 0.4f || world.dayCycle < 0.6f))
+		drawString("Monster Wave Incoming!", 0.0f, winHeight / 2.0f - 128.0f, 32.0f);
 
 	if((player.damageCooldown > 0.0f && player.damageTaken > 0) ||
 		player.health <= 0)

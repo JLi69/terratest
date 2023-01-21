@@ -153,7 +153,7 @@ struct Menu createCreateWorldPrompt()
 	struct Menu createWorld = emptyMenu();
 	addTextToMenu(&createWorld, 
 			"Create New World", 0.0f, 320.0f, 48.0f);
-	addButtonToMenu(&createWorld, "Create World (300MB)", 0.0f, 0.0f, 32.0f); 
+	addButtonToMenu(&createWorld, "Create World (~75MB)", 0.0f, 0.0f, 32.0f); 
 	addButtonToMenu(&createWorld, "Cancel", 0.0f, -128.0f, 32.0f); 
 	return createWorld;
 }

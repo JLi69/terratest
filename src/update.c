@@ -64,11 +64,12 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[2] = itemAmt(BRICK_ITEM, 99);
 	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
 	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
-	player->inventory.slots[5] = itemAmt(IRON_BLOCK_ITEM, 99);
+	player->inventory.slots[5] = itemAmt(RAINBOW_SWORD, 1);
 	player->inventory.slots[6] = itemAmt(WATER_BUCKET, 1);
-	player->inventory.slots[7] = itemAmt(SLIMEBALL, 99);
+	player->inventory.slots[7] = itemAmt(DIAMOND_PICKAXE, 1);
 
-	world->dayCycle = 0.8f;
+	//world->dayCycle = 0.8f;
+	//world->moonPhase = 0.75f;
 #endif
 	srand(time(0));
 }
@@ -660,14 +661,28 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 
 	//Update enemies	
+	//If it's a new moon and night, spawn a wave of enemies
+	if((world->moonPhase > 0.7f && world->moonPhase < 0.8f) &&
+		(world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
+		(rand() % SPAWN_WAVE == 0) && indices.sz < 64)
+		spawnWave(world, camPos, 64.0f);
 	//If it's night, attempt to spawn enemies
-	if((world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
+	else if((world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
 		rand() % SPAWN_AT_NIGHT == 0 &&
-		indices.sz < 64)
+		indices.sz < 24)
 		spawnEnemiesAtNight(world, camPos, 64.0f);
+	//If it's day, attempt to spawn chickens
+	else if((world->dayCycle > 0.4f || world->dayCycle < 0.6f) &&
+		rand() % SPAWN_CHICKEN == 0 &&
+		indices.sz < 8)
+		spawnChickens(world, camPos, 64.0f);
+
+	if(player->playerSpr.hitbox.position.x < 256.0f * BLOCK_SIZE &&
+		rand() % SPAWN_IN_CAVE == 0 &&
+		indices.sz < 16)
+		spawnEnemiesInCave(world, camPos, 64.0f);
+
 	int attacked = 0; //Did the player hit any enemy?
-	/*if(mouseButtonHeld(GLFW_MOUSE_BUTTON_LEFT) && maxUses(player->inventory.slots[player->inventory.selected].item) > 0)
-		activateUseAnimation(player);*/
 	for(int i = 0; i < indices.sz; i++)
 	{
 		int ind = indices.values[i];
@@ -691,13 +706,26 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				use(player->inventory.selected, &player->inventory);
 			}	
 		}
-
+	}
+	//Delete enemies that are dead
+	for(int i = 0; i < indices.sz; i++)
+	{	
+		int ind = indices.values[i];
 		if(world->enemies->enemyArr[ind].health <= 0)
 		{
 			addItem(world, itemAmt(droppedLoot(world->enemies->enemyArr[ind].spr.type), 1), world->enemies->enemyArr[ind].spr.hitbox.position.x, world->enemies->enemyArr[ind].spr.hitbox.position.y); 
 			deletePoint(world->enemies, ind);
 		}	
 	}
+	//Rebuild quadtree if it gets too empty
+	if(world->enemies->pointCount * 2 < world->enemies->maxPointCount &&
+		world->enemies->maxPointCount > DEFAULT_SZ * CAPACITY * 2)
+	{		
+		struct QuadTree* newTree = rebuildQTree(world->enemies);
+		destroyQuadtree(world->enemies);
+		world->enemies = newTree;
+	}
+
 	//If the player attacked an enemy, release the left mouse button	
 	if(attacked) releaseMouseButton(GLFW_MOUSE_BUTTON_LEFT);	
 

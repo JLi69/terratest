@@ -6,6 +6,7 @@
 #define DEFAULT_SZ 2048 
 #define ROOT 0
 #define NIL_NODE -1
+#define MAX_ENEMIES 32000
 
 struct IntVec
 {
@@ -65,6 +66,8 @@ void deletePoint(struct QuadTree *qtree, int ind);
 //Returns the index of the first object found that the enemy is colliding with
 //If it can't find any collision, return -1
 int getCollision(struct QuadTree *qtree, struct Enemy enemy, int nodeid);
+
+struct QuadTree* rebuildQTree(struct QuadTree *qtree);
 
 #endif
 #define QUADTREE_H

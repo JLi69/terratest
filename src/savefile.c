@@ -198,6 +198,54 @@ void writeBlockData(struct Block *blocks, int sz, FILE *file)
 	free(blockData);
 }
 
+void writeEnemyData(struct World *world, FILE *file)
+{
+	fwrite(&world->enemies->pointCount, sizeof(int), 1, file);
+	for(int i = 0; i < world->enemies->pointCount; i++)
+	{
+		writeSprite(&world->enemies->enemyArr[i].spr, file);
+		uint8_t sprDataInt[] = 
+		{
+			world->enemies->enemyArr[i].health,
+			world->enemies->enemyArr[i].maxHealth,
+			world->enemies->enemyArr[i].attackmode	
+		};
+		float sprDataFloat[] =
+		{
+			world->enemies->enemyArr[i].walkDistance,
+			world->enemies->enemyArr[i].timer,
+			world->enemies->enemyArr[i].damageCooldown
+		};
+		fwrite(sprDataInt, sizeof(uint8_t), 3, file);
+		fwrite(sprDataFloat, sizeof(float), 3, file);
+	}
+}
+
+void readEnemyData(struct World *world, FILE *file)
+{
+	size_t ret;
+	int pointCount;
+	ret = fread(&pointCount, sizeof(int), 1, file);
+	for(int i = 0; i < pointCount; i++)
+	{
+		struct Enemy enemy;
+		readSprite(&enemy.spr, file);
+		uint8_t sprDataInt[3];	
+		float sprDataFloat[3];	
+		ret = fread(sprDataInt, sizeof(uint8_t), 3, file);
+		ret = fread(sprDataFloat, sizeof(float), 3, file);
+		
+		ret = enemy.health = sprDataInt[0];
+		ret = enemy.maxHealth = sprDataInt[1];	
+		ret = enemy.attackmode = sprDataInt[2];	
+	          
+		ret = enemy.walkDistance = sprDataFloat[0];
+		ret = enemy.timer = sprDataFloat[1];	
+		ret = enemy.damageCooldown = sprDataFloat[2];
+		insertEnemy(world->enemies, enemy);
+	}
+}
+
 void saveWorld(struct World *world, struct Player *player, const char *path)
 {
 	FILE* savefile = fopen(path, "wb");
@@ -231,6 +279,8 @@ void saveWorld(struct World *world, struct Player *player, const char *path)
 	for(int i = 0; i < world->totalItems; i++)
 		writeDroppedItem(&world->droppedItems[i], savefile);
 
+	writeEnemyData(world, savefile);
+	
 	fclose(savefile);
 }
 
@@ -271,10 +321,13 @@ int readSave(struct World *world, struct Player *player, const char *path)
 	ret = fread(&world->totalItems, sizeof(int), 1, savefile);
 	for(int i = 0; i < world->totalItems; i++)
 		readDroppedItem(world->droppedItems, savefile);
-	fclose(savefile);
 
 	world->enemies = createQuadTree(
 			newpt(world->worldBoundingRect.minX * BLOCK_SIZE, world->worldBoundingRect.minY * BLOCK_SIZE),
 			newpt(world->worldBoundingRect.maxX * BLOCK_SIZE, world->worldBoundingRect.maxY * BLOCK_SIZE));
+	readEnemyData(world, savefile);	
+
+	fclose(savefile);
+
 	return 1;
 }

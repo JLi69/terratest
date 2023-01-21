@@ -38,6 +38,7 @@ int maxHealthEnemy(enum EnemyType type)
 	case CHICKEN: return 5;
 	case GREEN_SLIME: return 8;
 	case BLUE_SLIME: return 16;
+	case RED_SLIME: return 32;
 	default: return 0;
 	}
 }
@@ -215,20 +216,7 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 
 	//Colliding with player
 	if(colliding(player->playerSpr.hitbox, enemy->spr.hitbox))
-	{
-		/*if(player->playerSpr.hitbox.position.y - player->playerSpr.hitbox.dimensions.h / 2.0f >
-			enemy->spr.hitbox.position.y && player->playerSpr.vel.y < 0.0f)
-		{
-			player->playerSpr.canJump = 1;
-			//Uncollide the player
-			player->playerSpr.hitbox.position.y = 
-				enemy->spr.hitbox.position.y +
-				enemy->spr.hitbox.dimensions.h / 2.0f +
-				player->playerSpr.hitbox.dimensions.h / 2.0f + 4.0f;
-			player->playerSpr.vel.y = BLOCK_SIZE * 8.0f;
-			damageEnemy(enemy, 1);
-		}
-		else*/
+	{	
 		damagePlayer(player, 1);	
 	}
 
@@ -261,7 +249,7 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 
 void slimeAI(struct Enemy *enemy, float timePassed,
 			   struct Block *blocks, struct BoundingRect boundRect, int maxBlockInd,
-			   struct Player *player, int damageAmt)
+			   struct Player *player, int damageAmt, int immuneToLava)
 {
 	if(enemy->health <= 0)
 		return;
@@ -408,16 +396,32 @@ void slimeAI(struct Enemy *enemy, float timePassed,
 	if(colliding(player->playerSpr.hitbox, enemy->spr.hitbox))
 		damagePlayer(player, damageAmt);	
 
-	if(getBlock(blocks, 
-				enemy->spr.hitbox.position.x / BLOCK_SIZE,
-				enemy->spr.hitbox.position.y / BLOCK_SIZE,
-				maxBlockInd, boundRect).type == LAVA)
-		damageEnemy(enemy, 3);	
-	if(getBlock(blocks, 
-				enemy->spr.hitbox.position.x / BLOCK_SIZE,
-				enemy->spr.hitbox.position.y / BLOCK_SIZE - 1,
-				maxBlockInd, boundRect).type == MAGMA_STONE)
-		damageEnemy(enemy, 1);
+	if(!immuneToLava)
+	{
+		if(getBlock(blocks, 
+					enemy->spr.hitbox.position.x / BLOCK_SIZE,
+					enemy->spr.hitbox.position.y / BLOCK_SIZE,
+					maxBlockInd, boundRect).type == LAVA)
+		{
+			damageEnemy(enemy, 3);
+			enemy->attackmode = WANDER;	
+		}
+		if(getBlock(blocks, 
+					enemy->spr.hitbox.position.x / BLOCK_SIZE,
+					enemy->spr.hitbox.position.y / BLOCK_SIZE - 1,
+					maxBlockInd, boundRect).type == MAGMA_STONE)
+		{	
+			damageEnemy(enemy, 1);
+			enemy->attackmode = WANDER;	
+		}
+	}
+	//Swim in lava if immune
+	else if(getBlock(blocks, 
+			enemy->spr.hitbox.position.x / BLOCK_SIZE,
+			(int)roundf(enemy->spr.hitbox.position.y / BLOCK_SIZE + 0.5f),
+			maxBlockInd, boundRect).type == LAVA &&
+			enemy->spr.vel.y <= 0.0f)
+		enemy->spr.vel.y = 8.0f * BLOCK_SIZE;
 
 	enemy->damageCooldown -= timePassed;	
 }
@@ -432,8 +436,9 @@ void updateEnemy(struct Enemy *enemy,
 	switch(enemy->spr.type)
 	{
 	case CHICKEN: chickenAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player); break;
-	case GREEN_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 1); break;
-	case BLUE_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 2); break;
+	case GREEN_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 1, 0); break;
+	case BLUE_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 2, 0); break;
+	case RED_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 3, 1); break;
 	default: return;
 	}
 }
@@ -460,6 +465,16 @@ enum Item droppedLoot(enum EnemyType enemy)
 	case GREEN_SLIME: //Fall through
 	case BLUE_SLIME:
 		return SLIMEBALL;
+	case RED_SLIME:
+		if(rand() % 2 == 0)
+			return SLIMEBALL;
+		else if(rand() % 2 == 0)
+			return MAGMA_ITEM;
+		else if(rand() % 2 == 0)
+			return COAL_ITEM;
+		else if(rand() % 8 == 0)
+			return IRON_ITEM;
+		return SLIMEBALL;	
 	default: break;
 	}
 
