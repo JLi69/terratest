@@ -53,7 +53,10 @@ void animateSprites(struct World *world, struct Sprite *player, float secondsPer
 			break;
 		case RUN_AWAY: //Fall through
 		case CHASE:
-			updateAnimation(&world->enemies->enemyArr[ind].spr, &enemyWalk[0], 4, timePassed, 0.1f);
+			if(world->enemies->enemyArr[ind].spr.type != ZOMBIE)
+				updateAnimation(&world->enemies->enemyArr[ind].spr, &enemyWalk[0], 4, timePassed, 0.1f);
+			else if(world->enemies->enemyArr[ind].spr.type == ZOMBIE)
+				updateAnimation(&world->enemies->enemyArr[ind].spr, &enemyWalk[0], 4, timePassed, 0.4f);
 			break;
 		default: break;
 		}

@@ -40,10 +40,12 @@ struct Enemy
 	enum AttackMode attackmode;
 	float walkDistance;
 	float timer, damageCooldown;
+	float despawnTimer;
 };
 
 int maxHealthEnemy(enum EnemyType type);
 void drawEnemy1x1(struct Enemy enemy, struct Vector2D camPos);
+void drawEnemy1x2(struct Enemy enemy, struct Vector2D camPos);
 struct Enemy createEnemy(enum EnemyType type, float x, float y);
 void updateEnemy(struct Enemy *enemy, 
 				 float timePassed, 

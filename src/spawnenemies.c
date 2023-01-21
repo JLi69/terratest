@@ -8,6 +8,7 @@
 #define BLUE_SLIME_PROB 1024
 #define RED_SLIME_PROB 64
 #define PINK_SLIME_PROB 128
+#define ZOMBIE_PROB 128
 
 void spawnEnemies(struct World *world, float *worldheight, int worldwidth, union Point playerPos)
 {
@@ -66,6 +67,30 @@ void spawnEnemiesAtNight(struct World *world, struct Vector2D camPos, float rang
 				slime.spr.flipped = rand() % 2;
 				insertEnemy(world->enemies, slime);
 			}
+		}
+	}
+
+	//Spawn zombies
+	for(float x = camPosGrid.x - range * BLOCK_SIZE; x <= camPosGrid.x + range * BLOCK_SIZE; x += BLOCK_SIZE)
+	{
+		for(float y = camPosGrid.y - range * BLOCK_SIZE; y <= camPosGrid.y + range * BLOCK_SIZE; y += BLOCK_SIZE)
+		{
+			if(sqrtf(powf(x - camPos.x, 2.0f) + powf(y - camPos.y, 2.0f)) < BLOCK_SIZE * 24.0f)
+				continue;
+
+			struct Enemy zombie = createEnemy(ZOMBIE, x, y);
+			if(getCollision(world->enemies, zombie, ROOT) != -1)
+				continue;
+
+			if(!canReplace(getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type) &&
+				getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type != LEAF &&
+			   getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE, world->blockArea, world->worldBoundingRect).type == NONE &&
+			   getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE + 1, world->blockArea, world->worldBoundingRect).type == NONE &&
+				rand() % ZOMBIE_PROB == 0)
+			{
+				zombie.spr.flipped = rand() % 2;
+				insertEnemy(world->enemies, zombie);
+			}		
 		}
 	}
 }
@@ -155,12 +180,61 @@ void spawnEnemiesInCave(struct World *world, struct Vector2D camPos, float range
 			}
 		}
 	}
+
+	//Spawn zombies
+	for(float x = camPosGrid.x - range * BLOCK_SIZE; x <= camPosGrid.x + range * BLOCK_SIZE; x += BLOCK_SIZE)
+	{
+		for(float y = camPosGrid.y - range * BLOCK_SIZE; y <= camPosGrid.y + range * BLOCK_SIZE; y += BLOCK_SIZE)
+		{
+			if(sqrtf(powf(x - camPos.x, 2.0f) + powf(y - camPos.y, 2.0f)) < BLOCK_SIZE * 24.0f)
+				continue;
+
+			struct Enemy zombie = createEnemy(ZOMBIE, x, y);
+			if(getCollision(world->enemies, zombie, ROOT) != -1)
+				continue;
+
+			if(!canReplace(getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type) &&
+				getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type != LEAF &&
+			   getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE, world->blockArea, world->worldBoundingRect).type == NONE &&
+			   getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE + 1, world->blockArea, world->worldBoundingRect).type == NONE &&
+				y < BLOCK_SIZE * 180.0f &&
+			   rand() % (ZOMBIE_PROB * 8) == 0)
+			{
+				zombie.spr.flipped = rand() % 2;
+				insertEnemy(world->enemies, zombie);
+			}		
+		}
+	}
 }
 
 void spawnWave(struct World *world, struct Vector2D camPos, float range)
 {
 	struct Vector2D camPosGrid = createVector(floorf(camPos.x / BLOCK_SIZE) * BLOCK_SIZE, floorf(camPos.y / BLOCK_SIZE) * BLOCK_SIZE);
 	
+	//Spawn zombies
+	for(float x = camPosGrid.x - range * BLOCK_SIZE; x <= camPosGrid.x + range * BLOCK_SIZE; x += BLOCK_SIZE)
+	{
+		for(float y = camPosGrid.y - range * BLOCK_SIZE; y <= camPosGrid.y + range * BLOCK_SIZE; y += BLOCK_SIZE)
+		{
+			if(sqrtf(powf(x - camPos.x, 2.0f) + powf(y - camPos.y, 2.0f)) < BLOCK_SIZE * 24.0f)
+				continue;
+
+			struct Enemy zombie = createEnemy(ZOMBIE, x, y);
+			if(getCollision(world->enemies, zombie, ROOT) != -1)
+				continue;
+
+			if(!canReplace(getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type) &&
+				getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE - 1, world->blockArea, world->worldBoundingRect).type != LEAF &&
+			   getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE, world->blockArea, world->worldBoundingRect).type == NONE &&
+			   getBlock(world->blocks, x / BLOCK_SIZE, y / BLOCK_SIZE + 1, world->blockArea, world->worldBoundingRect).type == NONE &&
+				rand() % ZOMBIE_PROB / 2 == 0)
+			{
+				zombie.spr.flipped = rand() % 2;
+				insertEnemy(world->enemies, zombie);
+			}		
+		}
+	}
+
 	for(float x = camPosGrid.x - range * BLOCK_SIZE; x <= camPosGrid.x + range * BLOCK_SIZE; x += BLOCK_SIZE)
 	{
 		for(float y = camPosGrid.y - range / 8.0 * BLOCK_SIZE; y <= camPosGrid.y + range / 8.0f * BLOCK_SIZE; y += BLOCK_SIZE)

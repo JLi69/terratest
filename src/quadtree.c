@@ -231,6 +231,22 @@ void insertIntoNode(struct QuadTree *qtree, int nodeid, int ind)
 		  qtree->nodes[nodeid].botRightInd == NIL_NODE ||
 		  qtree->nodes[nodeid].topRightInd == NIL_NODE)
 		{
+			//First, check how many points have the same position as the point being inserted
+			int samePos = 0;
+			for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)
+			{		
+				int ptInd = qtree->nodes[nodeid].ptIndices[i];
+				if(qtree->enemyArr[ptInd].spr.hitbox.position.x == qtree->enemyArr[ind].spr.hitbox.position.x &&
+					qtree->enemyArr[ptInd].spr.hitbox.position.y == qtree->enemyArr[ind].spr.hitbox.position.y)
+					samePos++;
+			}
+
+			if(samePos >= CAPACITY)
+			{
+				qtree->pointCount--;
+				return;
+			}
+
 			splitNode(qtree, nodeid);
 			//Insert points into the child nodes
 			for(int i = 0; i < qtree->nodes[nodeid].totalPts; i++)

@@ -42,6 +42,7 @@ void initGL(void)
 	textures[3] = loadTexture("res/textures/cloud.png");
 	textures[4] = loadTexture("res/textures/items.png");
 	textures[5] = loadTexture("res/textures/enemy1x1.png");
+	textures[6] = loadTexture("res/textures/enemy1x2.png");
 
 	useShader(&shaders[0]);	
 	bindBuffers(buffers[0]);
@@ -214,9 +215,18 @@ void display(struct World world, struct Player player)
 	//Draw enemies
 	for(int i = 0; i < indices.sz; i++)
 	{
-		drawEnemy1x1(world.enemies->enemyArr[indices.values[i]], camPos);
+		if(world.enemies->enemyArr[indices.values[i]].spr.type < ZOMBIE)
+			drawEnemy1x1(world.enemies->enemyArr[indices.values[i]], camPos);
+	}
+	bindTexture(textures[6], GL_TEXTURE0);
+	setTexFrac(1.0f / 16.0f, 1.0f / 8.0f);
+	for(int i = 0; i < indices.sz; i++)
+	{
+		if(world.enemies->enemyArr[indices.values[i]].spr.type >= ZOMBIE)
+			drawEnemy1x2(world.enemies->enemyArr[indices.values[i]], camPos);
 	}
 	flip(0); //Turn off flip
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 
 	free(indices.values);
 

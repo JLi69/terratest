@@ -214,10 +214,11 @@ void writeEnemyData(struct World *world, FILE *file)
 		{
 			world->enemies->enemyArr[i].walkDistance,
 			world->enemies->enemyArr[i].timer,
-			world->enemies->enemyArr[i].damageCooldown
+			world->enemies->enemyArr[i].damageCooldown,
+			world->enemies->enemyArr[i].despawnTimer
 		};
 		fwrite(sprDataInt, sizeof(uint8_t), 3, file);
-		fwrite(sprDataFloat, sizeof(float), 3, file);
+		fwrite(sprDataFloat, sizeof(float), 4, file);
 	}
 }
 
@@ -231,17 +232,18 @@ void readEnemyData(struct World *world, FILE *file)
 		struct Enemy enemy;
 		readSprite(&enemy.spr, file);
 		uint8_t sprDataInt[3];	
-		float sprDataFloat[3];	
+		float sprDataFloat[4];	
 		ret = fread(sprDataInt, sizeof(uint8_t), 3, file);
-		ret = fread(sprDataFloat, sizeof(float), 3, file);
+		ret = fread(sprDataFloat, sizeof(float), 4, file);
 		
-		ret = enemy.health = sprDataInt[0];
-		ret = enemy.maxHealth = sprDataInt[1];	
-		ret = enemy.attackmode = sprDataInt[2];	
-	          
-		ret = enemy.walkDistance = sprDataFloat[0];
-		ret = enemy.timer = sprDataFloat[1];	
-		ret = enemy.damageCooldown = sprDataFloat[2];
+		enemy.health = sprDataInt[0];
+		enemy.maxHealth = sprDataInt[1];	
+		enemy.attackmode = sprDataInt[2];	
+	    
+		enemy.walkDistance = sprDataFloat[0];
+		enemy.timer = sprDataFloat[1];	
+		enemy.damageCooldown = sprDataFloat[2];	
+		enemy.despawnTimer = sprDataFloat[3];
 		insertEnemy(world->enemies, enemy);
 	}
 }

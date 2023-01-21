@@ -107,7 +107,8 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 int maxStack(enum Item item)
 {
 	if((item >= WOOD_PICKAXE && item <= CAKE) ||
-		item == RAW_MEAT || item == COOKED_MEAT)
+		item == RAW_MEAT || item == COOKED_MEAT ||
+		item == HEAL_POTION || item == HEALTH_BOOST)
 		return 1;
 	return 99;
 }

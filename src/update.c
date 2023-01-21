@@ -67,6 +67,7 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[5] = itemAmt(RAINBOW_SWORD, 1);
 	player->inventory.slots[6] = itemAmt(WATER_BUCKET, 1);
 	player->inventory.slots[7] = itemAmt(DIAMOND_PICKAXE, 1);
+	player->inventory.slots[8] = itemAmt(HEART_ITEM, 99);
 
 	//world->dayCycle = 0.8f;
 	//world->moonPhase = 0.75f;
@@ -345,11 +346,12 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	if(player->playerSpr.canJump && isPressed(GLFW_KEY_SPACE))
 		player->playerSpr.vel.y = JUMP_SPEED;
 
-	//Update liquid blocks	
-	if(blockUpdateTimer > 0.03f)
+	//Update liquid blocks
+	//This seems to be taking a lot of time, try to optimize this later
+	if(blockUpdateTimer > 0.05f)
 	{
-		updatePlants(world, camPos, 64);
-		updateBlocks(world->blocks, camPos, blockUpdateTimer, 48, world->blockArea, world->worldBoundingRect);
+		updatePlants(world, camPos, 48);
+		updateBlocks(world->blocks, camPos, blockUpdateTimer, 32, world->blockArea, world->worldBoundingRect);
 		blockUpdateTimer = 0.0f;	
 	}
 
@@ -587,6 +589,12 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			decrementSlot(player->inventory.selected, &player->inventory);
 			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);	
 		}
+		//Increase maximum health
+		else if(player->inventory.slots[player->inventory.selected].item == HEALTH_BOOST)
+		{
+			player->maxHealth++;
+			decrementSlot(player->inventory.selected, &player->inventory);
+		}
 	
 		if((!placed && toggleDoor(world, cursorX, cursorY, player->playerSpr, world->enemies->enemyArr, indices)) ||
 			(placed && isPartOfDoor(getBlock(world->blocks, cursorX, cursorY, world->blockArea, world->worldBoundingRect).type)))
@@ -701,6 +709,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 				breakBlockTimer <= 0.0f &&
 				damageEnemy(&world->enemies->enemyArr[ind], damageAmount(player->inventory.slots[player->inventory.selected].item)) > 0)
 			{
+				world->enemies->enemyArr[ind].despawnTimer = 0.0f;
 				activateUseAnimation(player);
 				attacked = 1;
 				use(player->inventory.selected, &player->inventory);
@@ -711,7 +720,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	for(int i = 0; i < indices.sz; i++)
 	{	
 		int ind = indices.values[i];
-		if(world->enemies->enemyArr[ind].health <= 0)
+		if(world->enemies->enemyArr[ind].health <= 0 ||
+		   world->enemies->enemyArr[ind].despawnTimer > 300.0f) //Delete enemies after five minutes
 		{
 			addItem(world, itemAmt(droppedLoot(world->enemies->enemyArr[ind].spr.type), 1), world->enemies->enemyArr[ind].spr.hitbox.position.x, world->enemies->enemyArr[ind].spr.hitbox.position.y); 
 			deletePoint(world->enemies, ind);

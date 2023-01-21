@@ -2,6 +2,7 @@
 #include "inventory.h"
 #include "sprite.h"
 
+#define JUMP_SPEED 320.0f
 #define DAMAGE_COOLDOWN 1.0f
 #define USE_ANIMATION_LENGTH 0.2f
 
