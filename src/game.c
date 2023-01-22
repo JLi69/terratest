@@ -168,8 +168,13 @@ void loop(void)
 			gettimeofday(&beginFrame, 0);
 			if(timeSinceLastFrame > 1.0f / 120.0f) //Cap frame rate
 			{
-				display(world, player);
+				display(world, player);	
 				displayFPS(fps);
+				if(frameUpdateTimer > 1.0f)
+				{
+					frameUpdateTimer = 0.0f;
+					fps = 1.0f / timeSinceLastFrame;
+				}
 				swapBuffers();	
 				timeSinceLastFrame = 0.0f;
 			}
@@ -178,12 +183,7 @@ void loop(void)
 			updateGameobjects(&world, &player, seconds);
 
 			//FPS counter
-			frameUpdateTimer += seconds;
-			if(frameUpdateTimer > 1.0f)
-			{
-				frameUpdateTimer = 0.0f;
-				fps = 1.0f / seconds;
-			}
+			frameUpdateTimer += seconds;	
 
 			updateWindowNoSwap();			
 

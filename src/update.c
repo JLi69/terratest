@@ -669,26 +669,31 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	}
 
 	//Update enemies	
-	//If it's a new moon and night, spawn a wave of enemies
-	if((world->moonPhase > 0.7f && world->moonPhase < 0.8f) &&
-		(world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
-		(rand() % SPAWN_WAVE == 0) && indices.sz < 64)
-		spawnWave(world, camPos, 64.0f);
-	//If it's night, attempt to spawn enemies
-	else if((world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
-		rand() % SPAWN_AT_NIGHT == 0 &&
-		indices.sz < 24)
-		spawnEnemiesAtNight(world, camPos, 64.0f);
-	//If it's day, attempt to spawn chickens
-	else if((world->dayCycle > 0.4f || world->dayCycle < 0.6f) &&
-		rand() % SPAWN_CHICKEN == 0 &&
-		indices.sz < 8)
-		spawnChickens(world, camPos, 64.0f);
-
-	if(player->playerSpr.hitbox.position.x < 256.0f * BLOCK_SIZE &&
-		rand() % SPAWN_IN_CAVE == 0 &&
-		indices.sz < 16)
-		spawnEnemiesInCave(world, camPos, 64.0f);
+	static float enemySpawnTimer = 0.0f;
+	enemySpawnTimer += secondsPerFrame;
+	if(enemySpawnTimer > 1.0f)
+	{
+		//If it's a new moon and night, spawn a wave of enemies
+		if((world->moonPhase > 0.7f && world->moonPhase < 0.8f) &&
+			(world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
+			(rand() % SPAWN_WAVE == 0) && indices.sz < 64)
+			spawnWave(world, camPos, 64.0f);
+		//If it's night, attempt to spawn enemies
+		else if((world->dayCycle > 0.8f || world->dayCycle < 0.2f) &&
+			rand() % SPAWN_AT_NIGHT == 0 &&
+			indices.sz < 24)
+			spawnEnemiesAtNight(world, camPos, 64.0f);
+		//If it's day, attempt to spawn chickens
+		else if((world->dayCycle > 0.4f || world->dayCycle < 0.6f) &&
+			rand() % SPAWN_CHICKEN == 0 &&
+			indices.sz < 8)
+			spawnChickens(world, camPos, 64.0f);
+	
+		if(player->playerSpr.hitbox.position.x < 256.0f * BLOCK_SIZE &&
+			rand() % SPAWN_IN_CAVE == 0 &&
+			indices.sz < 16)
+			spawnEnemiesInCave(world, camPos, 64.0f);
+	}
 
 	int attacked = 0; //Did the player hit any enemy?
 	for(int i = 0; i < indices.sz; i++)

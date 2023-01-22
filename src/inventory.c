@@ -136,8 +136,8 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 			return GRASS_ITEM;
 		return DIRT_ITEM;
 	case LEAF:
-		if(rand() % 32 == 0) return STICK;
-		else if(rand() % 32 <= 4) return SAPLING_ITEM;
+		if(rand() % 32 == 0) return SAPLING_ITEM;
+		else if(rand() % 32 <= 2) return STICK;
 		break;	
 	case STONE: 
 		if(item >= WOOD_PICKAXE && item <= RAINBOW_PICKAXE)	

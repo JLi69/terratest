@@ -255,11 +255,11 @@ void initRecipes()
 				  END_RECIPE, END_RECIPE);
 
 	CREATE_RECIPE(itemAmt(HEAL_POTION, 1), //Result
-				  itemAmt(HEART_ITEM, 5), //Ingredients
+				  itemAmt(HEART_ITEM, 2), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 	CREATE_RECIPE(itemAmt(HEALTH_BOOST, 1), //Result
-				  itemAmt(HEART_ITEM, 20), //Ingredients
+				  itemAmt(HEART_ITEM, 4), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 }

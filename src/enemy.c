@@ -558,6 +558,7 @@ void zombieAI(struct Enemy *enemy, float timePassed,
 			!(getBlock(blocks, enemy->spr.hitbox.position.x / BLOCK_SIZE, enemy->spr.hitbox.position.y / BLOCK_SIZE - 1, maxBlockInd, boundRect).type == SLIME_BLOCK))
 		{
 			damageEnemy(enemy, (int)sqrtf(-enemy->spr.vel.y / BLOCK_SIZE - 21.0f));
+			enemy->attackmode = WANDER;
 		}
 
 		//Uncollide the enemy
