@@ -720,12 +720,16 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	for(int i = 0; i < indices.sz; i++)
 	{	
 		int ind = indices.values[i];
-		if(world->enemies->enemyArr[ind].health <= 0 ||
-		   world->enemies->enemyArr[ind].despawnTimer > 300.0f) //Delete enemies after five minutes
+		if(world->enemies->enemyArr[ind].health <= 0) 
 		{
 			addItem(world, itemAmt(droppedLoot(world->enemies->enemyArr[ind].spr.type), 1), world->enemies->enemyArr[ind].spr.hitbox.position.x, world->enemies->enemyArr[ind].spr.hitbox.position.y); 
 			deletePoint(world->enemies, ind);
-		}	
+		}
+		//Delete enemies after five minutes
+		else if(world->enemies->enemyArr[ind].despawnTimer > 300.0f)
+		{
+			deletePoint(world->enemies, ind);
+		}
 	}
 	//Rebuild quadtree if it gets too empty
 	if(world->enemies->pointCount * 2 < world->enemies->maxPointCount &&

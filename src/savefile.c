@@ -322,7 +322,7 @@ int readSave(struct World *world, struct Player *player, const char *path)
 	readBoundingRect(&world->worldBoundingRect, savefile);
 	ret = fread(&world->totalItems, sizeof(int), 1, savefile);
 	for(int i = 0; i < world->totalItems; i++)
-		readDroppedItem(world->droppedItems, savefile);
+		readDroppedItem(&world->droppedItems[i], savefile);
 
 	world->enemies = createQuadTree(
 			newpt(world->worldBoundingRect.minX * BLOCK_SIZE, world->worldBoundingRect.minY * BLOCK_SIZE),
