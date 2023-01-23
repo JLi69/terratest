@@ -5,10 +5,10 @@
 
 #define ENEMY_DAMAGE_COOLDOWN 0.5f
 
-#define SPAWN_AT_NIGHT 1024
-#define SPAWN_IN_CAVE 256
-#define SPAWN_CHICKEN 81920
-#define SPAWN_WAVE 128
+#define SPAWN_AT_NIGHT 6
+#define SPAWN_IN_CAVE 4
+#define SPAWN_CHICKEN 64
+#define SPAWN_WAVE 1
 
 enum EnemyType
 {

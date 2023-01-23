@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.11)
 project(terratest)
 
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -O3 -static-libgcc -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive -Wl,--stack,8000000")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mwindows -O2 -static-libgcc -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive -Wl,--stack,8000000")
 
 	add_custom_target(
 	lib_glad

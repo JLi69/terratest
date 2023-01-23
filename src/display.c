@@ -43,6 +43,7 @@ void initGL(void)
 	textures[4] = loadTexture("res/textures/items.png");
 	textures[5] = loadTexture("res/textures/enemy1x1.png");
 	textures[6] = loadTexture("res/textures/enemy1x2.png");
+	textures[7] = loadTexture("res/textures/boss.png");
 
 	useShader(&shaders[0]);	
 	bindBuffers(buffers[0]);
@@ -229,6 +230,42 @@ void display(struct World world, struct Player player)
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 
 	free(indices.values);
+
+	//Draw boss
+	if(world.boss.phase == 0)
+	{
+		//Intro text
+		bindTexture(textures[2], GL_TEXTURE0);
+		if(world.boss.timer < 2.5f) drawString("Who dares summon me?", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 32.0f);	
+		else if(world.boss.timer < 5.0f) drawString("Prepare to die!", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 32.0f);
+	}
+	if(world.boss.phase >= 0)
+	{
+		//Draw boss health bar
+		if(world.boss.phase > 0)
+		{
+			bindTexture(textures[2], GL_TEXTURE0);
+			drawString("Skullface, Eater of Worlds", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 16.0f);
+		
+			turnOffTexture();
+			setRectColor(255.0f, 0.0f, 0.0f, 255.0f);
+			setRectSize(256.0f, 16.0f);
+			setRectPos(world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 96.0f);
+			drawRect();
+			setRectColor(0.0f, 255.0f, 0.0f, 255.0f);
+			setRectSize(254.0f * (float)world.boss.health / (float)world.boss.maxHealth, 14.0f);
+			setRectPos(world.boss.spr.hitbox.position.x - camPos.x - 254.0f * (0.5f - 0.5f * (float)world.boss.health / (float)world.boss.maxHealth), world.boss.spr.hitbox.position.y - camPos.y + 96.0f);
+			drawRect();
+			turnOnTexture();
+		}	
+
+		setTexFrac(1.0f / 8.0f, 1.0f);
+		setTexSize(256.0f, 32.0f);
+		bindTexture(textures[7], GL_TEXTURE0);
+		drawBoss(world.boss, camPos);
+		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+		setTexSize(256.0f, 256.0f);
+	}
 
 	//Draw liquid blocks	
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	

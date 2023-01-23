@@ -9,6 +9,7 @@ float timeToBreakBlock(enum BlockType type, enum Item item)
 	//Break time by hand
 	switch(type)
 	{
+	case TROPHY: //Fall through
 	case DOOR_BOTTOM_CLOSED: //Fall through
 	case DOOR_TOP_CLOSED: //Fall through
 	case DOOR_BOTTOM_OPEN: //Fall through
@@ -108,7 +109,8 @@ int maxStack(enum Item item)
 {
 	if((item >= WOOD_PICKAXE && item <= CAKE) ||
 		item == RAW_MEAT || item == COOKED_MEAT ||
-		item == HEAL_POTION || item == HEALTH_BOOST)
+		item == HEAL_POTION || item == HEALTH_BOOST ||
+		item == SUMMON_BOSS)
 		return 1;
 	return 99;
 }
@@ -118,6 +120,7 @@ enum Item droppedItem(enum BlockType type, enum Item item)
 {
 	switch(type)
 	{	
+	case TROPHY: return TROPHY_ITEM;
 	case SLIME_BLOCK: return SLIME_BLOCK_ITEM;
 	case COAL_BLOCK: return COAL_BLOCK_ITEM;
 	case IRON_BLOCK: return IRON_BLOCK_ITEM;
@@ -205,6 +208,7 @@ enum BlockType placeBlock(enum Item item)
 {
 	switch(item)
 	{
+	case TROPHY_ITEM: return TROPHY;
 	case SLIME_BLOCK_ITEM: return SLIME_BLOCK;
 	case DOOR_ITEM: return DOOR_BOTTOM_CLOSED;
 	case MAGMA_BRICK_ITEM: return MAGMA_BRICK;
@@ -398,7 +402,6 @@ void displayInventoryItemIcons(struct Inventory inventory, float x, float y, flo
 								float spacing)
 {
 	setRectSize(iconSz, iconSz);
-
 	for(int i = 0; i < inventory.maxSize; i++)
 	{
 		if(inventory.slots[i].item == NOTHING)

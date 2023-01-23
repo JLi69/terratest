@@ -7,6 +7,7 @@
 #include "quadtree.h"
 #include <stdint.h>
 #include "block.h"
+#include "boss.h"
 
 #define WORLD_WIDTH 8192
 #define MIN_CAVE_VALUE -0.2f
@@ -58,6 +59,8 @@ struct World
 	struct DroppedItem droppedItems[MAX_ITEMS];
 
 	struct QuadTree* enemies;
+	
+	struct Boss boss; 
 };
 
 struct World generateWorld(

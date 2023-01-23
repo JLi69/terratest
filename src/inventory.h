@@ -52,7 +52,8 @@ enum BlockType
 	DOOR_TOP_CLOSED,
 	DOOR_BOTTOM_OPEN,
 	DOOR_TOP_OPEN,
-	SLIME_BLOCK
+	SLIME_BLOCK,
+	TROPHY
 };
 
 //item types
@@ -145,6 +146,9 @@ enum Item
 	HEART_ITEM,
 	HEAL_POTION,
 	HEALTH_BOOST,
+
+	SUMMON_BOSS,
+	TROPHY_ITEM,
 };
 
 struct InventorySlot

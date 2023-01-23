@@ -144,6 +144,7 @@ double getMouseScroll()
 
 void initWindow(void)
 {
+	glfwSwapInterval(1);
 	for(int i = 0; i < MAX_KEY_PRESSED; i++)
 		pressed[i] = UNPRESSED;
 	for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
@@ -237,6 +238,16 @@ void getCursorPos(double *x, double *y)
 	*y = (double)winHeight - *y;
 	*x -= winWidth / 2.0f;
 	*y -= winHeight / 2.0f;
+
+	if(*x > winWidth / 2.0f)
+		*x = winWidth / 2.0f;
+	else if(*x < -winWidth / 2.0f)
+		*x = -winWidth / 2.0f;
+	
+	if(*y > winHeight / 2.0f)
+		*y = winHeight / 2.0f;
+	else if(*y < -winHeight / 2.0f)
+		*y = -winHeight / 2.0f;
 }
 
 int cursorInBounds()

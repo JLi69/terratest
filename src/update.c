@@ -30,13 +30,13 @@ static const enum BlockType transparent[] = { LOG,
 											  WHEAT3,
 											  WHEAT4,
 											  LADDER,
-											  PILLAR };
+											  PILLAR,
+											  TROPHY };
 
 void initGame(struct World *world, struct Player *player, int seed)
 {
 	const float height = 128.0f;
-	//TODO: save system where we can load worlds from disk
-	//Perhaps also implement chunking to reduce memory usage?
+	//TODO: Perhaps also implement chunking to reduce memory usage?
 	*world = generateWorld(seed, height, 256.0f);
 	revealVisible(world);
 
@@ -58,6 +58,8 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->damageTaken = 0;
 	player->useItemTimer = 0.0f;
 
+	world->boss = initBoss();	
+
 #ifdef DEV_VERSION 
 	player->inventory.slots[0] = itemAmt(BREAD, 99);
 	player->inventory.slots[1] = itemAmt(CAKE, 99);
@@ -65,9 +67,12 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
 	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
 	player->inventory.slots[5] = itemAmt(RAINBOW_SWORD, 1);
-	player->inventory.slots[6] = itemAmt(WATER_BUCKET, 1);
+	player->inventory.slots[6] = itemAmt(SUMMON_BOSS, 1);
 	player->inventory.slots[7] = itemAmt(DIAMOND_PICKAXE, 1);
-	player->inventory.slots[8] = itemAmt(HEART_ITEM, 99);
+	player->inventory.slots[8] = itemAmt(SUMMON_BOSS, 1);
+	player->inventory.slots[9] = itemAmt(LADDER_ITEM, 99);
+	player->inventory.slots[10] = itemAmt(SLIME_BLOCK_ITEM, 99);
+	player->inventory.slots[11] = itemAmt(TROPHY_ITEM, 99);
 
 	//world->dayCycle = 0.8f;
 	//world->moonPhase = 0.75f;
@@ -167,8 +172,6 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			menuSelection = 0;
 		menuBegin = (menuSelection / 8) * 8;
 		menuEnd = (menuSelection / 8 + 1) * 8;
-
-		//return; //Pause game when on crafting menu
 	}	
 
 	static float blockUpdateTimer = 0.0f;
@@ -211,7 +214,21 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1, SLIME_BLOCK, -1.0f))
 		player->playerSpr.vel.x *= 0.5f;
-	//Move player in the x direction
+	//Move player in the x direction	
+	//Ladder, climb
+	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LADDER, 0.0f))
+	{
+		player->playerSpr.falling = 0;
+		player->playerSpr.canJump = 1;
+	
+		if(isPressed(GLFW_KEY_W) || isPressed(GLFW_KEY_SPACE))
+			player->playerSpr.vel.y = JUMP_SPEED;
+		else if(isPressed(GLFW_KEY_S))
+			player->playerSpr.vel.y = -JUMP_SPEED;
+		else
+			player->playerSpr.vel.y = 0.0f;
+	}
+
 	updateSpriteX(&player->playerSpr, secondsPerFrame);
 	//Check for collision
 	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
@@ -240,25 +257,12 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		}
 	}
 
-	//Ladder, climb
-	if(touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, LADDER, 0.0f))
-	{
-		player->playerSpr.falling = 0;
-		player->playerSpr.canJump = 1;
-	
-		if(isPressed(GLFW_KEY_W) || isPressed(GLFW_KEY_SPACE))
-			player->playerSpr.vel.y = JUMP_SPEED;
-		else if(isPressed(GLFW_KEY_S))
-			player->playerSpr.vel.y = -JUMP_SPEED;
-		else
-			player->playerSpr.vel.y = 0.0f;
-	}
-
 	//Move player in y direction
 	updateSpriteY(&player->playerSpr, secondsPerFrame);
 	//Check for collision	
 	if(blockCollisionSearch(player->playerSpr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 	{		
+		
 		//Apply fall damage
 		if(player->playerSpr.vel.y / BLOCK_SIZE <= -21.0f && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE, WATER, 0.5f) 
 			 && !touching(*world, camPos.x / BLOCK_SIZE, camPos.y / BLOCK_SIZE - 1, SLIME_BLOCK, -1.0f))
@@ -350,7 +354,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//This seems to be taking a lot of time, try to optimize this later
 	if(blockUpdateTimer > 0.05f)
 	{
-		updatePlants(world, camPos, 48);
+		updatePlants(world, camPos, 32);
 		updateBlocks(world->blocks, camPos, blockUpdateTimer, 32, world->blockArea, world->worldBoundingRect);
 		blockUpdateTimer = 0.0f;	
 	}
@@ -594,6 +598,19 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		{
 			player->maxHealth++;
 			decrementSlot(player->inventory.selected, &player->inventory);
+			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
+		}
+		//summon the boss!
+		else if(player->inventory.slots[player->inventory.selected].item == SUMMON_BOSS)
+		{
+			if(summonBoss(&world->boss, player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y + BLOCK_SIZE * 6.0f))
+			{
+				//Turn to midnight
+				world->dayCycle = 0.0f;
+				world->moonPhase = 0.25f;
+				decrementSlot(player->inventory.selected, &player->inventory);
+			}	
+			releaseMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
 		}
 	
 		if((!placed && toggleDoor(world, cursorX, cursorY, player->playerSpr, world->enemies->enemyArr, indices)) ||
@@ -693,8 +710,10 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			rand() % SPAWN_IN_CAVE == 0 &&
 			indices.sz < 16)
 			spawnEnemiesInCave(world, camPos, 64.0f);
+		enemySpawnTimer = 0.0f;	
 	}
 
+	//Update enemies
 	int attacked = 0; //Did the player hit any enemy?
 	for(int i = 0; i < indices.sz; i++)
 	{
@@ -731,7 +750,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			deletePoint(world->enemies, ind);
 		}
 		//Delete enemies after five minutes
-		else if(world->enemies->enemyArr[ind].despawnTimer > 300.0f)
+		else if(world->enemies->enemyArr[ind].despawnTimer > 300.0f ||
+				blockCollisionSearch(world->enemies->enemyArr[ind].spr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
 		{
 			deletePoint(world->enemies, ind);
 		}
@@ -750,6 +770,15 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	free(indices.values);
 	free(nodes.values);
+
+	//Update the boss
+	if(world->boss.phase >= 0)
+	{
+
+		updateBoss(&world->boss, player, secondsPerFrame);
+		//Permanently keep it night until the boss is defeated
+		world->dayCycle = 0.0f;
+	}
 
 	//Update clouds
 	for(int i = 0; i < MAX_CLOUD; i++)

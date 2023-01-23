@@ -165,7 +165,23 @@ void loop(void)
 		float timeSinceLastFrame = 999.0f;
 		while(gameState == PLAYING && !canQuit())
 		{
-			gettimeofday(&beginFrame, 0);
+			gettimeofday(&beginFrame, 0);	
+			
+			animateSprites(&world, &player.playerSpr, seconds);
+			//TODO: optimize updating game objects
+			if(seconds < 1.0f / 40.0f)
+				updateGameobjects(&world, &player, seconds);
+			else
+			{
+				float totalLeft = seconds;
+				while(totalLeft > 1.0f / 40.0f)
+				{
+					updateGameobjects(&world, &player, 1.0f / 40.0f);
+					totalLeft -= 1.0f / 40.0f;
+				}
+				updateGameobjects(&world, &player, totalLeft);
+			}
+
 			if(timeSinceLastFrame > 1.0f / 120.0f) //Cap frame rate
 			{
 				display(world, player);	
@@ -177,10 +193,7 @@ void loop(void)
 				}
 				swapBuffers();	
 				timeSinceLastFrame = 0.0f;
-			}
-			animateSprites(&world, &player.playerSpr, seconds);
-			//TODO: optimize updating game objects
-			updateGameobjects(&world, &player, seconds);
+			}	
 
 			//FPS counter
 			frameUpdateTimer += seconds;	

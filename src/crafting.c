@@ -262,6 +262,12 @@ void initRecipes()
 				  itemAmt(HEART_ITEM, 4), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
+
+	CREATE_RECIPE(itemAmt(SUMMON_BOSS, 1), //Result
+				  itemAmt(HEART_ITEM, 4), //Ingredients
+				  itemAmt(GOLD_INGOT, 16), 
+				  itemAmt(RAINBOW_ITEM, 3),
+				  itemAmt(DIAMOND_ITEM, 3));
 }
 
 struct InventorySlot craft(struct Inventory *inventory, int recipeId)

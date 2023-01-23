@@ -23,3 +23,4 @@ int damagePlayer(struct Player *player, int amt);
 void activateUseAnimation(struct Player *player);
 
 #endif
+#define PLAYER_H

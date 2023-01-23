@@ -9,6 +9,9 @@ const int walkingAnimation[] = { 4, 5, 4, 6 };
 const int enemyIdle[] = { 0, 1 };
 const int enemyWalk[] = { 2, 0, 3, 0  };
 
+const int bossPhase1[] = { 0, 1 };
+const int bossPhase2[] = { 4, 5 };
+
 void animateSprites(struct World *world, struct Sprite *player, float secondsPerFrame)
 {
 	if(isPaused())
@@ -62,4 +65,14 @@ void animateSprites(struct World *world, struct Sprite *player, float secondsPer
 		}
 	}
 	free(indices.values);
+
+	//Animate the boss
+	switch(world->boss.phase)
+	{
+	case 0: updateAnimation(&world->boss.spr, bossPhase1, 2, timePassed, 0.5f); break;
+	case 1:
+		updateAnimation(&world->boss.spr, bossPhase1, 2, timePassed, 0.5f);
+		break;
+	default: break;
+	}
 }
