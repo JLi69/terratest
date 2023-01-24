@@ -774,7 +774,19 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	//Update the boss
 	if(world->boss.phase >= 0)
 	{
-
+		if(world->boss.phase == 3 && world->boss.timer + secondsPerFrame > 5.0f)
+		{
+			//Drop loot
+			for(int i = 0; i < 8; i++)
+			{
+				float dist = (float)rand() / (float)RAND_MAX * 3.0f * BLOCK_SIZE;
+				float angle = (float)rand() / (float)RAND_MAX * 3.14159f * 2.0f;
+				addItem(world, itemAmt(RAINBOW_ITEM, 1),
+						world->boss.spr.hitbox.position.x + cosf(angle) * dist, world->boss.spr.hitbox.position.y + sinf(angle) * dist);
+			}
+			//Give player a trophy
+			addItem(world, itemAmt(TROPHY_ITEM, 1), player->playerSpr.hitbox.position.x, player->playerSpr.hitbox.position.y);
+		}
 		updateBoss(&world->boss, player, secondsPerFrame);
 		//Permanently keep it night until the boss is defeated
 		world->dayCycle = 0.0f;

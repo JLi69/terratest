@@ -248,6 +248,45 @@ void readEnemyData(struct World *world, FILE *file)
 	}
 }
 
+void writeBoss(struct Boss *boss, FILE *file)
+{
+	writeSprite(&boss->spr, file);
+	int bossIntData[] = 
+	{
+		boss->phase,
+		boss->health,
+		boss->maxHealth,
+		boss->attackmode
+	};
+	float bossFloatData[] =
+	{
+		boss->timer,
+		boss->spawnX,
+		boss->spawnY,
+		boss->damageCooldown
+	};
+	fwrite(bossIntData, sizeof(int), 4, file);
+	fwrite(bossFloatData, sizeof(float), 4, file);
+}
+
+void readBoss(struct Boss *boss, FILE *file)
+{
+	readSprite(&boss->spr, file);
+	int bossIntData[4];
+	float bossFloatData[4];
+	size_t ret;
+	ret = fread(bossIntData, sizeof(int), 4, file);
+	ret = fread(bossFloatData, sizeof(float), 4, file);
+	boss->phase = bossIntData[0];
+	boss->health = bossIntData[1];
+	boss->maxHealth = bossIntData[2];
+	boss->attackmode = bossIntData[3];
+	boss->timer = bossFloatData[0];
+	boss->spawnX = bossFloatData[1];
+	boss->spawnY = bossFloatData[2];
+	boss->damageCooldown = bossFloatData[3];
+}
+
 void saveWorld(struct World *world, struct Player *player, const char *path)
 {
 	FILE* savefile = fopen(path, "wb");
@@ -282,6 +321,7 @@ void saveWorld(struct World *world, struct Player *player, const char *path)
 		writeDroppedItem(&world->droppedItems[i], savefile);
 
 	writeEnemyData(world, savefile);
+	writeBoss(&world->boss, savefile);
 	
 	fclose(savefile);
 }
@@ -328,6 +368,8 @@ int readSave(struct World *world, struct Player *player, const char *path)
 			newpt(world->worldBoundingRect.minX * BLOCK_SIZE, world->worldBoundingRect.minY * BLOCK_SIZE),
 			newpt(world->worldBoundingRect.maxX * BLOCK_SIZE, world->worldBoundingRect.maxY * BLOCK_SIZE));
 	readEnemyData(world, savefile);	
+
+	readBoss(&world->boss, savefile);
 
 	fclose(savefile);
 

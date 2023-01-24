@@ -241,7 +241,7 @@ void initRecipes()
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 	CREATE_RECIPE(itemAmt(GOLD_INGOT, 10), //Result
-				  itemAmt(GOLD_INGOT, 1), //Ingredients
+				  itemAmt(GOLD_BLOCK_ITEM, 1), //Ingredients
 				  END_RECIPE, 
 				  END_RECIPE, END_RECIPE);
 	CREATE_RECIPE(itemAmt(RAINBOW_ITEM, 10), //Result
@@ -265,9 +265,9 @@ void initRecipes()
 
 	CREATE_RECIPE(itemAmt(SUMMON_BOSS, 1), //Result
 				  itemAmt(HEART_ITEM, 4), //Ingredients
-				  itemAmt(GOLD_INGOT, 16), 
-				  itemAmt(RAINBOW_ITEM, 3),
-				  itemAmt(DIAMOND_ITEM, 3));
+				  itemAmt(IRON_INGOT, 16), 
+				  itemAmt(GOLD_INGOT, 16),
+				  itemAmt(DIAMOND_ITEM, 16));
 }
 
 struct InventorySlot craft(struct Inventory *inventory, int recipeId)

@@ -10,7 +10,10 @@ const int enemyIdle[] = { 0, 1 };
 const int enemyWalk[] = { 2, 0, 3, 0  };
 
 const int bossPhase1[] = { 0, 1 };
+const int attackPhase1[] = { 2, 3 };
 const int bossPhase2[] = { 4, 5 };
+const int attackPhase2[] = { 6, 7 };
+const int bossDeath[] = { 4, 5, 6, 7 };
 
 void animateSprites(struct World *world, struct Sprite *player, float secondsPerFrame)
 {
@@ -72,6 +75,12 @@ void animateSprites(struct World *world, struct Sprite *player, float secondsPer
 	case 0: updateAnimation(&world->boss.spr, bossPhase1, 2, timePassed, 0.5f); break;
 	case 1:
 		updateAnimation(&world->boss.spr, bossPhase1, 2, timePassed, 0.5f);
+		break;
+	case 2:
+		updateAnimation(&world->boss.spr, bossPhase2, 2, timePassed, 0.5f);
+		break;
+	case 3:
+		updateAnimation(&world->boss.spr, bossDeath, 4, timePassed, 0.1f);
 		break;
 	default: break;
 	}

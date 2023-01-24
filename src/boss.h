@@ -2,7 +2,7 @@
 #include "sprite.h"
 #include "player.h"
 
-#define BOSS_HEALTH 2000
+#define BOSS_HEALTH 20
 
 enum BossAttackMode
 {
@@ -17,7 +17,8 @@ struct Boss
 	// -1 = not summoned
 	// 0 = intro text
 	// 1 = phase 1
-	// 2 = phase 3
+	// 2 = phase 2
+	// 3 = death
 	int phase;
 	float timer;
 	int health, maxHealth;

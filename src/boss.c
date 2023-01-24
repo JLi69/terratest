@@ -45,7 +45,10 @@ void drawBoss(struct Boss boss, struct Vector2D camPos)
 	setRectSize(boss.spr.hitbox.dimensions.w, boss.spr.hitbox.dimensions.h);
 	setRectPos(boss.spr.hitbox.position.x - camPos.x, boss.spr.hitbox.position.y - camPos.y);
 	setTexOffset(1.0f / 8.0f * boss.spr.animationFrame, 0.0f);
+	if(boss.phase == 3)
+		setRotationRad(powf(2.0f, boss.timer) * 3.14159f);
 	drawRect();
+	setRotationRad(0.0f);
 }
 
 void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
@@ -61,14 +64,35 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 	//Boss just moves around and vertically charges toward the player
 	//If hit by the vertical charge attack, 2 damage is dealt but boss
 	//stays on the ground for 5 seconds
-	if(boss->phase == 1)
+	else if(boss->phase == 1)
 	{
-		
+		if(boss->health * 2 < boss->maxHealth)
+		{
+			boss->phase = 2;
+			boss->timer = 0.0f;
+		}
 	}
 	//2 = phase 2
 	//Boss is past half health and will horizontally charge at the player
 	//and also summon enemies
-	
+	else if(boss->phase == 2)
+	{
+		if(boss->health <= 0)
+		{
+			boss->timer = 0.0f;
+			boss->health = 0;
+			boss->phase = 3;
+		}
+	}
+	//3 = death
+	//death animation plays
+	else if(boss->phase == 3)
+	{
+		boss->timer += timePassed;
+		if(boss->timer > 5.0f)
+			boss->phase = -1; //Boss is dead!
+	}
+
 	float dist = sqrtf(powf(boss->spr.hitbox.position.x - player->playerSpr.hitbox.position.x, 2.0f) +
 			     powf(boss->spr.hitbox.position.y - player->playerSpr.hitbox.position.y, 2.0f));
 	if(boss->phase > 0)

@@ -258,7 +258,11 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 	if(getBlock(blocks, 
 				enemy->spr.hitbox.position.x / BLOCK_SIZE,
 				enemy->spr.hitbox.position.y / BLOCK_SIZE,
-				maxBlockInd, boundRect).type == LAVA)
+				maxBlockInd, boundRect).type == LAVA &&
+		getBlock(blocks, 
+				enemy->spr.hitbox.position.x / BLOCK_SIZE,
+				enemy->spr.hitbox.position.y / BLOCK_SIZE,
+				maxBlockInd, boundRect).mass > 0.1f)
 		damageEnemy(enemy, 3);
 	//Swim
 	if(getBlock(blocks, 
@@ -442,7 +446,11 @@ void slimeAI(struct Enemy *enemy, float timePassed,
 		if(getBlock(blocks, 
 					enemy->spr.hitbox.position.x / BLOCK_SIZE,
 					enemy->spr.hitbox.position.y / BLOCK_SIZE,
-					maxBlockInd, boundRect).type == LAVA)
+					maxBlockInd, boundRect).type == LAVA &&
+			getBlock(blocks, 
+					enemy->spr.hitbox.position.x / BLOCK_SIZE,
+					enemy->spr.hitbox.position.y / BLOCK_SIZE,
+					maxBlockInd, boundRect).mass >= 0.1f)
 		{
 			damageEnemy(enemy, 3);
 			enemy->attackmode = WANDER;	
@@ -624,7 +632,11 @@ void zombieAI(struct Enemy *enemy, float timePassed,
 	if(getBlock(blocks, 
 				enemy->spr.hitbox.position.x / BLOCK_SIZE,
 				enemy->spr.hitbox.position.y / BLOCK_SIZE,
-				maxBlockInd, boundRect).type == LAVA)
+				maxBlockInd, boundRect).type == LAVA &&
+		getBlock(blocks, 
+				enemy->spr.hitbox.position.x / BLOCK_SIZE,
+				enemy->spr.hitbox.position.y / BLOCK_SIZE,
+				maxBlockInd, boundRect).mass >= 0.1f)
 	{
 		damageEnemy(enemy, 3);
 		enemy->attackmode = WANDER;	

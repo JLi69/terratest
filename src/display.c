@@ -239,10 +239,17 @@ void display(struct World world, struct Player player)
 		if(world.boss.timer < 2.5f) drawString("Who dares summon me?", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 32.0f);	
 		else if(world.boss.timer < 5.0f) drawString("Prepare to die!", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 32.0f);
 	}
+	if(world.boss.phase == 3)
+	{
+		//Intro text
+		bindTexture(textures[2], GL_TEXTURE0);
+		if(world.boss.timer < 2.5f) drawString("I\'ve been defeated", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 32.0f);	
+		else if(world.boss.timer < 5.0f) drawString("NOOOOOOOOOOOOOOOOO", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 32.0f);
+	}
 	if(world.boss.phase >= 0)
 	{
 		//Draw boss health bar
-		if(world.boss.phase > 0)
+		if(world.boss.phase > 0 && world.boss.phase < 3)
 		{
 			bindTexture(textures[2], GL_TEXTURE0);
 			drawString("Skullface, Eater of Worlds", world.boss.spr.hitbox.position.x - camPos.x, world.boss.spr.hitbox.position.y - camPos.y + 128.0f, 16.0f);
