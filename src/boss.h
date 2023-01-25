@@ -2,13 +2,14 @@
 #include "sprite.h"
 #include "player.h"
 
-#define BOSS_HEALTH 20
+#define BOSS_HEALTH 1000
 
 enum BossAttackMode
 {
-	FOLLOW,
-	CHARGE_VERTICAL,
-	CHARGE_HORIZONTAL
+	NO_MOVE,
+	FLOAT,
+	ATTACK,
+	CHARGE,
 };
 
 struct Boss

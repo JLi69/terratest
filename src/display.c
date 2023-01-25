@@ -231,6 +231,11 @@ void display(struct World world, struct Player player)
 
 	free(indices.values);
 
+	//Draw liquid blocks	
+	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
+	bindTexture(textures[1], GL_TEXTURE0);
+	drawLiquids(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);
+
 	//Draw boss
 	if(world.boss.phase == 0)
 	{
@@ -273,12 +278,7 @@ void display(struct World world, struct Player player)
 		setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 		setTexSize(256.0f, 256.0f);
 	}
-
-	//Draw liquid blocks	
-	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
-	bindTexture(textures[1], GL_TEXTURE0);
-	drawLiquids(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);
-
+	
 	if(!isPaused() && player.health > 0)
 	{
 		double cursorX, cursorY;

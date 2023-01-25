@@ -777,7 +777,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		if(world->boss.phase == 3 && world->boss.timer + secondsPerFrame > 5.0f)
 		{
 			//Drop loot
-			for(int i = 0; i < 8; i++)
+			for(int i = 0; i < 12; i++)
 			{
 				float dist = (float)rand() / (float)RAND_MAX * 3.0f * BLOCK_SIZE;
 				float angle = (float)rand() / (float)RAND_MAX * 3.14159f * 2.0f;
