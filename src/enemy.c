@@ -14,6 +14,9 @@ void drawEnemy1x1(struct Enemy enemy, struct Vector2D camPos)
 	setTexOffset(1.0f / 16.0f * (ind % 16), 1.0f / 16.0f * (ind / 16));
 	drawRect();
 
+	if(enemy.spr.type == FIREBALL)
+		return;
+
 	//Draw health bar
 	turnOffTexture();
 	setRectPos(enemy.spr.hitbox.position.x - camPos.x,
@@ -67,6 +70,7 @@ int maxHealthEnemy(enum EnemyType type)
 	case RED_SLIME: return 32;
 	case PINK_SLIME: return 24;
 	case ZOMBIE: return 16;
+	case FIREBALL: return 1;
 	default: return 0;
 	}
 }
@@ -90,6 +94,7 @@ struct Enemy createEnemy(enum EnemyType type, float x, float y)
 	enemy.walkDistance = 0;
 	enemy.damageCooldown = enemy.timer = 0.0f;	
 	enemy.despawnTimer = 0.0f;
+	enemy.updated = 0;
 	return enemy;
 }
 
@@ -654,6 +659,23 @@ void zombieAI(struct Enemy *enemy, float timePassed,
 	enemy->despawnTimer += timePassed;
 }
 
+void fireBallAI(struct Enemy *enemy, float timePassed, struct Block *blocks, struct BoundingRect boundRect, int maxBlockInd, struct Player *player)
+{
+	if(fabs(enemy->spr.hitbox.position.x - player->playerSpr.hitbox.position.x) > BLOCK_SIZE * 32.0f ||
+		fabs(enemy->spr.hitbox.position.y - player->playerSpr.hitbox.position.y) > BLOCK_SIZE * 32.0f)
+		enemy->health = 0;
+
+	enemy->spr.hitbox.position.x += timePassed * enemy->spr.vel.x;
+	enemy->spr.hitbox.position.y += timePassed * enemy->spr.vel.y;
+	enemy->despawnTimer += timePassed;
+
+	if(colliding(player->playerSpr.hitbox, enemy->spr.hitbox))
+	{
+		damagePlayer(player, 1);
+		enemy->health = 0;
+	}
+}
+
 void updateEnemy(struct Enemy *enemy, 
 				 float timePassed,
 				 struct Block *blocks, 
@@ -661,6 +683,9 @@ void updateEnemy(struct Enemy *enemy,
 				 int maxBlockInd,
 				 struct Player *player)
 {
+	if(enemy->updated)
+		return;
+
 	switch(enemy->spr.type)
 	{
 	case CHICKEN: chickenAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player); break;
@@ -669,8 +694,11 @@ void updateEnemy(struct Enemy *enemy,
 	case RED_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 3, 1, 0); break;
 	case PINK_SLIME: slimeAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player, 1, 0, 4); break;
 	case ZOMBIE: zombieAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player); break; 
+	case FIREBALL: fireBallAI(enemy, timePassed, blocks, boundRect, maxBlockInd, player); break;
 	default: return;
 	}
+
+	enemy->updated = 1;
 }
 
 int damageEnemy(struct Enemy *enemy, int amt)

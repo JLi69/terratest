@@ -2,7 +2,7 @@
 #include "sprite.h"
 #include "player.h"
 
-#define BOSS_HEALTH 1000
+#define BOSS_HEALTH 600
 
 enum BossAttackMode
 {
@@ -26,6 +26,7 @@ struct Boss
 	float spawnX, spawnY;
 	enum BossAttackMode attackmode;
 	float damageCooldown;
+	float fireballTimer;
 };
 
 //Returns 1 if successful, 0 otherwise

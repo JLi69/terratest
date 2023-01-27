@@ -19,6 +19,7 @@ enum EnemyType
 	BLUE_SLIME,	
 	RED_SLIME,
 	PINK_SLIME,
+	FIREBALL,
 	//1 x 2 enemies
 	ZOMBIE = 64
 };
@@ -41,6 +42,7 @@ struct Enemy
 	float walkDistance;
 	float timer, damageCooldown;
 	float despawnTimer;
+	uint8_t updated;
 };
 
 int maxHealthEnemy(enum EnemyType type);

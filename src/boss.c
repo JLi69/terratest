@@ -27,6 +27,8 @@ int summonBoss(struct Boss *boss, float x, float y)
 
 		boss->damageCooldown = 5.0f;
 
+		boss->fireballTimer = 0.0f;
+
 		return 1;	
 	}
 	return 0;
@@ -79,6 +81,7 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 	//Boss just moves around and vertically charges toward the player
 	//If hit by the vertical charge attack, 2 damage is dealt but boss
 	//stays on the ground for 5 seconds
+	//Shoots fireballs
 	else if(boss->phase == 1)
 	{
 		if(dist < BLOCK_SIZE * 64.0f)
@@ -91,7 +94,7 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 		{
 			if(boss->spr.hitbox.position.y > player->playerSpr.hitbox.position.y + BLOCK_SIZE * 6.0f)
 				boss->spr.vel.y = -BLOCK_SIZE * 2.0f;
-			if(boss->spr.hitbox.position.y < player->playerSpr.hitbox.position.y - BLOCK_SIZE * 6.0f)
+			if(boss->spr.hitbox.position.y < player->playerSpr.hitbox.position.y + BLOCK_SIZE * 4.0f)
 				boss->spr.vel.y = BLOCK_SIZE * 2.0f;
 			else
 				boss->spr.vel.y = 0.0f;
@@ -99,9 +102,9 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 			if(fabs(boss->spr.hitbox.position.x - player->playerSpr.hitbox.position.x) < BLOCK_SIZE / 4.0f)
 				boss->spr.vel.x = 0.0f;
 			else if(boss->spr.hitbox.position.x < player->playerSpr.hitbox.position.x)
-				boss->spr.vel.x = BLOCK_SIZE * 5.0f;
+				boss->spr.vel.x = BLOCK_SIZE * 3.0f;
 			else if(boss->spr.hitbox.position.x > player->playerSpr.hitbox.position.x)
-				boss->spr.vel.x = -BLOCK_SIZE * 5.0f;
+				boss->spr.vel.x = -BLOCK_SIZE * 3.0f;
 
 			if(boss->damageCooldown >= 0.0f && boss->spr.hitbox.position.y < player->playerSpr.hitbox.position.y + BLOCK_SIZE * 6.0f)
 				boss->spr.vel.y = BLOCK_SIZE * 4.0f;
@@ -116,20 +119,21 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 		{
 			if(fabs(boss->spr.hitbox.position.x - player->playerSpr.hitbox.position.x) < BLOCK_SIZE / 4.0f)
 			{
-				boss->spr.vel.x = 0.0f;	
+				boss->spr.vel.x = 0.0f;
+				boss->spr.vel.y = 0.0f;	
 				boss->attackmode = CHARGE;			
 			}
 			else if(boss->spr.hitbox.position.x < player->playerSpr.hitbox.position.x && boss->spr.vel.y == 0.0f)
-				boss->spr.vel.x = BLOCK_SIZE * 12.0f;
+				boss->spr.vel.x = BLOCK_SIZE * 16.0f;
 			else if(boss->spr.hitbox.position.x > player->playerSpr.hitbox.position.x && boss->spr.vel.y == 0.0f)
-				boss->spr.vel.x = -BLOCK_SIZE * 12.0f;	
+				boss->spr.vel.x = -BLOCK_SIZE * 16.0f;	
 		}
 		else if(boss->attackmode == CHARGE)
 		{
 			if(boss->spr.hitbox.position.y > player->playerSpr.hitbox.position.y)
-				boss->spr.vel.y = -8.0f * BLOCK_SIZE;
+				boss->spr.vel.y = -12.0f * BLOCK_SIZE;
 			else if(boss->spr.hitbox.position.y < player->playerSpr.hitbox.position.y)
-				boss->spr.vel.y = 8.0f * BLOCK_SIZE;
+				boss->spr.vel.y = 12.0f * BLOCK_SIZE;
 			
 			if(fabs(boss->spr.hitbox.position.y - player->playerSpr.hitbox.position.y) < BLOCK_SIZE)
 			{	
@@ -153,17 +157,102 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 
 		if(boss->health * 2 < boss->maxHealth)
 		{
+			boss->attackmode = FLOAT;
 			boss->phase = 2;
-			boss->timer = 0.0f;
+			boss->timer = 10.0f;
 		}
 	}
 	//2 = phase 2
 	//Boss is past half health and will horizontally charge at the player
 	//and also summon enemies
+	//Shoots fireballs
 	else if(boss->phase == 2)
 	{
 		boss->spr.hitbox.position.x += boss->spr.vel.x * timePassed;
 		boss->spr.hitbox.position.y += boss->spr.vel.y * timePassed;
+
+		if(dist < BLOCK_SIZE * 64.0f)
+		{
+			boss->spr.hitbox.position.x += boss->spr.vel.x * timePassed;
+			boss->spr.hitbox.position.y += boss->spr.vel.y * timePassed;
+		}	
+
+		if(boss->attackmode == FLOAT)
+		{
+			if(boss->spr.hitbox.position.y > player->playerSpr.hitbox.position.y + BLOCK_SIZE * 6.0f)
+				boss->spr.vel.y = -BLOCK_SIZE * 2.0f;
+			if(boss->spr.hitbox.position.y < player->playerSpr.hitbox.position.y + BLOCK_SIZE * 4.0f)
+				boss->spr.vel.y = BLOCK_SIZE * 2.0f;
+			else
+				boss->spr.vel.y = 0.0f;
+
+			if(fabs(boss->spr.hitbox.position.x - player->playerSpr.hitbox.position.x) < BLOCK_SIZE / 4.0f)
+				boss->spr.vel.x = 0.0f;
+			else if(boss->spr.hitbox.position.x < player->playerSpr.hitbox.position.x)
+				boss->spr.vel.x = BLOCK_SIZE * 2.0f;
+			else if(boss->spr.hitbox.position.x > player->playerSpr.hitbox.position.x)
+				boss->spr.vel.x = -BLOCK_SIZE * 2.0f;
+
+			if(boss->damageCooldown >= 0.0f && boss->spr.hitbox.position.y < player->playerSpr.hitbox.position.y + BLOCK_SIZE * 6.0f)
+				boss->spr.vel.y = BLOCK_SIZE * 4.0f;
+
+			if(boss->timer <= 0.0f)
+			{
+				boss->attackmode = ATTACK;
+				boss->spr.vel.x = 0.0f;	
+			}	
+		}
+		else if(boss->attackmode == ATTACK)
+		{
+			if(fabs(boss->spr.hitbox.position.y - player->playerSpr.hitbox.position.y) < BLOCK_SIZE * 1.5f)
+			{
+				boss->spr.vel.y = 0.0f;	
+				boss->spr.vel.x = 0.0f;
+				boss->attackmode = CHARGE;
+				boss->timer = 16.0f;
+			
+				if(boss->spr.hitbox.position.x > player->playerSpr.hitbox.position.x)
+					boss->spr.vel.x = -8.0f * BLOCK_SIZE;
+				else if(boss->spr.hitbox.position.x < player->playerSpr.hitbox.position.x)
+					boss->spr.vel.x = 8.0f * BLOCK_SIZE;
+			}
+			else if(boss->spr.hitbox.position.y < player->playerSpr.hitbox.position.y && boss->spr.vel.x == 0.0f)
+				boss->spr.vel.y = BLOCK_SIZE * 8.0f;
+			else if(boss->spr.hitbox.position.y > player->playerSpr.hitbox.position.y && boss->spr.vel.x == 0.0f)
+				boss->spr.vel.y = -BLOCK_SIZE * 8.0f;	
+		}
+		else if(boss->attackmode == CHARGE)
+		{
+			if(boss->spr.hitbox.position.x < player->playerSpr.hitbox.position.x - 16.0f * BLOCK_SIZE)
+				boss->spr.vel.x = BLOCK_SIZE * 8.0f;
+			else if(boss->spr.hitbox.position.x > player->playerSpr.hitbox.position.x + 16.0f * BLOCK_SIZE)
+				boss->spr.vel.x = -BLOCK_SIZE * 8.0f;
+			else if(boss->spr.hitbox.position.x < player->playerSpr.hitbox.position.x - 16.0f * BLOCK_SIZE &&
+					boss->spr.vel.x < 0.0f)
+				boss->spr.vel.x = BLOCK_SIZE * 8.0f;
+			else if(boss->spr.hitbox.position.x > player->playerSpr.hitbox.position.x + 16.0f * BLOCK_SIZE &&
+					boss->spr.vel.x > 0.0f)
+				boss->spr.vel.x = -BLOCK_SIZE * 8.0f;
+
+			boss->timer -= timePassed;
+			if(boss->timer < 0.0f)
+			{
+				boss->attackmode = NO_MOVE;
+				boss->timer = 5.0f;	
+			}	
+		}
+		else if(boss->attackmode == NO_MOVE)
+		{
+			boss->spr.vel.x = 0.0f;
+			boss->spr.vel.y = 0.0f;
+			if(boss->timer < 0.0f)
+			{
+				boss->attackmode = FLOAT;
+				boss->timer = 10.0f;
+			}
+		}
+
+		boss->timer -= timePassed;
 
 		if(boss->health <= 0)
 		{
@@ -202,10 +291,14 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 			//Phase 1, damage player
 			if(boss->phase == 1)
 				damagePlayer(player, 2);
+			//3 damage on phase 2
+			else if(boss->phase == 2)
+				damagePlayer(player, 3);
 		}
 	}
 	
 	boss->damageCooldown -= timePassed;
+	boss->fireballTimer -= timePassed;
 }
 
 int damageBoss(struct Boss *boss, int amt)

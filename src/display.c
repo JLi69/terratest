@@ -216,7 +216,8 @@ void display(struct World world, struct Player player)
 	//Draw enemies
 	for(int i = 0; i < indices.sz; i++)
 	{
-		if(world.enemies->enemyArr[indices.values[i]].spr.type < ZOMBIE)
+		if(world.enemies->enemyArr[indices.values[i]].spr.type < ZOMBIE &&
+			world.enemies->enemyArr[indices.values[i]].spr.type != FIREBALL)
 			drawEnemy1x1(world.enemies->enemyArr[indices.values[i]], camPos);
 	}
 	bindTexture(textures[6], GL_TEXTURE0);
@@ -229,12 +230,20 @@ void display(struct World world, struct Player player)
 	flip(0); //Turn off flip
 	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
 
-	free(indices.values);
-
 	//Draw liquid blocks	
 	setRectSize(BLOCK_SIZE, BLOCK_SIZE);	
 	bindTexture(textures[1], GL_TEXTURE0);
 	drawLiquids(world.blocks, camPos, 32, 20, world.blockArea, world.worldBoundingRect, 1.0f);
+
+	bindTexture(textures[5], GL_TEXTURE0);
+	for(int i = 0; i < indices.sz; i++)
+	{
+		if(world.enemies->enemyArr[indices.values[i]].spr.type == FIREBALL)
+			drawEnemy1x1(world.enemies->enemyArr[indices.values[i]], camPos);
+	}
+	flip(0); //Turn off flip
+
+	free(indices.values);
 
 	//Draw boss
 	if(world.boss.phase == 0)

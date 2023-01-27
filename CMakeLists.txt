@@ -23,7 +23,7 @@ if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 	COMMAND  cd lib/SOIL2 && mingw32-make
 	)
 else()
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -static-libgcc")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -static-libgcc")
 
 	add_custom_target(
 	lib_glad

@@ -64,15 +64,12 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[0] = itemAmt(BREAD, 99);
 	player->inventory.slots[1] = itemAmt(CAKE, 99);
 	player->inventory.slots[2] = itemAmt(BRICK_ITEM, 99);
-	player->inventory.slots[3] = itemAmt(MAGMA_ITEM, 99);
-	player->inventory.slots[4] = itemAmt(LAVA_BUCKET, 1);
-	player->inventory.slots[5] = itemAmt(RAINBOW_SWORD, 1);
+	player->inventory.slots[3] = itemAmt(RAINBOW_SWORD, 1);
+	player->inventory.slots[4] = itemAmt(SUMMON_BOSS, 1);
+	player->inventory.slots[5] = itemAmt(DIAMOND_PICKAXE, 1);
 	player->inventory.slots[6] = itemAmt(SUMMON_BOSS, 1);
-	player->inventory.slots[7] = itemAmt(DIAMOND_PICKAXE, 1);
-	player->inventory.slots[8] = itemAmt(SUMMON_BOSS, 1);
-	player->inventory.slots[9] = itemAmt(LADDER_ITEM, 99);
-	player->inventory.slots[10] = itemAmt(SLIME_BLOCK_ITEM, 99);
-	player->inventory.slots[11] = itemAmt(TROPHY_ITEM, 99);
+	player->inventory.slots[7] = itemAmt(LADDER_ITEM, 99);
+	player->inventory.slots[8] = itemAmt(SLIME_BLOCK_ITEM, 99);
 
 	//world->dayCycle = 0.8f;
 	//world->moonPhase = 0.75f;
@@ -740,6 +737,11 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 			}	
 		}
 	}
+	for(int i = 0; i < indices.sz; i++)
+	{
+		int ind = indices.values[i];
+		world->enemies->enemyArr[ind].updated = 0;
+	}
 	//Delete enemies that are dead
 	for(int i = 0; i < indices.sz; i++)
 	{	
@@ -751,7 +753,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		}
 		//Delete enemies after five minutes
 		else if(world->enemies->enemyArr[ind].despawnTimer > 300.0f ||
-				blockCollisionSearch(world->enemies->enemyArr[ind].spr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided))
+				(blockCollisionSearch(world->enemies->enemyArr[ind].spr, 3, 3, world->blocks, world->blockArea, world->worldBoundingRect, &collided)
+				 && world->enemies->enemyArr[ind].spr.type != FIREBALL))
 		{
 			deletePoint(world->enemies, ind);
 		}
@@ -772,6 +775,8 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 	free(nodes.values);
 
 	//Update the boss
+	float distX = fabs(world->boss.spr.hitbox.position.x - player->playerSpr.hitbox.position.x),
+		  distY = fabs(world->boss.spr.hitbox.position.y - player->playerSpr.hitbox.position.y);
 	if(world->boss.phase >= 0)
 	{
 		if(world->boss.phase == 3 && world->boss.timer + secondsPerFrame > 5.0f)
@@ -790,6 +795,45 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		updateBoss(&world->boss, player, secondsPerFrame);
 		//Permanently keep it night until the boss is defeated
 		world->dayCycle = 0.0f;
+	
+		//Shoot fireballs
+		if(world->boss.fireballTimer <= 0.0f && world->boss.attackmode == FLOAT &&
+			distX < 32.0f * BLOCK_SIZE && distY < 32.0f * BLOCK_SIZE)
+		{
+			if(world->boss.phase == 1)
+			{
+				struct Enemy fireball = createEnemy(FIREBALL, world->boss.spr.hitbox.position.x, world->boss.spr.hitbox.position.y - world->boss.spr.hitbox.dimensions.h / 2.0f - BLOCK_SIZE / 2.0f);
+				fireball.spr.vel.y = BLOCK_SIZE * -4.0f;
+				insertEnemy(world->enemies, fireball);	
+				world->boss.fireballTimer = 3.0f;	
+			}
+			else if(world->boss.phase == 2)
+			{
+				//Summon enemies or shoot fireballs
+				if(rand() % 2 == 0 && 
+				   getBlock(world->blocks, (int)(world->boss.spr.hitbox.position.x / BLOCK_SIZE),
+										   (int)(world->boss.spr.hitbox.position.y / BLOCK_SIZE), world->blockArea, world->worldBoundingRect).type == NONE)
+				{
+					struct Enemy enemy = createEnemy(rand() % (PINK_SLIME + 1), (int)(world->boss.spr.hitbox.position.x / BLOCK_SIZE) * BLOCK_SIZE,
+																				(int)(world->boss.spr.hitbox.position.y / BLOCK_SIZE) * BLOCK_SIZE);
+					insertEnemy(world->enemies, enemy);
+				}
+				else
+				{
+					for(float i = 0.0f; i < 3.0f; i++)
+					{
+						float dist = world->boss.spr.hitbox.dimensions.h / 2.0f + BLOCK_SIZE;
+						float angle = (180.0f + 30.0f + 60.0f * i) / 180.0f * 3.14159f;
+						struct Enemy fireball = createEnemy(FIREBALL, world->boss.spr.hitbox.position.x + cosf(angle) * dist, world->boss.spr.hitbox.position.y + sinf(angle) * dist);
+						float speed = BLOCK_SIZE * (2.0f + 2.0f * (float)rand() / (float)RAND_MAX);
+						fireball.spr.vel.y = speed * sinf(angle);
+						fireball.spr.vel.x = speed * cosf(angle);
+						insertEnemy(world->enemies, fireball);	
+					}
+				}
+				world->boss.fireballTimer = 3.0f;
+			}
+		}
 	}
 
 	//Update clouds

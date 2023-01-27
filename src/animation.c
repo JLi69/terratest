@@ -80,7 +80,10 @@ void animateSprites(struct World *world, struct Sprite *player, float secondsPer
 			updateAnimation(&world->boss.spr, attackPhase1, 2, timePassed, 0.2f);
 		break;
 	case 2:
-		updateAnimation(&world->boss.spr, bossPhase2, 2, timePassed, 0.5f);
+		if(world->boss.attackmode == FLOAT)
+			updateAnimation(&world->boss.spr, bossPhase2, 2, timePassed, 0.5f);
+		else
+			updateAnimation(&world->boss.spr, attackPhase2, 2, timePassed, 0.2f);
 		break;
 	case 3:
 		updateAnimation(&world->boss.spr, bossDeath, 4, timePassed, 0.1f);

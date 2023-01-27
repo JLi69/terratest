@@ -2,7 +2,7 @@
 #include "sprite.h"
 #include "enemy.h"
 
-#define CAPACITY 64
+#define CAPACITY 16
 #define DEFAULT_SZ 2048 
 #define ROOT 0
 #define NIL_NODE -1

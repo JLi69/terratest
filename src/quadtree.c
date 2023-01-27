@@ -54,8 +54,8 @@ void searchInRect(struct QuadTree *qtree, union Point botleft, union Point topri
 	//if it isn't quit the search
 	if(qtree->nodes[nodeid].botLeftCorner.x > topright.x ||
 		qtree->nodes[nodeid].botLeftCorner.y > topright.y ||
-		qtree->nodes[nodeid].topRightCorner.x < botleft.x ||
-		qtree->nodes[nodeid].topRightCorner.y < botleft.y)
+		qtree->nodes[nodeid].topRightCorner.x <= botleft.x ||
+		qtree->nodes[nodeid].topRightCorner.y <= botleft.y)
 		return;
 	//Otherwise continue and check if it is a leaf node
 	if(qtree->nodes[nodeid].ptIndices != NULL)
@@ -293,7 +293,6 @@ void insertEnemy(struct QuadTree *qtree, struct Enemy enemy)
 	//List is full, expand it	
 	else
 	{
-		printf("Expand\n");
 		struct Enemy* temp = (struct Enemy*)malloc(sizeof(struct Enemy) * qtree->maxPointCount);
 		for(int i = 0; i < qtree->maxPointCount; i++)
 			temp[i] = qtree->enemyArr[i];

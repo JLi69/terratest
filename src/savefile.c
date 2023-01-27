@@ -285,6 +285,7 @@ void readBoss(struct Boss *boss, FILE *file)
 	boss->spawnX = bossFloatData[1];
 	boss->spawnY = bossFloatData[2];
 	boss->damageCooldown = bossFloatData[3];
+	boss->fireballTimer = 0.0f;
 }
 
 void saveWorld(struct World *world, struct Player *player, const char *path)
