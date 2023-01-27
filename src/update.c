@@ -67,7 +67,7 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[3] = itemAmt(RAINBOW_SWORD, 1);
 	player->inventory.slots[4] = itemAmt(SUMMON_BOSS, 1);
 	player->inventory.slots[5] = itemAmt(DIAMOND_PICKAXE, 1);
-	player->inventory.slots[6] = itemAmt(SUMMON_BOSS, 1);
+	player->inventory.slots[6] = itemAmt(LAVA_BUCKET, 1);
 	player->inventory.slots[7] = itemAmt(LADDER_ITEM, 99);
 	player->inventory.slots[8] = itemAmt(SLIME_BLOCK_ITEM, 99);
 

@@ -268,7 +268,10 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 				enemy->spr.hitbox.position.x / BLOCK_SIZE,
 				enemy->spr.hitbox.position.y / BLOCK_SIZE,
 				maxBlockInd, boundRect).mass > 0.1f)
+	{
 		damageEnemy(enemy, 3);
+		enemy->attackmode = WANDER;	
+	}
 	//Swim
 	if(getBlock(blocks, 
 				enemy->spr.hitbox.position.x / BLOCK_SIZE,
@@ -280,7 +283,10 @@ void chickenAI(struct Enemy *enemy, float timePassed,
 				enemy->spr.hitbox.position.x / BLOCK_SIZE,
 				enemy->spr.hitbox.position.y / BLOCK_SIZE - 1,
 				maxBlockInd, boundRect).type == MAGMA_STONE)
+	{
 		damageEnemy(enemy, 1);
+		enemy->attackmode = WANDER;	
+	}
 
 	//If we are on low health, run away and try to stay away from the player
 	if(enemy->health <= 1 && enemy->attackmode != KNOCKBACK && dist <= 8.0f * BLOCK_SIZE)
