@@ -244,6 +244,7 @@ void readEnemyData(struct World *world, FILE *file)
 		enemy.timer = sprDataFloat[1];	
 		enemy.damageCooldown = sprDataFloat[2];	
 		enemy.despawnTimer = sprDataFloat[3];
+		enemy.updated = 0;
 		insertEnemy(world->enemies, enemy);
 	}
 }
