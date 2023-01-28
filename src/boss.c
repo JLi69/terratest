@@ -113,6 +113,7 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 			{
 				boss->attackmode = ATTACK;
 				boss->spr.vel.x = 0.0f;	
+				boss->spr.vel.y = 0.0f;	
 			}	
 		}
 		else if(boss->attackmode == ATTACK)
@@ -200,6 +201,7 @@ void updateBoss(struct Boss *boss, struct Player *player, float timePassed)
 			{
 				boss->attackmode = ATTACK;
 				boss->spr.vel.x = 0.0f;	
+				boss->spr.vel.y = 0.0f;	
 			}	
 		}
 		else if(boss->attackmode == ATTACK)
