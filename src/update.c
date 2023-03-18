@@ -69,7 +69,8 @@ void initGame(struct World *world, struct Player *player, int seed)
 	player->inventory.slots[5] = itemAmt(DIAMOND_PICKAXE, 1);
 	player->inventory.slots[6] = itemAmt(LAVA_BUCKET, 1);
 	player->inventory.slots[7] = itemAmt(LADDER_ITEM, 99);
-	player->inventory.slots[8] = itemAmt(SLIME_BLOCK_ITEM, 99);
+	player->inventory.slots[8] = itemAmt(STICK, 99);
+	player->inventory.slots[9] = itemAmt(PLANK, 99);
 
 	//world->dayCycle = 0.8f;
 	//world->moonPhase = 0.75f;
@@ -143,9 +144,9 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 		if(enterPressed && (isPressedOnce(GLFW_KEY_LEFT_SHIFT) || isPressedOnce(GLFW_KEY_RIGHT_SHIFT)))
 		{
 			struct InventorySlot crafted = craft(&player->inventory, menuSelection);
-			crafted.maxUsesLeft = crafted.usesLeft = maxUses(crafted.item);
 			while(crafted.item != NOTHING)
 			{
+				crafted.maxUsesLeft = crafted.usesLeft = maxUses(crafted.item);
 				int pickedup = pickup(crafted.item, crafted.amount, crafted.usesLeft, crafted.maxUsesLeft, &player->inventory);
 				addItem(world, itemAmtWithUses(crafted.item, crafted.amount - pickedup, crafted.usesLeft, crafted.maxUsesLeft), camPos.x, camPos.y + BLOCK_SIZE); 
 				crafted = craft(&player->inventory, menuSelection);	

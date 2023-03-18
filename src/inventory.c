@@ -326,7 +326,7 @@ int pickup(enum Item item, int amt, int uses, int maxUses, struct Inventory *inv
 			amt -= (maxStack(inventory->slots[i].item) - inventory->slots[i].amount);
 			inventory->slots[i].amount = maxStack(inventory->slots[i].item);
 			inventory->slots[i].maxUsesLeft = maxUses;
-			inventory->slots[i].usesLeft = uses;	
+			inventory->slots[i].usesLeft = uses;
 		}
 	}
 
