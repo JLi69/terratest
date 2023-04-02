@@ -7,6 +7,7 @@
 #include <glad/glad.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <SOIL2/SOIL2.h>
 //Maximum number of keys that can be detected as pressed
 #define MAX_KEY_PRESSED 4
 #define MOUSE_BUTTON_COUNT 3
@@ -166,6 +167,11 @@ void initWindow(void)
 	glfwSetScrollCallback(win, handleMouseScroll);
 	glfwSetWindowPosCallback(win, handleWindowMovement);
 	//glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	GLFWimage icons[1];
+	icons[0].pixels = SOIL_load_image("res/terratest-icon.png", &icons[0].width, &icons[0].height, 0, SOIL_LOAD_RGBA);
+	glfwSetWindowIcon(win, 1, icons);
+	SOIL_free_image_data(icons[0].pixels);
 
 	//Initialize glad
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
