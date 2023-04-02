@@ -69,12 +69,22 @@ link_directories(${CMAKE_BINARY_DIR}/lib/glfw/src)
 link_directories(${CMAKE_BINARY_DIR}/lib/glad)
 link_directories(${CMAKE_BINARY_DIR}/lib/SOIL2)
 
-#build release version
-add_executable(
-	${PROJECT_NAME}
-
-	${source}
-)
+#build release version	
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+	set(APP_ICON_RESOURCE_WINDOWS terratest.rc)
+	add_executable(
+		${PROJECT_NAME}
+	
+		${source}
+		${APP_ICON_RESOURCE_WINDOWS}
+	)
+else()
+	add_executable(
+		${PROJECT_NAME}
+	
+		${source}
+	)
+endif()
 add_dependencies(${PROJECT_NAME} lib_glad lib_glfw lib_soil2) 
 
 #Link with libraries

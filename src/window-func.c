@@ -145,7 +145,6 @@ double getMouseScroll()
 
 void initWindow(void)
 {
-	glfwSwapInterval(1);
 	for(int i = 0; i < MAX_KEY_PRESSED; i++)
 		pressed[i] = UNPRESSED;
 	for(int i = 0; i < MOUSE_BUTTON_COUNT; i++)
@@ -160,6 +159,8 @@ void initWindow(void)
 	if(!win)
 		crash("Failed to create window!");
 	glfwMakeContextCurrent(win);
+
+	glfwSwapInterval(1);
 
 	glfwSetWindowSizeCallback(win, handleWindowResize);
 	glfwSetKeyCallback(win, handleKeyInput);
