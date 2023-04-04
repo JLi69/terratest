@@ -1,6 +1,6 @@
-#version 430
+#version 330 core
 
-layout(location = 0) uniform sampler2D tex;
+uniform sampler2D tex;
 
 out vec4 color;
 uniform vec4 uColor;
