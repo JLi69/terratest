@@ -154,6 +154,8 @@ void initWindow(void)
 	if(!glfwInit())
 		crash("Failed to initialize glfw!\n");
 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	//Create window
 	win = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "TerraTest", NULL, NULL);
 	if(!win)
@@ -168,6 +170,8 @@ void initWindow(void)
 	glfwSetScrollCallback(win, handleMouseScroll);
 	glfwSetWindowPosCallback(win, handleWindowMovement);
 	//glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	
 
 	GLFWimage icons[1];
 	icons[0].pixels = SOIL_load_image("res/terratest-icon.png", &icons[0].width, &icons[0].height, 0, SOIL_LOAD_RGBA);
