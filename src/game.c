@@ -206,7 +206,7 @@ void loop(void)
 			{
 				if(buttonClicked(PAUSED, 1, GLFW_MOUSE_BUTTON_LEFT))
 				{
-					saveWorld(&world, &player, "world1");	
+					saveWorld(&world, &player, savepaths[pathind]);	
 					setPaused(0);
 					toggleCursor();
 				}
