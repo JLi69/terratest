@@ -1,5 +1,7 @@
 #ifndef SPRITE_H
 
+#include <stdint.h>
+
 #define GRAVITY 640.0f
 
 #define newpt createPoint
@@ -34,11 +36,11 @@ struct Sprite
 {
 	struct Rectangle hitbox;
 	struct Vector2D vel;
-	short int falling, canMove, flipped, animating, canJump;
-	int animationFrame;
+	int16_t falling, canMove, flipped, animating, canJump;
+	int32_t animationFrame;
 	float timeSinceLastUpdate;
 
-	unsigned int type, animationState;
+	uint32_t type, animationState;
 	float timeExisted;
 };
 

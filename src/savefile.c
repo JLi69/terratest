@@ -1,16 +1,7 @@
 #include "savefile.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-/*
- * Some notes:
- * - I didn't particularly optimize the saving world code so it might be beneficial to have
- *   some of the following optimizations:
- *		- Chunking to save the world in smaller portions (and to consume less memory)
- *		- Write all binary data to a character array in memory first before writing
- *		that all to disk so that fwrite/fread doesn't need to do a bunch of syscalls
- *		(not sure how much that will increase speed but I imagine it could help a bit)
- * */
+#include <stdint.h>
 
 void readRectangle(struct Rectangle *rect, FILE *file)
 {
@@ -42,15 +33,15 @@ void readSprite(struct Sprite *spr, FILE *file)
 	size_t ret;
 	readRectangle(&spr->hitbox, file);
 	readVector(&spr->vel, file);	
-	ret = fread(&spr->falling, sizeof(short int), 1, file);
-	ret = fread(&spr->canMove, sizeof(short int), 1, file); 
-	ret = fread(&spr->flipped, sizeof(short int), 1, file); 
-	ret = fread(&spr->animating, sizeof(short int), 1, file); 
-	ret = fread(&spr->canJump, sizeof(short int), 1, file);
-	ret = fread(&spr->animationFrame, sizeof(int), 1, file);	
+	ret = fread(&spr->falling, sizeof(int16_t), 1, file);
+	ret = fread(&spr->canMove, sizeof(int16_t), 1, file); 
+	ret = fread(&spr->flipped, sizeof(int16_t), 1, file); 
+	ret = fread(&spr->animating, sizeof(int16_t), 1, file); 
+	ret = fread(&spr->canJump, sizeof(int16_t), 1, file);
+	ret = fread(&spr->animationFrame, sizeof(int32_t), 1, file);	
 	ret = fread(&spr->timeSinceLastUpdate, sizeof(float), 1, file);
-	ret = fread(&spr->type, sizeof(unsigned int), 1, file);
-	ret = fread(&spr->animationState, sizeof(unsigned int), 1, file);
+	ret = fread(&spr->type, sizeof(uint32_t), 1, file);
+	ret = fread(&spr->animationState, sizeof(uint32_t), 1, file);
 	ret = fread(&spr->timeExisted, sizeof(float), 1, file);
 }
 
@@ -58,15 +49,15 @@ void readInventory(struct Inventory *inventory, FILE *file)
 {
 	size_t ret;
 	int maxSize;
-	ret = fread(&maxSize, sizeof(int), 1, file);
+	ret = fread(&maxSize, sizeof(int32_t), 1, file);
 	*inventory = createInventory(maxSize);
-	ret = fread(&inventory->selected, sizeof(int), 1, file);
+	ret = fread(&inventory->selected, sizeof(int32_t), 1, file);
 	for(int i = 0; i < inventory->maxSize; i++)
 	{
-		ret = fread(&inventory->slots[i].amount, sizeof(int), 1, file);
+		ret = fread(&inventory->slots[i].amount, sizeof(int32_t), 1, file);
 		ret = fread(&inventory->slots[i].item, sizeof(enum Item), 1, file);
-		ret = fread(&inventory->slots[i].usesLeft, sizeof(int), 1, file);
-		ret = fread(&inventory->slots[i].maxUsesLeft, sizeof(int), 1, file);
+		ret = fread(&inventory->slots[i].usesLeft, sizeof(int32_t), 1, file);
+		ret = fread(&inventory->slots[i].maxUsesLeft, sizeof(int32_t), 1, file);
 	}
 }
 
@@ -74,10 +65,10 @@ void readDroppedItem(struct DroppedItem *droppedItem, FILE *file)
 {
 	size_t ret;
 	readSprite(&droppedItem->itemSpr, file);
-	ret = fread(&droppedItem->item.amount, sizeof(int), 1, file);
+	ret = fread(&droppedItem->item.amount, sizeof(int32_t), 1, file);
 	ret = fread(&droppedItem->item.item, sizeof(enum Item), 1, file);
-	ret = fread(&droppedItem->item.usesLeft, sizeof(int), 1, file);
-	ret = fread(&droppedItem->item.maxUsesLeft, sizeof(int), 1, file);
+	ret = fread(&droppedItem->item.usesLeft, sizeof(int32_t), 1, file);
+	ret = fread(&droppedItem->item.maxUsesLeft, sizeof(int32_t), 1, file);
 }
 
 void readPlayerData(struct Player *player, FILE *file)
@@ -88,8 +79,8 @@ void readPlayerData(struct Player *player, FILE *file)
 	//Read inventory data	
 	readInventory(&player->inventory, file);
 	//Player health and breath data
-	ret = fread(&player->health, sizeof(int), 1, file);
-	ret = fread(&player->maxHealth, sizeof(int), 1, file);
+	ret = fread(&player->health, sizeof(int32_t), 1, file);
+	ret = fread(&player->maxHealth, sizeof(int32_t), 1, file);
 	ret = fread(&player->breath, sizeof(float), 1, file);
 	ret = fread(&player->maxBreath, sizeof(float), 1, file);
 
@@ -136,38 +127,38 @@ void writeSprite(struct Sprite *spr, FILE *file)
 {
 	writeRectangle(&spr->hitbox, file);
 	writeVector(&spr->vel, file);	
-	fwrite(&spr->falling, sizeof(short int), 1, file);
-	fwrite(&spr->canMove, sizeof(short int), 1, file); 
-	fwrite(&spr->flipped, sizeof(short int), 1, file); 
-	fwrite(&spr->animating, sizeof(short int), 1, file); 
-	fwrite(&spr->canJump, sizeof(short int), 1, file);
-	fwrite(&spr->animationFrame, sizeof(int), 1, file);	
+	fwrite(&spr->falling, sizeof(int16_t), 1, file);
+	fwrite(&spr->canMove, sizeof(int16_t), 1, file); 
+	fwrite(&spr->flipped, sizeof(int16_t), 1, file); 
+	fwrite(&spr->animating, sizeof(int16_t), 1, file); 
+	fwrite(&spr->canJump, sizeof(int16_t), 1, file);
+	fwrite(&spr->animationFrame, sizeof(int32_t), 1, file);	
 	fwrite(&spr->timeSinceLastUpdate, sizeof(float), 1, file);
-	fwrite(&spr->type, sizeof(unsigned int), 1, file);
-	fwrite(&spr->animationState, sizeof(unsigned int), 1, file);
+	fwrite(&spr->type, sizeof(uint32_t), 1, file);
+	fwrite(&spr->animationState, sizeof(uint32_t), 1, file);
 	fwrite(&spr->timeExisted, sizeof(float), 1, file);
 }
 
 void writeInventory(struct Inventory *inventory, FILE *file)
 {
-	fwrite(&inventory->maxSize, sizeof(int), 1, file);
-	fwrite(&inventory->selected, sizeof(int), 1, file);
+	fwrite(&inventory->maxSize, sizeof(int32_t), 1, file);
+	fwrite(&inventory->selected, sizeof(int32_t), 1, file);
 	for(int i = 0; i < inventory->maxSize; i++)
 	{
-		fwrite(&inventory->slots[i].amount, sizeof(int), 1, file);
+		fwrite(&inventory->slots[i].amount, sizeof(int32_t), 1, file);
 		fwrite(&inventory->slots[i].item, sizeof(enum Item), 1, file);
-		fwrite(&inventory->slots[i].usesLeft, sizeof(int), 1, file);
-		fwrite(&inventory->slots[i].maxUsesLeft, sizeof(int), 1, file);
+		fwrite(&inventory->slots[i].usesLeft, sizeof(int32_t), 1, file);
+		fwrite(&inventory->slots[i].maxUsesLeft, sizeof(int32_t), 1, file);
 	}
 }
 
 void writeDroppedItem(struct DroppedItem *droppedItem, FILE *file)
 {
 	writeSprite(&droppedItem->itemSpr, file);
-	fwrite(&droppedItem->item.amount, sizeof(int), 1, file);
+	fwrite(&droppedItem->item.amount, sizeof(int32_t), 1, file);
 	fwrite(&droppedItem->item.item, sizeof(enum Item), 1, file);
-	fwrite(&droppedItem->item.usesLeft, sizeof(int), 1, file);
-	fwrite(&droppedItem->item.maxUsesLeft, sizeof(int), 1, file);
+	fwrite(&droppedItem->item.usesLeft, sizeof(int32_t), 1, file);
+	fwrite(&droppedItem->item.maxUsesLeft, sizeof(int32_t), 1, file);
 }
 
 void writePlayerData(struct Player *player, FILE *file)
@@ -177,8 +168,8 @@ void writePlayerData(struct Player *player, FILE *file)
 	//Write inventory data
 	writeInventory(&player->inventory, file);
 	//Player health and breath data
-	fwrite(&player->health, sizeof(int), 1, file);
-	fwrite(&player->maxHealth, sizeof(int), 1, file);
+	fwrite(&player->health, sizeof(int32_t), 1, file);
+	fwrite(&player->maxHealth, sizeof(int32_t), 1, file);
 	fwrite(&player->breath, sizeof(float), 1, file);
 	fwrite(&player->maxBreath, sizeof(float), 1, file);
 }
@@ -200,7 +191,7 @@ void writeBlockData(struct Block *blocks, int sz, FILE *file)
 
 void writeEnemyData(struct World *world, FILE *file)
 {
-	fwrite(&world->enemies->pointCount, sizeof(int), 1, file);
+	fwrite(&world->enemies->pointCount, sizeof(int32_t), 1, file);
 	for(int i = 0; i < world->enemies->pointCount; i++)
 	{
 		writeSprite(&world->enemies->enemyArr[i].spr, file);
@@ -226,7 +217,7 @@ void readEnemyData(struct World *world, FILE *file)
 {
 	size_t ret;
 	int pointCount;
-	ret = fread(&pointCount, sizeof(int), 1, file);
+	ret = fread(&pointCount, sizeof(int32_t), 1, file);
 	for(int i = 0; i < pointCount; i++)
 	{
 		struct Enemy enemy;
@@ -266,7 +257,7 @@ void writeBoss(struct Boss *boss, FILE *file)
 		boss->spawnY,
 		boss->damageCooldown
 	};
-	fwrite(bossIntData, sizeof(int), 4, file);
+	fwrite(bossIntData, sizeof(int32_t), 4, file);
 	fwrite(bossFloatData, sizeof(float), 4, file);
 }
 
@@ -276,7 +267,7 @@ void readBoss(struct Boss *boss, FILE *file)
 	int bossIntData[4];
 	float bossFloatData[4];
 	size_t ret;
-	ret = fread(bossIntData, sizeof(int), 4, file);
+	ret = fread(bossIntData, sizeof(int32_t), 4, file);
 	ret = fread(bossFloatData, sizeof(float), 4, file);
 	boss->phase = bossIntData[0];
 	boss->health = bossIntData[1];
@@ -303,7 +294,7 @@ void saveWorld(struct World *world, struct Player *player, const char *path)
 	writePlayerData(player, savefile);
 
 	//Write world data
-	fwrite(&world->blockArea, sizeof(int), 1, savefile);
+	fwrite(&world->blockArea, sizeof(int32_t), 1, savefile);
 	//Write block data
 	writeBlockData(world->blocks, world->blockArea, savefile);
 	writeBlockData(world->transparentBlocks, world->blockArea, savefile);
@@ -318,7 +309,7 @@ void saveWorld(struct World *world, struct Player *player, const char *path)
 
 	writeBoundingRect(&world->worldBoundingRect, savefile);
 
-	fwrite(&world->totalItems, sizeof(int), 1, savefile);
+	fwrite(&world->totalItems, sizeof(int32_t), 1, savefile);
 	for(int i = 0; i < world->totalItems; i++)
 		writeDroppedItem(&world->droppedItems[i], savefile);
 
@@ -344,7 +335,7 @@ int readSave(struct World *world, struct Player *player, const char *path)
 	player->useItemTimer = 0.0f;
 
 	//Read world data
-	ret = fread(&world->blockArea, sizeof(int), 1, savefile);
+	ret = fread(&world->blockArea, sizeof(int32_t), 1, savefile);
 	world->blocks = (struct Block*)malloc(sizeof(struct Block) * world->blockArea);
 	world->transparentBlocks = (struct Block*)malloc(sizeof(struct Block) * world->blockArea);
 	world->backgroundBlocks = (struct Block*)malloc(sizeof(struct Block) * world->blockArea);	
@@ -362,7 +353,7 @@ int readSave(struct World *world, struct Player *player, const char *path)
 		readSprite(&world->clouds[i], savefile);
 
 	readBoundingRect(&world->worldBoundingRect, savefile);
-	ret = fread(&world->totalItems, sizeof(int), 1, savefile);
+	ret = fread(&world->totalItems, sizeof(int32_t), 1, savefile);
 	for(int i = 0; i < world->totalItems; i++)
 		readDroppedItem(&world->droppedItems[i], savefile);
 
