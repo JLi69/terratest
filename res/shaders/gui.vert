@@ -19,17 +19,6 @@ void main()
 	float w = uWindowDimensions.x;
 	float h = uWindowDimensions.y;
 
-	if(w * 800.0 / 1280.0 > h)
-	{	
-		w *= 1280.0 / uWindowDimensions.x; 
-		h *= 1280.0 / uWindowDimensions.x;
-	}
-	else if(w * 800.0 / 1280.0 < h)
-	{
-		w *= 800.0 / uWindowDimensions.y; 
-		h *= 800.0 / uWindowDimensions.y;
-	}
-
 	mat4 win;
 	win[0] = vec4(1.0 / w, 0.0, 0.0, 0.0);
 	win[1] = vec4(0.0, 1.0 / h, 0.0, 0.0); 

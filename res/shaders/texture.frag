@@ -18,10 +18,7 @@ uniform float uBrightness = 1.0f;
 void main()
 {
 	if(tc.y > uLevel)
-	{
-		color = vec4(0.0, 0.0, 0.0, 0.0);
-		return;
-	}
+		discard;
 
 	color = uColor * uBrightness;
 
@@ -40,7 +37,7 @@ void main()
 			texCoord = vec2(
 				(floor(uTexSize.x * ((1.0f - tc.x) * uTexFrac.x + uTexOffset.x)) + 0.5) / uTexSize.x,
 				(floor(uTexSize.y * ((tc.y) * uTexFrac.y + uTexOffset.y)) + 0.5) / uTexSize.y
-			);	
+			);
 		}
 
 		if(texCoord.y > uTexOffset.y + uTexFrac.y)

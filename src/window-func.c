@@ -261,6 +261,23 @@ void getCursorPos(double *x, double *y)
 		*y = -winHeight / 2.0f;
 }
 
+void getCursorPosNormalized(double *x, double *y)
+{
+	getCursorPos(x, y);
+	int winw, winh;
+	getWindowSize(&winw, &winh);
+
+	if(winw * 800 > winh * 1280)
+		winh = winw * 800 / 1280;
+	else if(winw * 800 < winh * 1280)
+		winw = winh * 1280 / 800;
+
+	*x /= (float)winw;
+	*y /= (float)winh;
+	*x *= DEFAULT_WIDTH;
+	*y *= DEFAULT_HEIGHT;
+}
+
 int cursorInBounds()
 {
 	int winWidth, winHeight;

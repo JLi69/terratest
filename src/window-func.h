@@ -36,6 +36,10 @@ void getWindowSize(int *w, int *h);
 //translated so that the origin is in the
 //center of the window
 void getCursorPos(double *x, double *y);
+//Returns the position of the cursor normalized to be in the coordinates
+//x: -DEFAULT_WIDTH / 2 to DEFAULT_WIDTH / 2 and
+//y: -DEFAULT_HEIGHT / 2 to DEFAULT_HEIGHT / 2
+void getCursorPosNormalized(double *x, double *y);
 
 void toggleCursor(void);
 void enableCursor(void);

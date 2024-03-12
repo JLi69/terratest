@@ -359,7 +359,7 @@ void updateGameobjects(struct World *world, struct Player *player, float seconds
 
 	//Get selected block
 	double cursorX, cursorY;
-	getCursorPos(&cursorX, &cursorY);
+	getCursorPosNormalized(&cursorX, &cursorY);
 	cursorX = roundf((cursorX + player->playerSpr.hitbox.position.x) / BLOCK_SIZE);	
 	cursorY = roundf((cursorY + player->playerSpr.hitbox.position.y) / BLOCK_SIZE);
 	if(isPressed(GLFW_KEY_LEFT_SHIFT) || isPressed(GLFW_KEY_RIGHT_SHIFT))

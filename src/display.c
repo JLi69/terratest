@@ -31,6 +31,7 @@ void initGL(void)
 	shaders[0] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/texture.frag");
 	shaders[1] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/outline.frag");
 	shaders[2] = createShaderProgram("res/shaders/transform-vert.vert", "res/shaders/sun.frag");
+	shaders[3] = createShaderProgram("res/shaders/gui.vert", "res/shaders/texture.frag");
 
 	//Set up vertex buffers
 	buffers[0] = createRectangleBuffer();
@@ -74,8 +75,8 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 		updateActiveShaderWindowSize();	
 		turnOffTexture();
 		setRectColor(255.0f, 255.0f, 0.0f, 255.0f);	
-		setRectPos(-sinf(dayCycleTime * 2.0f * 3.14159f) * 1024.0f,
-					-cosf(dayCycleTime * 2.0f * 3.14159f) * 960.0f - 500.0f);	
+		setRectPos(-sinf(dayCycleTime * 2.0f * 3.14159f) * 600.0f,
+					-cosf(dayCycleTime * 2.0f * 3.14159f) * 800.0f - 500.0f);	
 		setRectSize(128.0f, 128.0f);	
 		drawRect();
 	}
@@ -87,8 +88,8 @@ void background(float dayCycleTime, float offsetx, float offsety, struct World w
 		updateActiveShaderWindowSize();	
 		turnOffTexture();
 		setRectColor(255.0f, 255.0f, 255.0f, 255.0f);	
-		setRectPos(sinf(dayCycleTime * 2.0f * 3.14159f) * 1024.0f,
-					cosf(dayCycleTime * 2.0f * 3.14159f) * 960.0f - 500.0f);	
+		setRectPos(sinf(dayCycleTime * 2.0f * 3.14159f) * 600.0f,
+					cosf(dayCycleTime * 2.0f * 3.14159f) * 800.0f - 500.0f);	
 		setRectSize(128.0f, 128.0f);	
 		drawRect();
 	}
@@ -146,8 +147,8 @@ void display(struct World world, struct Player player)
 	//Highlight block
 	if(!isPaused())
 	{
-		double cursorX, cursorY;
-		getCursorPos(&cursorX, &cursorY);
+		double cursorX, cursorY;	
+		getCursorPosNormalized(&cursorX, &cursorY);
 
 		//Break block animation	
 		bindTexture(textures[2], GL_TEXTURE0);	
@@ -291,7 +292,7 @@ void display(struct World world, struct Player player)
 	if(!isPaused() && player.health > 0)
 	{
 		double cursorX, cursorY;
-		getCursorPos(&cursorX, &cursorY);
+		getCursorPosNormalized(&cursorX, &cursorY);
 	
 		useShader(&shaders[1]);						
 		updateActiveShaderWindowSize();
@@ -333,7 +334,11 @@ void display(struct World world, struct Player player)
 		}
 	}
 	setTransparency(1.0f);
-
+	
+	useShader(&shaders[3]);
+	updateActiveShaderWindowSize();
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+	setTexSize(256.0f, 256.0f);
 	//Crafting recipes
 	if(craftingMenuShown())
 	{
@@ -378,9 +383,9 @@ void display(struct World world, struct Player player)
 		drawRect();
 		turnOnTexture();
 	}
-
+	
 	//Menus
-	if(player.health <= 0)
+	if(player.health <= 0) 
 		drawMenu(RESPAWN);
 	//Pause menu	
 	if(isPaused())
@@ -473,7 +478,11 @@ void displayMainMenu(float secondsPerFrame)
 		}
 	}
 	bindTexture(textures[2], GL_TEXTURE0);
-		
+	
+	useShader(&shaders[3]);
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+	setTexSize(256.0f, 256.0f);
+	updateActiveShaderWindowSize();
 	drawMenu(MAIN);
 }
 
@@ -482,8 +491,10 @@ void displaySaveMenu(const char **savepaths, int savecount, int perColumn, int s
 	int columns = (int)ceilf((float)savecount / (float)perColumn);
 
 	clear();
-	useShader(&shaders[0]);
+	useShader(&shaders[3]);
 	updateActiveShaderWindowSize();
+	setTexFrac(1.0f / 16.0f, 1.0f / 16.0f);
+	setTexSize(256.0f, 256.0f);
 
 	turnOffTexture();
 	setRectColor(64.0f, 120.0f, 255.0f, 255.0f);	
@@ -597,9 +608,7 @@ void displayCreatePrompt(unsigned int seed)
 	if(seed == 0)
 		drawString("seed (leave blank for random)", 0.0f, 128.0f, 16.0f);
 	else
-	{
 		drawUnsignedInteger(seed, 0.0f, 128.0f, 32.0f);
-	}
 
 	drawMenu(CREATE_WORLD_PROMPT);
 }
