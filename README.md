@@ -1,10 +1,16 @@
 # TerraTest
 
+**NOTE: as of August 22nd, 2024 I am archiving this repository and ceasing 
+development. I have not worked on this game in a long time and I feel that there
+are too many issues that have made this game unmaintainable and I feel
+that this project no longer represents my best work. You can read more
+about my thoughts in a [blog post](https://jli69.github.io/blog/2024/07/23/criticizing-terratest.html)
+I made. I might make a rewrite in the future but that will take a while.**
+
 This is a Terraria clone that I wrote as a programming challenge.
 
 A lot of the code is messy and rather poorly organized and the 
-performance/resource usage of the game isn't good at times but
-I plan on fixing that in the future.
+performance/resource usage of the game isn't good at times.
 
 ## Libraries Used
 [GLFW](https://github.com/glfw/glfw)
@@ -45,38 +51,6 @@ cd build
 cmake .. -G "MinGW Makefiles"
 mingw32-make
 ```
-
-## TODO
-I don't intend on working on this project for a while as I want to
-work on other projects but this is a list that I plan on using when
-adding new features to the game later when I want to work on this
-again. If you have any suggestions/find bugs/have feedback, please
-open an issue to discuss it.
-
-Additionally, forks/pull requests are encouraged.
-
- - Fix any bugs in the game
- - Improve performance
-	- Make optimizations to keep frame rate stable
-	- Optimize OpenGL to use less CPU
-	- World chunking to reduce memory usage/improve performance
- - Quality of Life
-	- More easily rearrange inventory
-	- Better UI design
-	- Improved crafting menu
- - Add new features
-	- More enemies
-	- New blocks
-		- Utility blocks such as chests/furnace
-	- Biomes
-		- Snow biome
-		- Desert biome
- - Lua support?
-
-## Screenshots
-![screenshot1](screenshots/terratest_title.png)
-![screenshot2](screenshots/terratest-base.png)
-![screenshot3](screenshots/diamond_block_house.png)
 
 ## License
 All code (shaders/source code) is under the MIT license.
